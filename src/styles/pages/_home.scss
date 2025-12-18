@@ -1,0 +1,230 @@
+// Home 頁面樣式（用戶主頁）
+.home-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+
+  .home-loading {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #f86f03;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 1rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  .home-error {
+    color: #ef4444;
+    padding: 1rem;
+  }
+}
+
+.home-header {
+  min-height: 90px;
+  margin: 1.5rem 1.5rem 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 1.4rem;
+  flex-shrink: 0;
+
+  .user-avatar {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+  }
+
+  .user-info {
+    flex: 1;
+
+    h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
+
+    .welcome-text {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.25rem;
+    }
+
+    .phone-text {
+      font-size: 0.875rem;
+      color: #9ca3af;
+    }
+  }
+
+  .user-info-edit {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .edit-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #f86f03;
+        ring: 2px;
+        ring-color: rgba(248, 111, 3, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .edit-button {
+      background-color: #f3f4f6;
+      color: #4b5563;
+
+      &:hover:not(:disabled) {
+        background-color: #e5e7eb;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+    }
+
+    .save-button {
+      background-color: #10b981;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background-color: #059669;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+    }
+
+    .cancel-button {
+      background-color: #ef4444;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background-color: #dc2626;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+.home-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.5rem 7rem;
+
+  /* 隱藏滾動條但保留滾動功能 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 固定在底部的預約按鈕區域
+.booking-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem 1.5rem calc(1rem + 16px);
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+
+  .booking-button {
+    width: 100%;
+    background-color: #f86f03;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #ea6102;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}

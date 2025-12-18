@@ -1,0 +1,39 @@
+// 主要 SCSS 入口檔案
+
+// 1. 引入工具類（變數、mixins、動畫）
+@use "./utils/variables" as *;
+@use "./utils/mixins" as *;
+@use "./utils/animations";
+
+// 2. 引入基礎樣式
+@use "./base/reset";
+
+// 3. 引入佈局樣式
+@use "./layouts/sidebar";
+@use "./layouts/admin-dashboard";
+
+// 4. 引入組件樣式
+@use "./components/buttons";
+@use "./components/cards";
+@use "./components/appointment-details";
+@use "./components/appointment-detail-popup";
+@use "./components/customer-reminders";
+
+// 5. 引入頁面樣式
+@use "./pages/admin-login";
+@use "./pages/device-selection";
+@use "./pages/mobile-daily-view";
+@use "./pages/home";
+@use "./pages/service-history";
+@use "./pages/appointment-form";
+@use "./pages/booking-flow";
+@use "./pages/superadmin-layout";
+@use "./pages/appointment-list";
+@use "./pages/calendar-view";
+@use "./pages/customer-list";
+@use "./pages/service-records";
+@use "./pages/shop-settings";
+
+// 6. 全域客製化樣式
+// 在這裡可以寫全域的客製化樣式
+// 或者在對應的 partial 檔案中寫

@@ -1,0 +1,626 @@
+// Admin Dashboard 完整樣式
+
+// 根容器
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+// Loading 狀態
+.admin-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+// Dashboard 容器
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+// 左側：Logo + Sidebar 容器
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.5rem 1rem 1.5rem;
+  gap: 1.5rem;
+
+  .navbar-logo {
+    width: 5rem;
+    height: 5rem;
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0.9rem;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+// 右側：Navbar + Main Content 容器
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-right: 1.5rem;
+}
+
+// 頂部導航欄
+.admin-navbar {
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+
+  .navbar-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .walk-in-booking-btn {
+      background: #f86f03;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #d85f02;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(248, 111, 3, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // Search Input
+  .navbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      color: #9ca3af;
+      font-size: 1.25rem;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 160px;
+      padding: 0.625rem 2.75rem 0.625rem 2.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      color: #1f2937;
+      outline: none;
+      transition: all 0.2s;
+      background-color: white;
+
+      &:focus {
+        border-color: #f86f03;
+        box-shadow: 0 0 0 3px rgba(248, 111, 3, 0.1);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+
+      &:hover {
+        color: #6b7280;
+        background-color: #f3f4f6;
+      }
+
+      .material-symbols-rounded {
+        font-size: 1.125rem;
+      }
+    }
+  }
+
+  // Filter Select
+  .navbar-filter {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .filter-icon {
+      position: absolute;
+      left: 1rem;
+      color: #9ca3af;
+      font-size: 1.25rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .filter-select {
+      width: 160px;
+      padding: 0.625rem 1rem 0.625rem 2.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      color: #1f2937;
+      outline: none;
+      transition: all 0.2s;
+      background-color: white;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+
+      &:focus {
+        border-color: #f86f03;
+        box-shadow: 0 0 0 3px rgba(248, 111, 3, 0.1);
+      }
+
+      option {
+        padding: 0.5rem;
+      }
+    }
+
+    // 日期選擇器特定樣式
+    &.date-picker-wrapper {
+      .date-input {
+        width: 160px;
+        padding-right: 3rem; // 為右側清除按鈕留空間
+        cursor: pointer;
+
+        // 清除 select 的下拉箭頭樣式
+        background-image: none;
+
+        &::-webkit-calendar-picker-indicator {
+          cursor: pointer;
+          opacity: 0.6;
+          transition: opacity 0.2s;
+          margin-right: 0.5rem; // 與清除按鈕保持距離
+
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+
+      .clear-date-btn {
+        position: absolute;
+        right: 0.75rem; // 在最右邊
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        z-index: 2;
+        background-color: #f3f4f6;
+
+        &:hover {
+          color: #6b7280;
+          background-color: #f3f4f6;
+        }
+
+        .material-symbols-rounded {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  // Action Buttons (Edit/Save)
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      white-space: nowrap;
+
+      .material-symbols-rounded {
+        font-size: 1.125rem;
+      }
+
+      &.edit {
+        background-color: transparent;
+        color: #f86f03;
+        border: 1px solid #f86f03;
+
+        &:hover {
+          background-color: #f86f03;
+          color: white;
+        }
+      }
+
+      &.save {
+        background-color: #f86f03;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: darken(#f86f03, 8%);
+          box-shadow: 0 4px 12px rgba(248, 111, 3, 0.3);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      &.cancel {
+        background-color: transparent;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+
+        &:hover {
+          background-color: #f9fafb;
+          border-color: #9ca3af;
+        }
+      }
+    }
+  }
+
+  .shop-badge {
+    border-radius: 0.5rem;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+  }
+}
+
+// Sidebar
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 1rem;
+
+  .sidebar-nav {
+    background-color: #ffffff;
+    border-radius: 60px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .nav-item {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    text-align: center;
+    padding: 0;
+    border-radius: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: #6b7280;
+
+    .nav-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    &.active {
+      background-color: #f86f03;
+      color: #ffffff;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    // 通知紅點
+    .nav-notification-dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 12px;
+      height: 12px;
+      background-color: #ef4444;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      animation: pulse-notification 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    // 活躍狀態時紅點邊框保持白色（在橘色背景上更清晰）
+    &.active .nav-notification-dot {
+      border-color: white;
+    }
+
+    @keyframes pulse-notification {
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  // User Profile Section
+  .sidebar-user {
+    border-radius: 60px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: auto;
+
+    .user-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 54px;
+      background-color: #ffffff;
+      color: #f86f03;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .sidebar-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .mobile-switch-btn,
+      .logout-btn {
+        width: 54px;
+        height: 54px;
+        border-radius: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        color: #6b7280;
+
+        span {
+          font-size: 24px;
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      .mobile-switch-btn {
+        &:hover {
+          background-color: #d1fae5;
+          color: #10b981;
+        }
+      }
+
+      .logout-btn {
+        &:hover {
+          background-color: #fee2e2;
+          color: #dc2626;
+        }
+      }
+    }
+
+    .logout-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      color: #6b7280;
+
+      span {
+        font-size: 24px;
+      }
+
+      &:hover {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+}
+
+// 主內容區域
+.admin-main-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f3f4f6;
+  padding: 1.5rem 0;
+
+  /* 隱藏滾動條但保留滾動功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .content-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+  }
+}
+
+// 卡片樣式
+.admin-card {
+  text-align: center;
+  padding: 3rem 2rem;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+  .card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+
+  .card-description {
+    color: #4b5563;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .card-button {
+    background-color: #f86f03;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #d65d00;
+      transform: scale(1.05);
+    }
+  }
+
+  // 錯誤狀態卡片
+  &.error-card {
+    .card-title {
+      color: #ef4444;
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-description {
+      color: #6b7280;
+      margin-bottom: 0;
+    }
+
+    .card-uid {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 1rem;
+    }
+  }
+}

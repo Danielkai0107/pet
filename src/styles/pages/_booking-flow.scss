@@ -1,0 +1,650 @@
+// 彈窗遮罩層（電腦版）
+.modal-overlay {
+  // 手機版：不使用遮罩，直接全屏
+  display: block;
+
+  // 電腦版：顯示彈窗遮罩
+  @media (min-width: 768px) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 預約流程統一樣式
+.booking-flow-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+
+  // 手機版：全屏，確保內容可見
+  @media (max-width: 767px) {
+    min-width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    &.modal-content {
+      border-radius: 0;
+    }
+  }
+
+  // 電腦版：彈窗樣式
+  @media (min-width: 768px) {
+    &.modal-content {
+      min-height: auto;
+      max-height: 90vh;
+      width: 100%;
+      max-width: 600px;
+      border-radius: 1rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      animation: slideUp 0.3s ease-out;
+      overflow: hidden;
+    }
+  }
+
+  // 頂部離開按鈕區域（固定）
+  .booking-header {
+    padding: 1.5rem 1rem;
+    display: flex;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    background-color: #ffffff;
+
+    @media (min-width: 768px) {
+      padding: 1.5rem 1rem;
+      border-bottom: none;
+    }
+
+    .close-button {
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #000;
+      background-color: #f3f4f6;
+      border: none;
+      border-radius: 4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #e5e7eb;
+      }
+    }
+  }
+
+  // 主要內容區域（可滾動）
+  .booking-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 1rem 10rem;
+    -webkit-overflow-scrolling: touch; // iOS 平滑滾動
+
+    /* 隱藏滾動條但保留滾動功能 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // 手機版：增加底部安全距離
+    @media (max-width: 767px) {
+      padding: 0 1rem calc(10rem + env(safe-area-inset-bottom));
+    }
+
+    // 電腦版彈窗：調整 padding
+    @media (min-width: 768px) {
+      padding: 0 2rem 2rem;
+    }
+
+    // 標題區域
+    .booking-title {
+      margin-bottom: 1.5rem;
+
+      @media (min-width: 768px) {
+        margin-bottom: 2rem;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+
+        @media (min-width: 768px) {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    // 表單區域
+    .booking-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+
+      .form-label {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-input {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.75rem 1rem;
+        font-size: 16px; // 防止 iOS 自動縮放
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        max-width: 100%;
+        -webkit-appearance: none; // 移除 iOS 預設樣式
+
+        @media (min-width: 768px) {
+          min-height: 48px;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #f86f03;
+          ring: 2px;
+          ring-color: rgba(248, 111, 3, 0.1);
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+
+        // 錯誤狀態
+        &.error {
+          border-color: #ef4444;
+
+          &:focus {
+            border-color: #ef4444;
+            ring-color: rgba(239, 68, 68, 0.1);
+          }
+        }
+
+        // 日期選擇特殊處理
+        &[type="date"] {
+          -webkit-appearance: none;
+          appearance: none;
+          position: relative;
+          min-height: 48px;
+          height: auto;
+          line-height: 1.5;
+
+          // iOS Safari 特殊處理
+          &::-webkit-date-and-time-value {
+            text-align: left;
+            min-height: 1.5em;
+          }
+
+          &::-webkit-calendar-picker-indicator {
+            position: absolute;
+            right: 0.5rem;
+            cursor: pointer;
+            width: 1.5rem;
+            height: 1.5rem;
+          }
+        }
+      }
+
+      .form-select {
+        width: 100%;
+        min-height: 48px;
+        padding: 0.75rem 1rem;
+        font-size: 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #ffffff;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        line-height: 1.5;
+
+        &:focus {
+          outline: none;
+          border-color: #f86f03;
+          ring: 2px;
+          ring-color: rgba(248, 111, 3, 0.1);
+        }
+      }
+
+      .form-group {
+        // 基本樣式
+      }
+
+      // 並排欄位（種類和體型）
+      .form-group-row {
+        display: flex;
+        gap: 1rem;
+
+        .form-group {
+          flex: 1;
+        }
+      }
+
+      // 照片上傳區域
+      .photo-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.75rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background-color: #fafafa;
+
+        &:hover {
+          border-color: #f86f03;
+          background-color: #fff7ed;
+        }
+
+        .photo-icon {
+          width: 3rem;
+          height: 3rem;
+          margin: 0 auto 0.5rem;
+          color: #9ca3af;
+        }
+
+        .photo-text {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+      }
+
+      .photo-preview {
+        position: relative;
+        border-radius: 0.75rem;
+        overflow: hidden;
+
+        img {
+          width: 100%;
+          height: 12rem;
+          object-fit: cover;
+        }
+
+        .remove-photo {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          padding: 0.5rem;
+          background-color: #ef4444;
+          color: #ffffff;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background-color: #dc2626;
+          }
+        }
+      }
+
+      // 時間選擇網格
+      .time-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+
+        // 手機版小螢幕：2 列
+        @media (max-width: 360px) {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem;
+        }
+
+        // 時間格子容器（包含按鈕和錯誤提示）
+        > div {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .time-slot {
+          padding: 0.75rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          text-align: center;
+          border: 1px solid #d1d5db;
+          border-radius: 0.5rem;
+          background-color: #ffffff;
+          color: #374151;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover:not(:disabled) {
+            border-color: #f86f03;
+            background-color: #fff7ed;
+          }
+
+          &.selected {
+            border-color: #f86f03;
+            border-width: 2px;
+            background-color: #fff7ed;
+            color: #111827;
+          }
+
+          &.disabled,
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            border-color: #d1d5db;
+
+            &:hover {
+              border-color: #d1d5db;
+              background-color: #e5e7eb;
+            }
+          }
+        }
+
+        // 時段衝突提示
+        .time-conflict-message {
+          font-size: 0.75rem;
+          color: #ef4444;
+          text-align: center;
+          margin-top: 0.25rem;
+        }
+      }
+
+      // 服務項目卡片
+      .service-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .service-card {
+          padding: 1rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.75rem;
+          background-color: #ffffff;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          &:hover {
+            border-color: #f86f03;
+            background-color: #fff7ed;
+          }
+
+          &.selected {
+            border-color: #f86f03;
+            border-width: 2px;
+            background-color: #fff7ed;
+          }
+
+          .service-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+          }
+
+          .service-info {
+            text-align: right;
+
+            .service-price {
+              font-size: 1.125rem;
+              font-weight: 700;
+              color: #f86f03;
+            }
+
+            .service-duration {
+              font-size: 0.75rem;
+              color: #6b7280;
+              margin-top: 0.125rem;
+            }
+          }
+        }
+      }
+
+      // 備註輸入框
+      .form-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        resize: vertical;
+        min-height: 6rem;
+        font-family: inherit;
+
+        &:focus {
+          outline: none;
+          border-color: #f86f03;
+          ring: 2px;
+          ring-color: rgba(248, 111, 3, 0.1);
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
+
+      // 寵物選擇列表（橫向排列）
+      .pet-selection-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      // 寵物選擇晶片（小按鈕）
+      .pet-selection-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 2rem;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: #f86f03;
+          background-color: #fff7ed;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &.selected {
+          border-color: #f86f03;
+          background-color: #fff7ed;
+          box-shadow: 0 0 0 2px rgba(248, 111, 3, 0.1);
+        }
+
+        // 寵物頭像
+        .pet-chip-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+          object-position: center;
+          flex-shrink: 0;
+        }
+
+        .pet-chip-avatar-placeholder {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: #f3f4f6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          flex-shrink: 0;
+        }
+
+        // 寵物資訊
+        .pet-chip-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          min-width: 0; // 允許文字截斷
+        }
+
+        .pet-chip-name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #111827;
+          line-height: 1.2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 120px;
+        }
+
+        .pet-chip-details {
+          font-size: 0.75rem;
+          color: #6b7280;
+          line-height: 1.2;
+        }
+      }
+    }
+  }
+
+  // 底部固定區域（進度條 + 按鈕）
+  .booking-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-shrink: 0;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    z-index: 100;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+
+    // 手機版小螢幕：調整 padding
+    @media (max-width: 360px) {
+      padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    // 電腦版彈窗：調整定位
+    @media (min-width: 768px) {
+      position: sticky;
+      padding: 1.5rem 2rem;
+      box-shadow: none;
+    }
+
+    // 進度條
+    .progress-bar-container {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.5rem;
+
+      .progress-step {
+        flex: 1;
+        height: 0.25rem;
+        background-color: #e5e7eb;
+        border-radius: 9999px;
+        overflow: hidden;
+
+        &.active {
+          background-color: #f86f03;
+        }
+      }
+    }
+
+    // 按鈕區域
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+
+      .btn {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        &.btn-secondary {
+          background-color: #ffffff;
+          color: #374151;
+          border: 1px solid #d1d5db;
+
+          &:hover:not(:disabled) {
+            background-color: #f9fafb;
+          }
+        }
+
+        &.btn-primary {
+          background-color: #f86f03;
+          color: #ffffff;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+          &:hover:not(:disabled) {
+            background-color: #ea6102;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          }
+
+          &:active:not(:disabled) {
+            transform: scale(0.98);
+          }
+        }
+
+        &.btn-full {
+          flex: none;
+          width: 100%;
+        }
+      }
+    }
+  }
+}

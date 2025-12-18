@@ -1,0 +1,19 @@
+// 按鈕客製化樣式
+// 範例：
+// .custom-button {
+//   @include button-reset;
+//   @include transition;
+//   padding: $spacing-md $spacing-lg;
+//   background-color: $primary-color;
+//   color: white;
+//   border-radius: $radius-md;
+//   font-weight: 600;
+//
+//   &:hover {
+//     background-color: darken($primary-color, 10%);
+//   }
+//
+//   &:active {
+//     transform: scale(0.98);
+//   }
+// }

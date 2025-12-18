@@ -1,0 +1,47 @@
+# Global Project Rules
+
+## Technical Stack & Constraints
+- **Framework:** React (Vite)
+- **Language:** TypeScript (Strict Mode)
+- **Styling:** Tailwind CSS (Mobile-First, no CSS-in-JS)
+- **State Management:** React Context / Hooks
+- **Backend:** Firebase (Modular SDK v9+)
+- **Platform:** LINE In-App Browser (LIFF)
+
+## Coding Standards
+### Functional Programming
+- Use **React Functional Components** and **Hooks** exclusively.
+- Avoid Class Components.
+- Use Custom Hooks to separate logic from UI (`src/hooks`).
+
+### Styling (Tailwind CSS)
+- Use utility classes for all styling.
+- Ensure **Responsive Design** starting from mobile (`min-width` approach).
+- Do not use `@apply` unless absolutely necessary for reusable components, prefer component composition.
+
+### Firebase Integration
+- **Strictly** use the Modular SDK to ensure tree-shaking:
+  ```typescript
+  import { getFirestore, doc, getDoc } from 'firebase/firestore'; 
+  // NOT import firebase from 'firebase/compat/app';
+  ```
+- All async operations must be wrapped in `try-catch` blocks with proper error state handling.
+
+### Type Safety
+- No `any` type allowed.
+- Define specific Interfaces for all data models (User, Pet, Appointment).
+- Locate types in `src/types/`.
+
+### LIFF Specifics
+- **NEVER** use `liff.scanCode()` (deprecated/unsupported on iOS).
+- **NEVER** use `alert()` for errors; use toast notifications or UI error messages.
+- Handle `liff.init()` async nature carefully; ensure app doesn't mount/render dependent components until initialized.
+
+### Camera & Hardware
+- Use `<input type="file" accept="image/*" capture="environment" />` for camera access.
+- Hide the native input and trigger via `useRef`.
+- Compress images on the client-side before uploading.
+
+### Performance
+- Use `React.lazy` and `Suspense` for route-based code splitting.
+- Minimize bundle size by importing only needed sub-packages.

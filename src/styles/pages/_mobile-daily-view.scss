@@ -1,0 +1,364 @@
+// Mobile Daily View Styles
+
+@use "../utils/variables" as *;
+
+.mobile-daily-view {
+  min-height: 100vh;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+// Header
+.mobile-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .header-logo {
+      width: 48px;
+      height: 48px;
+    }
+
+    .header-info {
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+      }
+
+      .date-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+      }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .walk-in-button,
+    .switch-button,
+    .logout-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #f3f4f6;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #e5e7eb;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .walk-in-button {
+      background: #f86f03;
+      color: white;
+
+      &:hover {
+        background: #d85f02;
+      }
+    }
+  }
+}
+
+// Timeline
+.mobile-timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.mobile-timeline-slot {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  .timeline-time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60px;
+    flex-shrink: 0;
+
+    .time-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      white-space: nowrap;
+
+      &.current {
+        color: $primary-color;
+        font-size: 1rem;
+      }
+    }
+
+    .timeline-line {
+      flex: 1;
+      width: 2px;
+      background: #e5e7eb;
+      position: relative;
+      min-height: 60px;
+
+      .current-indicator {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: $primary-color;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px $primary-color;
+        animation: pulse 2s ease-in-out infinite;
+      }
+    }
+  }
+
+  .timeline-appointments {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .empty-slot {
+      min-height: 60px;
+    }
+  }
+}
+
+.mobile-appointment-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.4rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.inactive {
+    opacity: 0.5;
+
+    &:hover {
+      border-color: #e5e7eb;
+      box-shadow: none;
+    }
+  }
+
+  .card-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f3f4f6;
+    position: relative;
+
+    .mobile-card-image-wrapper {
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: #f3f4f6;
+    }
+
+    .pending-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 12px;
+      height: 12px;
+      background: #ef4444;
+      border-radius: 50%;
+      border: 2px solid white;
+      animation: pulse-dot 2s ease-in-out infinite;
+      z-index: 10;
+    }
+  }
+
+  .card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 0;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+
+      .card-time {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: $primary-color;
+      }
+    }
+
+    .card-time {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $primary-color;
+    }
+
+    .card-service {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f2937;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-customer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.875rem;
+      color: #6b7280;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// 狀態徽章
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid;
+  flex-shrink: 0;
+
+  // 待確認：主色 outline
+  &.badge-yellow {
+    background-color: transparent;
+    color: $primary-color;
+    border-color: $primary-color;
+  }
+
+  // 已確認：主色 fill
+  &.badge-green {
+    background-color: $primary-color;
+    color: #ffffff;
+    border-color: $primary-color;
+  }
+
+  // 已完成：灰色 outline
+  &.badge-blue {
+    background-color: transparent;
+    color: #10b981;
+    border-color: #d1d5db;
+  }
+
+  // 已取消：灰色 outline
+  &.badge-red {
+    background-color: transparent;
+    color: #6b7280;
+    border-color: #d1d5db;
+  }
+}
+
+.empty-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 1.125rem;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

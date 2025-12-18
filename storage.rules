@@ -1,0 +1,128 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ==========================================
+    // Helper Functions
+    // ==========================================
+    
+    // 檢查是否為已登入的 Firebase Admin
+    function isAdmin() {
+      return request.auth != null;
+    }
+    
+    // 檢查文件大小（10MB 限制）
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // 檢查是否為圖片文件
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // ==========================================
+    // 用戶上傳的寵物照片
+    // ==========================================
+    match /pets/{userId}/{petId}/{fileName} {
+      // 任何人都可以上傳寵物照片（LINE LIFF 環境）
+      allow create: if isValidSize() && isImage();
+      
+      // 任何人都可以讀取（用於顯示）
+      allow read: if true;
+      
+      // 用戶可以更新和刪除自己的照片
+      // 在生產環境中應該驗證 userId
+      allow update, delete: if true;
+    }
+    
+    // 寵物照片 - 簡化路徑（預約時上傳）
+    match /pets/{userId}/{fileName} {
+      // 任何人都可以上傳（LINE LIFF 環境）
+      allow create: if isValidSize() && isImage();
+      
+      // 任何人都可以讀取
+      allow read: if true;
+      
+      // 可以更新和刪除
+      allow update, delete: if true;
+    }
+    
+    // ==========================================
+    // 用戶資料（個人帳戶相關文件）
+    // ==========================================
+    match /users/{userId}/profileImages/{fileName} {
+      // 任何人都可以上傳（LINE LIFF 環境）
+      allow create: if isValidSize() && isImage();
+      
+      // 任何人都可以讀取
+      allow read: if true;
+      
+      // 可以更新和刪除
+      allow update, delete: if true;
+    }
+    
+    // 企業帳戶文件
+    match /users/{userId}/businessDocuments/{fileName} {
+      allow create: if isValidSize() && isImage();
+      allow read: if true;
+      allow update, delete: if true;
+    }
+    
+    match /users/{userId}/bankbook/{fileName} {
+      allow create: if isValidSize() && isImage();
+      allow read: if true;
+      allow update, delete: if true;
+    }
+    
+    match /users/{userId}/idCards/{fileName} {
+      allow create: if isValidSize() && isImage();
+      allow read: if true;
+      allow update, delete: if true;
+    }
+    
+    // ==========================================
+    // 店鋪相關圖片
+    // ==========================================
+    match /shops/{shopId}/{fileName} {
+      // 所有人都可以讀取店鋪圖片
+      allow read: if true;
+      
+      // 只有管理員可以上傳店鋪圖片
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ==========================================
+    // 預約相關附件（如果有的話）
+    // ==========================================
+    match /appointments/{appointmentId}/{fileName} {
+      allow read: if true;
+      allow create: if isValidSize() && isImage();
+      allow update, delete: if isAdmin();
+    }
+    
+    // ==========================================
+    // 服務紀錄圖片（臨時回報、完成分享）
+    // ==========================================
+    match /service-reports/{shopId}/{appointmentId}/{fileName} {
+      // 任何人都可以讀取（LINE LIFF 環境）
+      allow read: if true;
+      
+      // 任何人都可以上傳和更新（LINE LIFF 環境，管理員在後台使用）
+      // 驗證文件大小和類型
+      allow create, update: if isValidSize() && isImage();
+      
+      // 刪除權限放寬（管理員可能需要刪除錯誤上傳的照片）
+      allow delete: if true;
+    }
+    
+    // ==========================================
+    // 其他路徑預設拒絕
+    // ==========================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

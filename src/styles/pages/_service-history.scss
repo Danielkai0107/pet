@@ -1,0 +1,179 @@
+// Service History 樣式
+.service-history-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  // 區塊之間的分隔線
+  > div + div {
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1rem;
+
+    .shop-name {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #6b7280;
+    }
+  }
+
+  .section-title-history {
+    opacity: 0.75;
+  }
+
+  .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    &.history-list {
+      opacity: 0.75;
+    }
+  }
+
+  .appointment-card {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 1.4rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+    .card-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    .date-time {
+      font-weight: 700;
+      color: #1f2937;
+      font-size: 1rem;
+    }
+
+    .service-type {
+      color: #f86f03;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .pet-name {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+      flex-shrink: 0;
+
+      .cancel-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        border: 1px solid #ef4444;
+        background-color: transparent;
+        color: #ef4444;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+
+        &:hover {
+          background-color: #fef2f2;
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+
+    .notes-section {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.75rem;
+      background-color: #f9fafb;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .shop-id {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+      text-align: right;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    border: 1px dashed #e5e7eb;
+
+    p {
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    &.history-empty {
+      border: 1px solid #e5e7eb;
+      border-style: solid;
+    }
+  }
+
+  // Status badges - 跟 Admin 統一樣式
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1px solid;
+    flex-shrink: 0;
+
+    // 已確認：主色 fill
+    &.status-confirmed {
+      background-color: #f86f03;
+      color: #ffffff;
+      border-color: #f86f03;
+    }
+
+    // 待確認：主色 outline
+    &.status-pending {
+      background-color: transparent;
+      color: #f86f03;
+      border-color: #f86f03;
+    }
+
+    // 已完成：灰色 outline
+    &.status-completed {
+      background-color: transparent;
+      color: #6b7280;
+      border-color: #d1d5db;
+    }
+
+    // 已取消：灰色 outline
+    &.status-cancelled {
+      background-color: transparent;
+      color: #6b7280;
+      border-color: #d1d5db;
+    }
+  }
+}

@@ -1,0 +1,155 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // Helper Functions
+    // ==========================================
+    
+    // 檢查是否為已登入的 Firebase Admin
+    function isAdmin() {
+      return request.auth != null;
+    }
+    
+    // 檢查是否為超級管理員
+    function isSuperAdmin() {
+      return isAdmin() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin';
+    }
+    
+    // 檢查是否為特定店鋪的管理員
+    function isShopAdmin(shopId) {
+      return isAdmin() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+             (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.shopId == shopId ||
+              get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin');
+    }
+    
+    // ==========================================
+    // Users Collection (LINE Users)
+    // ==========================================
+    match /users/{userId} {
+      // 任何人都可以創建用戶（LINE LIFF 登入時）
+      allow create: if true;
+      
+      // 用戶只能讀取和更新自己的資料
+      allow read, update: if true; // LINE LIFF 不提供 auth，所以暫時開放讀取
+      
+      // 刪除權限保留給超級管理員
+      allow delete: if isSuperAdmin();
+      
+      // 用戶的寵物子集合
+      match /pets/{petId} {
+        // 任何人都可以創建、讀取、更新和刪除（因為 LINE LIFF 沒有 auth）
+        // 在生產環境中，應該使用 Cloud Functions 來驗證 LINE User ID
+        allow read, write: if true;
+      }
+    }
+    
+    // ==========================================
+    // Appointments Collection (已廢棄 - 改用 Subcollections)
+    // ==========================================
+    // 舊的頂層 appointments collection 已廢棄
+    // 新的預約資料存在 shops/{shopId}/appointments 中
+    
+    // ==========================================
+    // Shops Collection (Multi-Tenant)
+    // ==========================================
+    match /shops/{shopId} {
+      // 所有人都可以讀取店鋪資訊（用於前端顯示服務項目）
+      allow read: if true;
+      
+      // 只有該店鋪的管理員或超級管理員可以更新
+      // 超級管理員可以更新訂閱資訊
+      allow update: if isShopAdmin(shopId) || isSuperAdmin();
+      
+      // 只有超級管理員可以創建和刪除店鋪
+      allow create, delete: if isSuperAdmin();
+      
+      // 每日預約時段子集合
+      match /daily_schedules/{date} {
+        // 客戶端需要讀取來檢查可用時段
+        allow read: if true;
+        
+        // 創建預約時需要寫入時段（透過 transaction）
+        allow write: if true;
+      }
+      
+      // 預約子集合（Multi-Tenant）
+      match /appointments/{appointmentId} {
+        // 任何人都可以創建預約（客戶端預約）
+        allow create: if true;
+        
+        // 任何人都可以讀取（LIFF 用戶查看自己的預約）
+        // 管理員可以讀取所屬店鋪的預約
+        allow read: if true || isShopAdmin(shopId);
+        
+        // 客戶端可以取消預約
+        // 管理員可以更新所有狀態
+        allow update: if (request.resource.data.status == 'cancelled' && 
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+                         isShopAdmin(shopId);
+        
+        // 只有超級管理員可以刪除預約
+        allow delete: if isSuperAdmin();
+      }
+      
+      // 服務紀錄子集合（Multi-Tenant）
+      match /serviceReports/{reportId} {
+        // 管理員可以讀取和寫入
+        allow read, write: if isShopAdmin(shopId);
+        
+        // 客戶端可以讀取自己的服務紀錄
+        allow read: if true;
+        
+        // 臨時回報紀錄子集合
+        match /tempReports/{tempReportId} {
+          // 管理員可以讀取和寫入
+          allow read, write: if isShopAdmin(shopId);
+          
+          // 客戶端可以讀取
+          allow read: if true;
+        }
+        
+        // 完成分享紀錄子集合
+        match /completions/{completionId} {
+          // 管理員可以讀取和寫入
+          allow read, write: if isShopAdmin(shopId);
+          
+          // 客戶端可以讀取
+          allow read: if true;
+        }
+      }
+    }
+    
+    // ==========================================
+    // Admins Collection
+    // ==========================================
+    match /admins/{adminId} {
+      // 管理員可以讀取自己的資料
+      allow read: if isAdmin() && request.auth.uid == adminId;
+      
+      // 超級管理員可以讀取所有管理員
+      allow read: if isSuperAdmin();
+      
+      // 只有超級管理員可以創建、更新、刪除管理員
+      allow create, update, delete: if isSuperAdmin();
+    }
+    
+    // ==========================================
+    // Service Reports Collection (已廢棄 - 改用 Subcollections)
+    // ==========================================
+    // 舊的頂層 serviceReports collection 已廢棄
+    // 新的服務紀錄存在 shops/{shopId}/serviceReports 中
+    
+    // ==========================================
+    // 其他集合預設拒絕
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
