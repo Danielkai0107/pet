@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAppointments } from "../../hooks/useAppointments";
-import { Phone, User, Mail, Bell } from "lucide-react";
+import { useShopUsers } from "../../hooks/useShopUsers";
+import { Phone, User, Mail, Bell, UserCheck } from "lucide-react";
 import type { Appointment } from "../../types/appointment";
 import { CustomerRemindersPopup } from "./CustomerRemindersPopup";
 
@@ -19,11 +20,14 @@ interface Customer {
   pendingAppointments: number;
   lastAppointmentDate?: string;
   appointments: Appointment[];
+  isLineFollower?: boolean; // 是否為 LINE 好友
+  followedAt?: string; // 加入好友時間
 }
 
 export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
   const { useAppointmentList } = useAppointments();
   const { appointments: rawAppointments } = useAppointmentList(shopId);
+  const { users: shopUsers } = useShopUsers(shopId);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
@@ -31,10 +35,11 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
   // 顧客注記狀態
   const [showReminders, setShowReminders] = useState(false);
 
-  // 從預約中提取唯一客戶
+  // 合併預約客戶和 LINE 好友
   const customers = useMemo(() => {
     const customerMap = new Map<string, Customer>();
 
+    // 先從預約中提取客戶
     rawAppointments.forEach((apt) => {
       if (!customerMap.has(apt.userId)) {
         customerMap.set(apt.userId, {
@@ -46,6 +51,7 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
           completedAppointments: 0,
           pendingAppointments: 0,
           appointments: [],
+          isLineFollower: false,
         });
       }
 
@@ -69,12 +75,48 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
       }
     });
 
+    // 合併 LINE 好友資料
+    shopUsers.forEach((user) => {
+      if (user.status !== "active") return; // 跳過已封鎖的用戶
+
+      if (customerMap.has(user.uid)) {
+        // 更新現有客戶的 LINE 資料
+        const customer = customerMap.get(user.uid)!;
+        customer.pictureUrl = user.pictureUrl;
+        customer.isLineFollower = true;
+        customer.followedAt = user.followedAt;
+        // 如果預約中沒有姓名，使用 LINE 的 displayName
+        if (!customer.userName || customer.userName === "未命名客戶") {
+          customer.userName = user.displayName;
+        }
+      } else {
+        // 新增只有加好友但沒有預約的客戶
+        customerMap.set(user.uid, {
+          userId: user.uid,
+          userName: user.displayName,
+          phone: user.phone,
+          pictureUrl: user.pictureUrl,
+          totalAppointments: 0,
+          completedAppointments: 0,
+          pendingAppointments: 0,
+          appointments: [],
+          isLineFollower: true,
+          followedAt: user.followedAt,
+        });
+      }
+    });
+
     return Array.from(customerMap.values()).sort((a, b) => {
-      const dateA = a.lastAppointmentDate || "";
-      const dateB = b.lastAppointmentDate || "";
+      // 優先顯示有預約的客戶
+      if (a.totalAppointments > 0 && b.totalAppointments === 0) return -1;
+      if (a.totalAppointments === 0 && b.totalAppointments > 0) return 1;
+      
+      // 然後按最後預約日期或加入好友時間排序
+      const dateA = a.lastAppointmentDate || a.followedAt || "";
+      const dateB = b.lastAppointmentDate || b.followedAt || "";
       return dateB.localeCompare(dateA);
     });
-  }, [rawAppointments]);
+  }, [rawAppointments, shopUsers]);
 
   // 搜尋過濾（統一邏輯：客戶名稱、寵物名稱、手機末三碼）
   const filteredCustomers = useMemo(() => {
@@ -150,7 +192,22 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
 
               {/* Right: Customer Info */}
               <div className="card-info">
-                <div className="card-title">{customer.userName}</div>
+                <div className="card-title">
+                  {customer.userName}
+                  {customer.isLineFollower && (
+                    <span
+                      style={{
+                        marginLeft: "0.5rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        color: "#06C755",
+                      }}
+                      title="LINE 好友"
+                    >
+                      <UserCheck size={16} />
+                    </span>
+                  )}
+                </div>
                 <div className="card-details">
                   <span className="detail-item">
                     預約 {customer.totalAppointments} 次
@@ -167,6 +224,11 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
                 {customer.lastAppointmentDate && (
                   <div className="card-date">
                     最後預約：{customer.lastAppointmentDate}
+                  </div>
+                )}
+                {!customer.lastAppointmentDate && customer.followedAt && (
+                  <div className="card-date">
+                    加入好友：{customer.followedAt.split("T")[0]}
                   </div>
                 )}
               </div>
