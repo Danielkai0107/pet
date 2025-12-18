@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '../firebase';
-import type { User } from '../types/user';
+import { useState, useEffect } from "react";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import type { User } from "../types/user";
 
 interface ShopUser extends User {
   id: string;
