@@ -427,7 +427,7 @@ export const AppointmentFormNew = () => {
           await liff.sendMessages([
             {
               type: "text",
-              text: `【預約送出成功】\n\n日期：${formattedDate}\n時間：${time}\n服務：${selectedService.name}\n\n您的預約已成功送出，將儘速為您確認。`,
+              text: `【送出通知】\n\n日期：${formattedDate}\n時間：${time}\n服務：${selectedService.name}\n\n已成功送出，將儘速為您確認。`,
             },
           ]);
           console.log("LINE 訊息發送成功");

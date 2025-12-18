@@ -184,33 +184,18 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
 
   return (
     <div className="auto-reply-container">
-      {/* Header Widget */}
-      <div className="auto-reply-header-widget">
-        <div className="widget-header">
-          <div className="header-icon">
-            <MessageSquare />
-          </div>
-          <div className="header-content">
-            <h3>自動回覆管理</h3>
-            <p>設定 LINE 自動回覆功能，包含關鍵字回覆和歡迎訊息。</p>
-          </div>
-        </div>
-      </div>
-
       {/* Tabs */}
       <div className="popup-tabs">
         <button
           className={`tab-button ${activeTab === "keywords" ? "active" : ""}`}
           onClick={() => setActiveTab("keywords")}
         >
-          <MessageSquare size={18} />
           <span>關鍵字回覆</span>
         </button>
         <button
           className={`tab-button ${activeTab === "welcome" ? "active" : ""}`}
           onClick={() => setActiveTab("welcome")}
         >
-          <Wave size={18} />
           <span>歡迎訊息</span>
         </button>
       </div>
@@ -513,17 +498,6 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                       <p className="form-hint">
                         {welcomeFormData.message.length} / 2000 字元
                       </p>
-                    </div>
-
-                    {/* 提示資訊 */}
-                    <div className="form-info">
-                      <p>💡 建議在訊息中包含：</p>
-                      <ul>
-                        <li>友善的問候語</li>
-                        <li>店家簡介</li>
-                        <li>服務項目或特色</li>
-                        <li>預約方式說明</li>
-                      </ul>
                     </div>
 
                     {/* 啟用狀態 */}

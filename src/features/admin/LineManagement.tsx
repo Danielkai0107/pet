@@ -136,14 +136,12 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
           className={`tab-button ${activeTab === "quota" ? "active" : ""}`}
           onClick={() => setActiveTab("quota")}
         >
-          <MessageCircle size={18} />
           <span>訊息配額</span>
         </button>
         <button
           className={`tab-button ${activeTab === "liff" ? "active" : ""}`}
           onClick={() => setActiveTab("liff")}
         >
-          <LinkIcon size={18} />
           <span>預約連結</span>
         </button>
       </div>
