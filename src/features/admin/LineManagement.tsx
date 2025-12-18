@@ -35,7 +35,8 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
       await navigator.clipboard.writeText(liffUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
+      // Fallback for older browsers
       const textArea = document.createElement("textarea");
       textArea.value = liffUrl;
       document.body.appendChild(textArea);
@@ -130,7 +131,7 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
       )}
 
       {/* Tabs */}
-      <div className="popup-tabs" style={{ marginTop: "1rem" }}>
+      <div className="popup-tabs">
         <button
           className={`tab-button ${activeTab === "quota" ? "active" : ""}`}
           onClick={() => setActiveTab("quota")}
