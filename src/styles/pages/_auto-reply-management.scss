@@ -631,40 +631,44 @@
   }
 }
 
-// Tabs (使用與 AppointmentDetailPopup 相同的樣式)
+// Tabs (線條樣式)
 .popup-tabs {
   display: flex;
-  gap: 0.5rem;
-  background: #f9fafb;
-  padding: 0.5rem;
-  border-radius: 1rem;
-  margin-bottom: 1rem;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1.5rem;
 
   .tab-button {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.5rem;
     border: none;
-    border-radius: 0.75rem;
     background: transparent;
     color: #6b7280;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
 
     &:hover {
-      background: #fff;
       color: #374151;
+      background: #f9fafb;
     }
 
     &.active {
-      background: #fff;
       color: $primary-color;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      border-bottom-color: $primary-color;
+    }
+
+    @media (max-width: 640px) {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      font-size: 0.8125rem;
     }
   }
 }

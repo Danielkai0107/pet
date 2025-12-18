@@ -51,21 +51,6 @@ export const MemberList = ({ shopId, searchQuery }: MemberListProps) => {
 
   return (
     <div className="member-list-container">
-      {/* Header Widget */}
-      <div className="auto-reply-header-widget">
-        <div className="widget-header">
-          <div className="header-icon">
-            <UserCheck style={{ color: "#06C755" }} />
-          </div>
-          <div className="header-content">
-            <h3>LINE 會員列表</h3>
-            <p>
-              所有透過 LINE 官方帳號加入好友的會員，共 {filteredMembers.length} 位
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Member Table Widget */}
       <div className="auto-reply-rules-widget">
         {filteredMembers.length === 0 ? (

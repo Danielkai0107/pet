@@ -426,35 +426,10 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
       {/* Tab Content: Welcome Message */}
       {activeTab === "welcome" && (
         <>
-          {/* Header Widget */}
-          <div className="auto-reply-header-widget">
-            <div className="widget-header">
-              <div className="header-icon">
-                <Wave />
-              </div>
-              <div className="header-content">
-                <h3>歡迎訊息</h3>
-                <p>
-                  當用戶加入 LINE 官方帳號成為好友時，系統會自動發送此歡迎訊息。
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions Bar Widget */}
-          <div className="auto-reply-actions-widget">
-            <div className="actions-bar">
-              <button onClick={handleOpenWelcomeModal} className="add-button">
-                {welcomeMessage?.message ? "編輯歡迎訊息" : "設定歡迎訊息"}
-              </button>
-            </div>
-          </div>
-
           {/* Welcome Message Display Widget */}
           <div className="auto-reply-rules-widget">
             {!welcomeMessage || !welcomeMessage.message ? (
               <div className="empty-state">
-                <Wave className="empty-icon" />
                 <h3>尚未設定歡迎訊息</h3>
                 <p>點擊上方按鈕設定您的歡迎訊息</p>
                 <button

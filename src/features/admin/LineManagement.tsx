@@ -184,147 +184,147 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
         {/* Tab Content: LINE Message Quota */}
         {activeTab === "quota" && (
           <div className="settings-widget quota-widget flex-1">
-          <div className="widget-header">
-            <div className="header-icon">
-              <MessageCircle size={24} />
-            </div>
-            <div className="header-content">
-              <h3>LINE 訊息配額</h3>
-              <p>本月 LINE OA 的訊息使用狀況</p>
-            </div>
-            <button
-              onClick={refreshQuota}
-              disabled={refreshingQuota || quota.loading}
-              className="refresh-quota-button"
-              title="重新整理統計"
-            >
-              <RefreshCw
-                size={18}
-                className={refreshingQuota || quota.loading ? "spinning" : ""}
-              />
-            </button>
-          </div>
-          <div className="widget-body">
-            {quota.loading ? (
-              <div className="quota-loading">
-                <div className="loading-spinner"></div>
-                <p>載入中...</p>
+            <div className="widget-header">
+              <div className="header-icon">
+                <MessageCircle size={24} />
               </div>
-            ) : quota.error ? (
-              <div className="quota-error">
-                <p className="error-message">{quota.error}</p>
-                <p className="error-hint">
-                  請確認已在 Superadmin 設定 LINE API
-                </p>
+              <div className="header-content">
+                <h3>LINE 訊息配額</h3>
+                <p>本月 LINE OA 的訊息使用狀況</p>
               </div>
-            ) : (
-              <div className="quota-display">
-                {/* LINE 官方配額 */}
-                {quota.officialQuota ? (
-                  <div className="quota-official">
-                    <div className="official-header">
-                      <h4>LINE 官方配額</h4>
-                      <span className="month-badge">{quota.yearMonth}</span>
-                    </div>
-
-                    <div className="quota-main">
-                      <div className="quota-total">
-                        <div className="total-number">
-                          {quota.officialQuota.total.toLocaleString()}
-                        </div>
-                        <div className="total-label">則 / 每月免費額度</div>
+              <button
+                onClick={refreshQuota}
+                disabled={refreshingQuota || quota.loading}
+                className="refresh-quota-button"
+                title="重新整理統計"
+              >
+                <RefreshCw
+                  size={18}
+                  className={refreshingQuota || quota.loading ? "spinning" : ""}
+                />
+              </button>
+            </div>
+            <div className="widget-body">
+              {quota.loading ? (
+                <div className="quota-loading">
+                  <div className="loading-spinner"></div>
+                  <p>載入中...</p>
+                </div>
+              ) : quota.error ? (
+                <div className="quota-error">
+                  <p className="error-message">{quota.error}</p>
+                  <p className="error-hint">
+                    請確認已在 Superadmin 設定 LINE API
+                  </p>
+                </div>
+              ) : (
+                <div className="quota-display">
+                  {/* LINE 官方配額 */}
+                  {quota.officialQuota ? (
+                    <div className="quota-official">
+                      <div className="official-header">
+                        <h4>LINE 官方配額</h4>
+                        <span className="month-badge">{quota.yearMonth}</span>
                       </div>
 
-                      <div className="quota-progress-container">
-                        <div className="quota-progress-bar">
+                      <div className="quota-main">
+                        <div className="quota-total">
+                          <div className="total-number">
+                            {quota.officialQuota.total.toLocaleString()}
+                          </div>
+                          <div className="total-label">則 / 每月免費額度</div>
+                        </div>
+
+                        <div className="quota-progress-container">
+                          <div className="quota-progress-bar">
+                            <div
+                              className={`progress-fill ${
+                                quota.officialQuota.percentage >= 80
+                                  ? "danger"
+                                  : quota.officialQuota.percentage >= 50
+                                  ? "caution"
+                                  : "normal"
+                              }`}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  quota.officialQuota.percentage
+                                )}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="quota-legend">
+                            <div className="legend-item">
+                              <span className="legend-label">已使用</span>
+                              <span className="legend-value">
+                                {quota.officialQuota.used.toLocaleString()} 則
+                              </span>
+                            </div>
+                            <div className="legend-item">
+                              <span className="legend-label">剩餘</span>
+                              <span className="legend-value">
+                                {quota.officialQuota.remaining.toLocaleString()}{" "}
+                                則
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 警告提示 */}
+                        {quota.officialQuota.percentage >= 80 && (
                           <div
-                            className={`progress-fill ${
-                              quota.officialQuota.percentage >= 80
-                                ? "danger"
-                                : quota.officialQuota.percentage >= 50
-                                ? "caution"
-                                : "normal"
+                            className={`quota-warning ${
+                              quota.officialQuota.percentage >= 100
+                                ? "level-critical"
+                                : quota.officialQuota.percentage >= 90
+                                ? "level-danger"
+                                : "level-caution"
                             }`}
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                quota.officialQuota.percentage
-                              )}%`,
-                            }}
-                          ></div>
-                        </div>
-                        <div className="quota-legend">
-                          <div className="legend-item">
-                            <span className="legend-label">已使用</span>
-                            <span className="legend-value">
-                              {quota.officialQuota.used.toLocaleString()} 則
-                            </span>
+                          >
+                            <div className="warning-icon">⚠️</div>
+                            <div className="warning-content">
+                              {quota.officialQuota.percentage >= 100 ? (
+                                <>
+                                  <div className="warning-title">
+                                    已達每月訊息上限
+                                  </div>
+                                  <div className="warning-text">
+                                    請升級 LINE OA 方案以繼續發送訊息
+                                  </div>
+                                </>
+                              ) : quota.officialQuota.percentage >= 90 ? (
+                                <>
+                                  <div className="warning-title">
+                                    配額即將用盡
+                                  </div>
+                                  <div className="warning-text">
+                                    已使用{" "}
+                                    {quota.officialQuota.percentage.toFixed(1)}%
+                                    ，請注意控制發送量
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="warning-title">
+                                    接近配額上限
+                                  </div>
+                                  <div className="warning-text">
+                                    已使用{" "}
+                                    {quota.officialQuota.percentage.toFixed(1)}%
+                                    ，請注意使用狀況
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="legend-item">
-                            <span className="legend-label">剩餘</span>
-                            <span className="legend-value">
-                              {quota.officialQuota.remaining.toLocaleString()}{" "}
-                              則
-                            </span>
-                          </div>
-                        </div>
+                        )}
                       </div>
-
-                      {/* 警告提示 */}
-                      {quota.officialQuota.percentage >= 80 && (
-                        <div
-                          className={`quota-warning ${
-                            quota.officialQuota.percentage >= 100
-                              ? "level-critical"
-                              : quota.officialQuota.percentage >= 90
-                              ? "level-danger"
-                              : "level-caution"
-                          }`}
-                        >
-                          <div className="warning-icon">⚠️</div>
-                          <div className="warning-content">
-                            {quota.officialQuota.percentage >= 100 ? (
-                              <>
-                                <div className="warning-title">
-                                  已達每月訊息上限
-                                </div>
-                                <div className="warning-text">
-                                  請升級 LINE OA 方案以繼續發送訊息
-                                </div>
-                              </>
-                            ) : quota.officialQuota.percentage >= 90 ? (
-                              <>
-                                <div className="warning-title">
-                                  配額即將用盡
-                                </div>
-                                <div className="warning-text">
-                                  已使用{" "}
-                                  {quota.officialQuota.percentage.toFixed(1)}%
-                                  ，請注意控制發送量
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="warning-title">
-                                  接近配額上限
-                                </div>
-                                <div className="warning-text">
-                                  已使用{" "}
-                                  {quota.officialQuota.percentage.toFixed(1)}%
-                                  ，請注意使用狀況
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
+                  ) : null}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         )}
       </div>
     </div>
