@@ -8,25 +8,25 @@
 export interface AutoReplyRule {
   /** 規則 ID */
   id: string;
-  
+
   /** 關鍵字（例如：「營業時間」） */
   keyword: string;
-  
+
   /** 回覆訊息內容 */
   replyMessage: string;
-  
+
   /** 匹配方式（固定為部分符合） */
-  matchType: 'partial';
-  
+  matchType: "partial";
+
   /** 是否啟用 */
   isActive: boolean;
-  
+
   /** 建立時間（ISO 8601 格式） */
   createdAt: string;
-  
+
   /** 更新時間（ISO 8601 格式） */
   updatedAt: string;
-  
+
   /** 建立者（admin ID，可選） */
   createdBy?: string;
 }
@@ -37,10 +37,10 @@ export interface AutoReplyRule {
 export interface CreateAutoReplyRuleInput {
   /** 關鍵字 */
   keyword: string;
-  
+
   /** 回覆訊息 */
   replyMessage: string;
-  
+
   /** 是否啟用（預設為 true） */
   isActive?: boolean;
 }
@@ -51,13 +51,13 @@ export interface CreateAutoReplyRuleInput {
 export interface UpdateAutoReplyRuleInput {
   /** 規則 ID */
   id: string;
-  
+
   /** 關鍵字（可選） */
   keyword?: string;
-  
+
   /** 回覆訊息（可選） */
   replyMessage?: string;
-  
+
   /** 是否啟用（可選） */
   isActive?: boolean;
 }

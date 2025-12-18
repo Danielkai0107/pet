@@ -5,6 +5,7 @@
 本次更新新增了 LINE 關鍵字自動回覆功能，讓商家可以設定當客戶傳送包含特定關鍵字的訊息時，系統會自動回覆預設內容。
 
 **主要特點**：
+
 - ✅ 部分匹配（用戶訊息包含關鍵字即觸發）
 - ✅ 純文字回覆
 - ✅ 使用 Reply Token（免費）
@@ -19,10 +20,12 @@
 ### 前端
 
 1. **`src/types/auto-reply.ts`**
+
    - 自動回覆規則的型別定義
    - LINE Webhook 事件型別
 
 2. **`src/hooks/useAutoReplyRules.ts`**
+
    - Custom Hook，處理規則的 CRUD 操作
    - 即時監聽規則變化
    - 表單驗證邏輯
@@ -42,6 +45,7 @@
 ### 其他
 
 5. **`firestore.rules`** (修改)
+
    - 新增 `autoReplyRules` 子集合的安全規則
    - 允許 Cloud Function 讀取規則
 
@@ -61,6 +65,7 @@ firebase deploy --only firestore:rules
 ```
 
 **預期輸出**：
+
 ```
 ✔  Deploy complete!
 ```
@@ -75,6 +80,7 @@ firebase deploy --only functions:lineWebhook
 ```
 
 **預期輸出**：
+
 ```
 ✔  functions[asia-east1-lineWebhook]: Successful create operation.
 Function URL (lineWebhook): https://asia-east1-pet-crm-bb6e9.cloudfunctions.net/lineWebhook
@@ -90,6 +96,7 @@ firebase deploy --only hosting
 ```
 
 **預期輸出**：
+
 ```
 ✔  Deploy complete!
 Hosting URL: https://pet-crm-bb6e9.web.app
@@ -116,6 +123,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 ### 步驟 2：啟用 Webhook
 
 在同一個頁面：
+
 1. 找到「**Use webhook**」開關
 2. **開啟**這個開關 ✅
 
@@ -132,6 +140,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 ### 步驟 4：確認權限
 
 確保以下權限已啟用：
+
 - ✅ **Messaging API** 已啟用
 - ✅ **Webhook** 已設定並開啟
 - ✅ Bot 可以接收訊息
@@ -169,6 +178,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 ### 測試 3：測試部分匹配
 
 傳送以下訊息，都應該觸發自動回覆：
+
 - ✅ `營業時間`（完全符合）
 - ✅ `請問營業時間`（前方有文字）
 - ✅ `營業時間是幾點`（後方有文字）
@@ -206,6 +216,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 **症狀**：在 LINE Developers Console 點擊「Verify」時顯示錯誤
 
 **解決方法**：
+
 1. 確認 Cloud Function 已成功部署
 2. 檢查 Function URL 是否正確
 3. 查看 Cloud Functions 日誌：
@@ -218,21 +229,26 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 **可能原因與解決方法**：
 
 **原因 1：規則未啟用**
+
 - 檢查後台規則狀態是否為「✅ 已啟用」
 
 **原因 2：關鍵字不匹配**
+
 - 檢查您傳送的訊息是否包含關鍵字
 - 注意：匹配不區分大小寫
 
 **原因 3：Webhook 未設定**
+
 - 確認 LINE Developers Console 的 Webhook 已開啟
 
 **原因 4：店鋪未設定 Channel Access Token**
+
 - 登入 Superadmin：`/superadmin`
 - 點擊店鋪的「LINE API」按鈕
 - 確認已填入 Channel Access Token
 
 **原因 5：用戶不屬於任何店鋪**
+
 - 系統會根據用戶的預約記錄判斷所屬店鋪
 - 如果用戶從未預約過，系統無法識別店鋪
 - **解決方法**：讓用戶先透過 LIFF 預約一次
@@ -242,6 +258,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 **原因**：LINE OA 的自動回覆未關閉
 
 **解決方法**：
+
 1. 前往 LINE Developers Console
 2. 找到「Auto-reply messages」
 3. **關閉**所有自動回覆功能
@@ -251,6 +268,7 @@ Hosting URL: https://pet-crm-bb6e9.web.app
 **原因**：可能是瀏覽器快取
 
 **解決方法**：
+
 1. 清除瀏覽器快取
 2. 強制重新整理（Cmd/Ctrl + Shift + R）
 3. 或使用無痕模式測試
@@ -306,6 +324,7 @@ firebase functions:log --only lineWebhook --tail
 - **Firestore 寫入**：每月前 2 萬次免費
 
 **預估**：每月約 1000 次自動回覆
+
 - Cloud Functions：1000 次（遠低於免費額度）
 - Firestore 讀取：每次約 2-3 次（店鋪資料 + 規則列表）
 - 總讀取：約 3000 次（遠低於免費額度）
@@ -356,26 +375,33 @@ firebase deploy --only hosting
 目前實作的是基礎版本，未來可以考慮新增：
 
 1. **多個關鍵字觸發同一則回覆**
+
    - 例如：「價格」、「費用」、「收費」都觸發同一則回覆
 
 2. **支援圖片回覆**
+
    - 回覆時可以附上圖片（例如價目表、地圖）
 
 3. **Flex Message 回覆**
+
    - 使用 LINE 的 Flex Message 製作精美卡片
 
 4. **關鍵字優先順序**
+
    - 當多個關鍵字匹配時，可以設定優先順序
 
 5. **時間排程**
+
    - 營業時間內外回覆不同內容
    - 例如：非營業時間自動回覆「目前非營業時間，明天 9 點開始營業」
 
 6. **統計功能**
+
    - 記錄每個關鍵字被觸發的次數
    - 分析客戶最常問的問題
 
 7. **匯入/匯出規則**
+
    - 批次匯入關鍵字規則
    - 匯出備份
 
@@ -405,15 +431,18 @@ firebase deploy --only hosting
 如有任何問題，請查看：
 
 1. **Cloud Functions 日誌**：
+
    ```bash
    firebase functions:log --only lineWebhook
    ```
 
 2. **Firestore Console**：
+
    - 檢查 `shops/{shopId}/autoReplyRules` collection
    - 確認規則格式正確
 
 3. **LINE Developers Console**：
+
    - 檢查 Webhook 設定
    - 查看 API 錯誤訊息
 

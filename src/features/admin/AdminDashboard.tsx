@@ -28,7 +28,12 @@ export const AdminDashboard = () => {
   } | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "appointments" | "calendar" | "customers" | "records" | "settings" | "auto-reply"
+    | "appointments"
+    | "calendar"
+    | "customers"
+    | "records"
+    | "settings"
+    | "auto-reply"
   >("appointments");
 
   // Search and filter states

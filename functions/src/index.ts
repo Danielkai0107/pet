@@ -2993,11 +2993,7 @@ export const lineWebhook = onRequest(
 
         // 驗證 LINE Signature（如果有提供 Channel Secret）
         if (channelSecret && signature) {
-          const isValid = validateLineSignature(
-            body,
-            signature,
-            channelSecret
-          );
+          const isValid = validateLineSignature(body, signature, channelSecret);
           if (!isValid) {
             logger.error("LINE Signature 驗證失敗", { shopId });
             res.status(401).send({ error: "Invalid signature" });

@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useAutoReplyRules } from '../../hooks/useAutoReplyRules';
+import { useState } from "react";
+import { useAutoReplyRules } from "../../hooks/useAutoReplyRules";
 import type {
   AutoReplyRule,
   CreateAutoReplyRuleInput,
-} from '../../types/auto-reply';
+} from "../../types/auto-reply";
 
 interface AutoReplyManagementProps {
   shopId: string;
@@ -18,11 +18,11 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutoReplyRule | null>(null);
   const [formData, setFormData] = useState<CreateAutoReplyRuleInput>({
-    keyword: '',
-    replyMessage: '',
+    keyword: "",
+    replyMessage: "",
     isActive: true,
   });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,8 +35,8 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
   const handleOpenAddModal = () => {
     setEditingRule(null);
     setFormData({
-      keyword: '',
-      replyMessage: '',
+      keyword: "",
+      replyMessage: "",
       isActive: true,
     });
     setIsModalOpen(true);
@@ -58,8 +58,8 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
     setIsModalOpen(false);
     setEditingRule(null);
     setFormData({
-      keyword: '',
-      replyMessage: '',
+      keyword: "",
+      replyMessage: "",
       isActive: true,
     });
   };
@@ -126,7 +126,8 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
           <span>自動回覆管理</span>
         </h1>
         <p className="text-gray-600">
-          設定 LINE 關鍵字自動回覆，當客戶傳送包含關鍵字的訊息時，系統會自動回覆預設內容。
+          設定 LINE
+          關鍵字自動回覆，當客戶傳送包含關鍵字的訊息時，系統會自動回覆預設內容。
         </p>
       </div>
 
@@ -157,12 +158,12 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <div className="text-6xl mb-4">🤖</div>
           <h3 className="text-xl font-medium text-gray-900 mb-2">
-            {searchTerm ? '找不到符合的關鍵字' : '尚未設定任何自動回覆規則'}
+            {searchTerm ? "找不到符合的關鍵字" : "尚未設定任何自動回覆規則"}
           </h3>
           <p className="text-gray-600 mb-6">
             {searchTerm
-              ? '請嘗試其他搜尋詞'
-              : '點擊「新增關鍵字」按鈕開始設定您的第一個自動回覆規則'}
+              ? "請嘗試其他搜尋詞"
+              : "點擊「新增關鍵字」按鈕開始設定您的第一個自動回覆規則"}
           </p>
           {!searchTerm && (
             <button
@@ -214,11 +215,11 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                       onClick={() => handleToggle(rule.id)}
                       className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                         rule.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {rule.isActive ? '✅ 已啟用' : '❌ 已停用'}
+                      {rule.isActive ? "✅ 已啟用" : "❌ 已停用"}
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -256,7 +257,7 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {editingRule ? '編輯關鍵字規則' : '新增關鍵字規則'}
+                {editingRule ? "編輯關鍵字規則" : "新增關鍵字規則"}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -339,7 +340,7 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                     className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={submitting}
                   >
-                    {submitting ? '儲存中...' : '儲存'}
+                    {submitting ? "儲存中..." : "儲存"}
                   </button>
                 </div>
               </form>
@@ -352,9 +353,7 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              確認刪除
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">確認刪除</h3>
             <p className="text-gray-600 mb-6">
               確定要刪除這個自動回覆規則嗎？此操作無法復原。
             </p>
