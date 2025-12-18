@@ -105,17 +105,16 @@
     }
   }
 
-  // Tab 導航樣式
+  // Tab 導航樣式（橘色主題）
   .superadmin-tabs {
     background-color: white;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-bottom: 2px solid #e5e7eb;
 
     .tabs-container {
       max-width: 80rem;
       margin: 0 auto;
       display: flex;
-      gap: 0.5rem;
+      gap: 0;
       padding: 0 1.5rem;
 
       @media (min-width: 640px) {
@@ -136,20 +135,16 @@
       border: none;
       border-bottom: 3px solid transparent;
       color: #6b7280;
-      font-size: 0.9375rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: color 0.2s;
       position: relative;
-
-      &:hover {
-        color: #7c3aed;
-        background-color: #f9fafb;
-      }
+      margin-bottom: -2px;
 
       &.active {
-        color: #7c3aed;
-        border-bottom-color: #7c3aed;
+        color: #f86f03;
+        border-bottom-color: #f86f03;
       }
 
       svg {
@@ -157,7 +152,7 @@
       }
 
       span {
-        white-space: nowrap;
+        whitespace: nowrap;
       }
     }
   }
@@ -256,7 +251,7 @@
       }
 
       &.selected {
-        box-shadow: 0 0 0 2px #7c3aed;
+        box-shadow: 0 0 0 2px #f86f03;
       }
     }
 
@@ -269,7 +264,7 @@
       }
 
       &.selected {
-        box-shadow: 0 0 0 2px #10b981;
+        box-shadow: 0 0 0 2px #f86f03;
       }
     }
   }
