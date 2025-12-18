@@ -1,21 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useShopSettings } from "../../hooks/useShopSettings";
-import { useLineMessageQuota } from "../../hooks/useLineMessageQuota";
 import type { Shop, Service, BusinessHours } from "../../types/shop";
 import {
   Plus,
   Trash2,
-  Link as LinkIcon,
-  Copy,
-  Check,
   Store,
   Clock,
   Scissors,
   PawPrint,
   X,
   Camera,
-  MessageCircle,
-  RefreshCw,
 } from "lucide-react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase";
@@ -36,18 +30,9 @@ const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
 export const ShopSettings = ({ shopId, isEditing }: ShopSettingsProps) => {
   const { shop, loading, updateSettings } = useShopSettings(shopId);
-  const quota = useLineMessageQuota(shopId);
   const [formData, setFormData] = useState<Partial<Shop>>({});
-  const [copied, setCopied] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [refreshingQuota, setRefreshingQuota] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Multi-Tenant: 使用商家專屬的 LIFF ID 生成 URL（不需要 shopId 參數）
-  const liffUrl =
-    shop?.liffId && shop.liffId !== "未設定"
-      ? `https://liff.line.me/${shop.liffId}`
-      : null;
 
   useEffect(() => {
     if (shop) {
@@ -206,34 +191,6 @@ export const ShopSettings = ({ shopId, isEditing }: ShopSettingsProps) => {
     });
   };
 
-  const copyToClipboard = async () => {
-    if (!liffUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(liffUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      const textArea = document.createElement("textarea");
-      textArea.value = liffUrl;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const refreshQuota = async () => {
-    setRefreshingQuota(true);
-    try {
-      await quota.refetch();
-    } finally {
-      setRefreshingQuota(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="settings-loading">
@@ -245,188 +202,6 @@ export const ShopSettings = ({ shopId, isEditing }: ShopSettingsProps) => {
 
   return (
     <div className="shop-settings-container">
-      {/* Subscription Badge - 從 navbar 移過來 */}
-      {formData.subscription && (
-        <div className="subscription-badge-navbar">
-          <span
-            className={`plan-indicator ${
-              formData.subscription.plan === "lifetime_free" &&
-              formData.subscription.status === "active"
-                ? "lifetime-free"
-                : formData.subscription.status === "active"
-                ? "active"
-                : formData.subscription.status === "inactive"
-                ? "inactive"
-                : "expired"
-            }`}
-          >
-            <span className="status-dot"></span>
-            <span className="status-text">
-              {formData.subscription.status === "active" ? (
-                <>
-                  {formData.subscription.plan === "monthly"
-                    ? "月訂閱"
-                    : formData.subscription.plan === "yearly"
-                    ? "年訂閱"
-                    : formData.subscription.plan === "lifetime_free"
-                    ? "終身免費"
-                    : "試用期"}
-                </>
-              ) : formData.subscription.status === "inactive" ? (
-                "已停用"
-              ) : (
-                "已過期"
-              )}
-            </span>
-            {formData.subscription.status === "active" &&
-              formData.subscription.plan !== "lifetime_free" && (
-                <>
-                  <span className="expiry-date">
-                    到期：
-                    {new Date(
-                      formData.subscription.expiryDate
-                    ).toLocaleDateString("zh-TW", {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                    })}
-                  </span>
-                  <span className="days-remaining">
-                    {(() => {
-                      const expiry = new Date(formData.subscription.expiryDate);
-                      const now = new Date();
-                      const diff = expiry.getTime() - now.getTime();
-                      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                      return `剩 ${days} 天`;
-                    })()}
-                  </span>
-                </>
-              )}
-          </span>
-        </div>
-      )}
-
-      <div className="row-container">
-        {/* LIFF Booking Link Widget */}
-        {liffUrl && (
-          <div className="settings-widget liff-widget flex-1">
-            <div className="widget-header">
-              <div className="header-icon">
-                <LinkIcon size={24} />
-              </div>
-              <div className="header-content">
-                <h3>預約連結 (LIFF)</h3>
-                <p>客戶可透過此連結進入 LINE 預約系統</p>
-              </div>
-            </div>
-            <div className="widget-body">
-              <div className="liff-url-container">
-                <div className="url-display">{liffUrl}</div>
-                <button onClick={copyToClipboard} className="copy-button">
-                  {copied ? (
-                    <>
-                      <Check size={18} />
-                      <span>已複製</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={18} />
-                      <span>複製</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* LINE Message Usage Widget */}
-        <div className="settings-widget quota-widget flex-1">
-          <div className="widget-header">
-            <div className="header-icon">
-              <MessageCircle size={24} />
-            </div>
-            <div className="header-content">
-              <h3>LINE 訊息使用量</h3>
-              <p>本月系統發送的訊息統計</p>
-            </div>
-            <button
-              onClick={refreshQuota}
-              disabled={refreshingQuota || quota.loading}
-              className="refresh-quota-button"
-              title="重新整理統計"
-            >
-              <RefreshCw
-                size={18}
-                className={refreshingQuota || quota.loading ? "spinning" : ""}
-              />
-            </button>
-          </div>
-          <div className="widget-body">
-            {quota.loading ? (
-              <div className="quota-loading">
-                <div className="loading-spinner"></div>
-                <p>載入中...</p>
-              </div>
-            ) : quota.error ? (
-              <div className="quota-error">
-                <p className="error-message">{quota.error}</p>
-                <p className="error-hint">
-                  請確認已在 Superadmin 設定 LINE API
-                </p>
-              </div>
-            ) : (
-              <div className="quota-display">
-                <div className="quota-content">
-                  <div className="usage-total">
-                    <div className="usage-header">
-                      <div className="month-label">{quota.yearMonth}</div>
-                    </div>
-                    <div className="total-value">
-                      {quota.totalSent.toLocaleString()}
-                    </div>
-                    <div className="total-label">則訊息</div>
-                  </div>
-
-                  <div className="usage-breakdown">
-                    <div className="breakdown-title">訊息分類</div>
-                    <div className="breakdown-list">
-                      <div className="breakdown-item">
-                        <div className="item-label">
-                          <span className="dot appointment"></span>
-                          預約通知
-                        </div>
-                        <div className="item-value">
-                          {quota.breakdown.appointmentNotifications.toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="breakdown-item">
-                        <div className="item-label">
-                          <span className="dot completion"></span>
-                          完成通知
-                        </div>
-                        <div className="item-value">
-                          {quota.breakdown.completionNotifications.toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="breakdown-item">
-                        <div className="item-label">
-                          <span className="dot reminder"></span>
-                          提醒通知
-                        </div>
-                        <div className="item-value">
-                          {quota.breakdown.reminderNotifications.toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       <div className="row-container">
         {/* Basic Info Widget */}
         <div className="settings-widget flex-1">

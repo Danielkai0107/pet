@@ -21,8 +21,10 @@ export const ServiceHistory = () => {
         appointment.shopId
       );
 
+      // 取消成功後發送訊息並關閉視窗
       if (liff.isInClient()) {
         try {
+          // 發送取消訊息到聊天室（免費，不計入配額）
           await liff.sendMessages([
             {
               type: "text",

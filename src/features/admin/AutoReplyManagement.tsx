@@ -4,6 +4,7 @@ import type {
   AutoReplyRule,
   CreateAutoReplyRuleInput,
 } from "../../types/auto-reply";
+import { MessageSquare, Search, Plus } from "lucide-react";
 
 interface AutoReplyManagementProps {
   shopId: string;
@@ -111,160 +112,150 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="auto-reply-loading">
+        <div className="loading-spinner"></div>
+        <p>載入中...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <span>🤖</span>
-          <span>自動回覆管理</span>
-        </h1>
-        <p className="text-gray-600">
-          設定 LINE
-          關鍵字自動回覆，當客戶傳送包含關鍵字的訊息時，系統會自動回覆預設內容。
-        </p>
-      </div>
-
-      {/* Actions Bar */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <button
-          onClick={handleOpenAddModal}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-        >
-          <span>+</span>
-          <span>新增關鍵字</span>
-        </button>
-
-        <div className="relative w-full sm:w-64">
-          <input
-            type="text"
-            placeholder="搜尋關鍵字..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+    <div className="auto-reply-container">
+      {/* Header Widget */}
+      <div className="auto-reply-header-widget">
+        <div className="widget-header">
+          <div className="header-icon">
+            <MessageSquare />
+          </div>
+          <div className="header-content">
+            <h3>自動回覆管理</h3>
+            <p>
+              設定 LINE
+              關鍵字自動回覆，當客戶傳送包含關鍵字的訊息時，系統會自動回覆預設內容。
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Rules List */}
-      {filteredRules.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <div className="text-6xl mb-4">🤖</div>
-          <h3 className="text-xl font-medium text-gray-900 mb-2">
-            {searchTerm ? "找不到符合的關鍵字" : "尚未設定任何自動回覆規則"}
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {searchTerm
-              ? "請嘗試其他搜尋詞"
-              : "點擊「新增關鍵字」按鈕開始設定您的第一個自動回覆規則"}
-          </p>
-          {!searchTerm && (
-            <button
-              onClick={handleOpenAddModal}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              新增第一個關鍵字
-            </button>
-          )}
+      {/* Actions Bar Widget */}
+      <div className="auto-reply-actions-widget">
+        <div className="actions-bar">
+          <button onClick={handleOpenAddModal} className="add-button">
+            <Plus size={20} />
+            <span>新增關鍵字</span>
+          </button>
+
+          <div className="search-wrapper">
+            <Search className="search-icon" />
+            <input
+              type="text"
+              placeholder="搜尋關鍵字..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      </div>
+
+      {/* Rules List Widget */}
+      <div className="auto-reply-rules-widget">
+        {filteredRules.length === 0 ? (
+          <div className="empty-state">
+            <MessageSquare className="empty-icon" />
+            <h3>
+              {searchTerm ? "找不到符合的關鍵字" : "尚未設定任何自動回覆規則"}
+            </h3>
+            <p>
+              {searchTerm
+                ? "請嘗試其他搜尋詞"
+                : "點擊「新增關鍵字」按鈕開始設定您的第一個自動回覆規則"}
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={handleOpenAddModal}
+                className="empty-action-button"
+              >
+                新增第一個關鍵字
+              </button>
+            )}
+          </div>
+        ) : (
+          <table className="rules-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  關鍵字
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  回覆訊息預覽
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  狀態
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  操作
-                </th>
+                <th>關鍵字</th>
+                <th>回覆訊息預覽</th>
+                <th>狀態</th>
+                <th>操作</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {filteredRules.map((rule) => (
-                <tr key={rule.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {rule.keyword}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-md truncate">
+                <tr key={rule.id}>
+                  <td className="keyword-cell">{rule.keyword}</td>
+                  <td className="message-cell">
+                    <div className="message-preview">
                       {rule.replyMessage.length > 60
                         ? `${rule.replyMessage.substring(0, 60)}...`
                         : rule.replyMessage}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="status-cell">
                     <button
                       onClick={() => handleToggle(rule.id)}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        rule.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                      className={`status-button ${
+                        rule.isActive ? "active" : "inactive"
                       }`}
                     >
-                      {rule.isActive ? "✅ 已啟用" : "❌ 已停用"}
+                      {rule.isActive ? "已啟用" : "已停用"}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="actions-cell">
                     <button
                       onClick={() => handleOpenEditModal(rule)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className="action-button edit-button"
                       title="編輯"
                     >
-                      ✏️ 編輯
+                      編輯
                     </button>
                     <button
                       onClick={() => setDeleteConfirmId(rule.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="action-button delete-button"
                       title="刪除"
                     >
-                      🗑️ 刪除
+                      刪除
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 統計資訊 */}
-      <div className="mt-4 text-sm text-gray-600">
-        共 {rules.length} 個規則，
-        {rules.filter((r) => r.isActive).length} 個已啟用
+      {/* Stats Widget */}
+      <div className="auto-reply-stats-widget">
+        <p className="stats-text">
+          共 {rules.length} 個規則，
+          {rules.filter((r) => r.isActive).length} 個已啟用
+        </p>
       </div>
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-body">
+              <h2 className="modal-title">
                 {editingRule ? "編輯關鍵字規則" : "新增關鍵字規則"}
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="modal-form">
                 {/* 關鍵字 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    關鍵字 <span className="text-red-500">*</span>
+                <div className="form-group">
+                  <label className="form-label">
+                    關鍵字 <span className="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -273,19 +264,19 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                       setFormData({ ...formData, keyword: e.target.value })
                     }
                     placeholder="例如：營業時間、價格、預約方式"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="form-input"
                     required
                     maxLength={50}
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="form-hint">
                     當客戶傳送的訊息包含此關鍵字時，系統會自動回覆
                   </p>
                 </div>
 
                 {/* 回覆訊息 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    回覆訊息 <span className="text-red-500">*</span>
+                <div className="form-group">
+                  <label className="form-label">
+                    回覆訊息 <span className="required">*</span>
                   </label>
                   <textarea
                     value={formData.replyMessage}
@@ -297,17 +288,17 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                     }
                     placeholder="請輸入要自動回覆的訊息內容"
                     rows={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="form-textarea"
                     required
                     maxLength={2000}
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="form-hint">
                     {formData.replyMessage.length} / 2000 字元
                   </p>
                 </div>
 
                 {/* 啟用狀態 */}
-                <div className="flex items-center">
+                <div className="checkbox-group">
                   <input
                     type="checkbox"
                     id="isActive"
@@ -315,29 +306,24 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                     onChange={(e) =>
                       setFormData({ ...formData, isActive: e.target.checked })
                     }
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="form-checkbox"
                   />
-                  <label
-                    htmlFor="isActive"
-                    className="ml-2 block text-sm text-gray-900"
-                  >
-                    啟用此規則
-                  </label>
+                  <label htmlFor="isActive">啟用此規則</label>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-end gap-3 mt-6">
+                <div className="form-actions">
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                    className="cancel-button"
                     disabled={submitting}
                   >
                     取消
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="submit-button"
                     disabled={submitting}
                   >
                     {submitting ? "儲存中..." : "儲存"}
@@ -351,25 +337,27 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">確認刪除</h3>
-            <p className="text-gray-600 mb-6">
-              確定要刪除這個自動回覆規則嗎？此操作無法復原。
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirmId(null)}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirmId)}
-                className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
-              >
-                確認刪除
-              </button>
+        <div className="modal-overlay delete-confirm">
+          <div className="modal-content">
+            <div className="modal-body">
+              <h3 className="modal-title">確認刪除</h3>
+              <p className="modal-text">
+                確定要刪除這個自動回覆規則嗎？此操作無法復原。
+              </p>
+              <div className="confirm-actions">
+                <button
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="cancel-button"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirmId)}
+                  className="delete-button"
+                >
+                  確認刪除
+                </button>
+              </div>
             </div>
           </div>
         </div>

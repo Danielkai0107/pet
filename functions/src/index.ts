@@ -1,7 +1,4 @@
-import {
-  onDocumentCreated,
-  onDocumentUpdated,
-} from "firebase-functions/v2/firestore";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
@@ -13,231 +10,13 @@ initializeApp();
 const db = getFirestore();
 
 // Multi-Tenant: 監聽所有商家的預約創建事件
-export const onAppointmentCreated = onDocumentCreated(
-  "shops/{shopId}/appointments/{appointmentId}",
-  async (event) => {
-    const snapshot = event.data;
-    if (!snapshot) {
-      return;
-    }
-
-    const appointment = snapshot.data();
-    const userId = appointment.userId;
-    const shopId = event.params.shopId; // 從 event 參數中獲取 shopId
-
-    logger.info("預約已創建，準備發送通知", {
-      shopId,
-      userId,
-      appointmentId: event.params.appointmentId,
-    });
-
-    // 檢查是否為現場預約（walk-in）
-    if (userId.startsWith("walk-in-")) {
-      logger.info("現場預約，不發送 LINE 通知", { userId });
-      return;
-    }
-
-    // 1. 從 Firestore 取得店家的 LINE API 設定
-    const shopDoc = await db.collection("shops").doc(shopId).get();
-
-    if (!shopDoc.exists) {
-      logger.error("找不到商家資料", { shopId });
-      return;
-    }
-
-    const shopData = shopDoc.data();
-    const channelAccessToken = shopData?.lineChannelAccessToken;
-    const liffId = shopData?.liffId;
-
-    if (!channelAccessToken) {
-      logger.error("商家未設定 LINE Channel Access Token", { shopId });
-      return;
-    }
-
-    // 2. Get User's LINE ID (Assuming uid IS the LINE ID as per MVP)
-    const lineUserId = userId;
-
-    // 3. Construct Flex Message（不含圖片）
-    const flexMessage = {
-      to: lineUserId,
-      messages: [
-        {
-          type: "flex",
-          altText: "預約確認通知",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "預約成功",
-                  weight: "bold",
-                  size: "lg",
-                  margin: "sm",
-                },
-                {
-                  type: "separator",
-                  margin: "md",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "寵物",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: appointment.petName || "未提供",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "服務",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: appointment.serviceType || "未提供",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "日期",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: appointment.date || "未提供",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "時間",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: appointment.time || "未提供",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              spacing: "sm",
-              contents: [
-                {
-                  type: "button",
-                  style: "primary",
-                  height: "sm",
-                  action: {
-                    type: "uri",
-                    label: "查看預約詳情",
-                    uri: liffId
-                      ? `https://liff.line.me/${liffId}`
-                      : "https://line.me",
-                  },
-                },
-              ],
-              flex: 0,
-            },
-          },
-        },
-      ],
-    };
-
-    try {
-      logger.info("發送 LINE 預約通知", {
-        shopId,
-        userId: lineUserId,
-        hasToken: !!channelAccessToken,
-      });
-
-      const response = await fetch("https://api.line.me/v2/bot/message/push", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${channelAccessToken}`,
-        },
-        body: JSON.stringify(flexMessage),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        logger.error("發送 LINE 訊息失敗", {
-          shopId,
-          status: response.status,
-          body: errorText,
-        });
-      } else {
-        logger.info("LINE 預約通知發送成功", { shopId, userId: lineUserId });
-
-        // 記錄訊息統計
-        await recordMessageSent(shopId, "appointment");
-      }
-    } catch (error) {
-      logger.error("發送 LINE 訊息時發生錯誤", { shopId, error });
-    }
-  }
-);
+// 已停用：節省 LINE Push API 配額，改用客戶端 sendMessages（免費）
+// export const onAppointmentCreated = onDocumentCreated(
+//   "shops/{shopId}/appointments/{appointmentId}",
+//   async (event) => {
+//     // ... 已註解以節省配額
+//   }
+// );
 
 // Multi-Tenant: 監聽預約狀態變化（待確認 > 已確認）
 export const onAppointmentStatusConfirmed = onDocumentUpdated(
@@ -786,6 +565,169 @@ export const getLineMessageQuota = onRequest(
       });
     } catch (error) {
       logger.error("查詢 LINE 訊息使用量時發生錯誤", { error });
+      res.status(500).send({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+);
+
+/**
+ * Cloud Function: 查詢 LINE Official Account 官方配額
+ * 從 admin 後台調用，顯示 LINE OA 的免費配額和使用狀況
+ */
+export const getLineOfficialQuota = onRequest(
+  {
+    cors: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://pet-crm-bb6e9.web.app",
+      "https://pet-crm-bb6e9.firebaseapp.com",
+    ],
+    region: "asia-east1",
+  },
+  async (req, res) => {
+    // 設定 CORS headers
+    res.set("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    res.set("Access-Control-Max-Age", "3600");
+
+    // 處理 preflight request
+    if (req.method === "OPTIONS") {
+      res.status(204).send("");
+      return;
+    }
+
+    // 1. 驗證請求方法
+    if (req.method !== "GET" && req.method !== "POST") {
+      res.status(405).send({ error: "Method not allowed" });
+      return;
+    }
+
+    try {
+      // 2. 取得 shopId（從 query 或 body）
+      const shopId =
+        req.method === "GET" ? (req.query.shopId as string) : req.body.shopId;
+
+      logger.info("查詢 LINE 官方配額", { shopId });
+
+      // 3. 驗證必要參數
+      if (!shopId) {
+        res.status(400).send({ error: "Missing shopId parameter" });
+        return;
+      }
+
+      // 4. 從 Firestore 取得店家的 LINE API 設定
+      const shopDoc = await db.collection("shops").doc(shopId).get();
+
+      if (!shopDoc.exists) {
+        res.status(404).send({ error: "Shop not found" });
+        return;
+      }
+
+      const shopData = shopDoc.data();
+      const channelAccessToken = shopData?.lineChannelAccessToken;
+
+      if (!channelAccessToken) {
+        logger.error("店家未設定 LINE Channel Access Token", { shopId });
+        res.status(400).send({
+          error: "LINE API not configured",
+          message: "請在 Superadmin 設定 LINE Channel Access Token",
+        });
+        return;
+      }
+
+      // 5. 並行調用 LINE API 查詢配額和使用量
+      logger.info("調用 LINE API 查詢配額", { shopId });
+
+      const [quotaRes, consumptionRes] = await Promise.all([
+        fetch("https://api.line.me/v2/bot/message/quota", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${channelAccessToken}`,
+          },
+        }),
+        fetch("https://api.line.me/v2/bot/message/quota/consumption", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${channelAccessToken}`,
+          },
+        }),
+      ]);
+
+      // 6. 檢查 API 回應
+      if (!quotaRes.ok) {
+        const errorText = await quotaRes.text();
+        logger.error("LINE quota API 調用失敗", {
+          shopId,
+          status: quotaRes.status,
+          error: errorText,
+        });
+        res.status(quotaRes.status).send({
+          error: "LINE API error",
+          message: "無法取得配額資訊",
+          details: errorText,
+        });
+        return;
+      }
+
+      if (!consumptionRes.ok) {
+        const errorText = await consumptionRes.text();
+        logger.error("LINE consumption API 調用失敗", {
+          shopId,
+          status: consumptionRes.status,
+          error: errorText,
+        });
+        res.status(consumptionRes.status).send({
+          error: "LINE API error",
+          message: "無法取得使用量資訊",
+          details: errorText,
+        });
+        return;
+      }
+
+      // 7. 解析 API 回應
+      const quotaData = await quotaRes.json();
+      const consumptionData = await consumptionRes.json();
+
+      logger.info("LINE API 回應", {
+        shopId,
+        quotaType: quotaData.type,
+        quotaValue: quotaData.value,
+        totalUsage: consumptionData.totalUsage,
+      });
+
+      // 8. 計算剩餘配額和使用率
+      const quota = quotaData.value || 0;
+      const used = consumptionData.totalUsage || 0;
+      const remaining = Math.max(0, quota - used);
+      const percentage = quota > 0 ? (used / quota) * 100 : 0;
+
+      // 9. 回傳結果
+      res.status(200).send({
+        success: true,
+        data: {
+          quota: quota,
+          used: used,
+          remaining: remaining,
+          percentage: Math.round(percentage * 10) / 10, // 保留一位小數
+          type: quotaData.type, // "limited" or "none"
+        },
+      });
+
+      logger.info("LINE 官方配額查詢成功", {
+        shopId,
+        quota,
+        used,
+        remaining,
+        percentage: percentage.toFixed(1),
+      });
+    } catch (error) {
+      logger.error("查詢 LINE 官方配額時發生錯誤", {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
       res.status(500).send({
         error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
@@ -1785,783 +1727,6 @@ export const sendLineTempReportMessage = onRequest(
       res.status(200).send({ success: true });
     } catch (error) {
       logger.error("發送臨時回報訊息時發生錯誤", error);
-      res.status(500).send({ error: "Internal server error" });
-    }
-  }
-);
-
-/**
- * Cloud Function: 測試發送所有類型的 LINE 訊息
- * 從 admin/shop-settings 調用，用於測試 LINE API 設定
- */
-export const sendTestMessages = onRequest(
-  {
-    cors: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://pet-crm-bb6e9.web.app",
-      "https://pet-crm-bb6e9.firebaseapp.com",
-    ],
-    region: "asia-east1",
-  },
-  async (req, res) => {
-    // 設定 CORS headers
-    res.set("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type");
-    res.set("Access-Control-Max-Age", "3600");
-
-    // 處理 preflight request
-    if (req.method === "OPTIONS") {
-      res.status(204).send("");
-      return;
-    }
-
-    if (req.method !== "POST") {
-      res.status(405).send({ error: "Method not allowed" });
-      return;
-    }
-
-    try {
-      const { shopId, userId } = req.body;
-
-      logger.info("收到測試發送請求", { shopId, userId });
-
-      if (!shopId || !userId) {
-        res.status(400).send({ error: "Missing required parameters" });
-        return;
-      }
-
-      // 檢查是否為現場預約
-      if (userId.startsWith("walk-in-")) {
-        res.status(400).send({
-          error: "Cannot send message to walk-in customers",
-        });
-        return;
-      }
-
-      // 從 Firestore 取得店家的 LINE API 設定
-      const shopDoc = await db.collection("shops").doc(shopId).get();
-
-      if (!shopDoc.exists) {
-        res.status(404).send({ error: "Shop not found" });
-        return;
-      }
-
-      const shopData = shopDoc.data();
-      const channelAccessToken = shopData?.lineChannelAccessToken;
-      const liffId = shopData?.liffId;
-
-      if (!channelAccessToken) {
-        logger.error("店家未設定 LINE Channel Access Token", { shopId });
-        res.status(400).send({
-          error: "LINE API not configured for this shop",
-          message: "請在 Superadmin 設定 Channel Access Token",
-        });
-        return;
-      }
-
-      // 準備所有測試訊息
-      const messages = [
-        // 1. 預約成功通知
-        {
-          type: "flex",
-          altText: "預約確認通知",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "預約成功",
-                  weight: "bold",
-                  size: "lg",
-                  margin: "sm",
-                },
-                {
-                  type: "separator",
-                  margin: "md",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "寵物",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試寵物",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "服務",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試服務",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "日期",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "2025-12-20",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "時間",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "14:00",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              spacing: "sm",
-              contents: [
-                {
-                  type: "button",
-                  style: "primary",
-                  height: "sm",
-                  action: {
-                    type: "uri",
-                    label: "查看預約詳情",
-                    uri: liffId
-                      ? `https://liff.line.me/${liffId}`
-                      : "https://line.me",
-                  },
-                },
-              ],
-              flex: 0,
-            },
-          },
-        },
-        // 2. 預約確認通知
-        {
-          type: "flex",
-          altText: "預約已確認",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "您的預約已經確認！",
-                  weight: "bold",
-                  size: "lg",
-                  margin: "sm",
-                },
-                {
-                  type: "separator",
-                  margin: "md",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "寵物",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試寵物",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "服務",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試服務",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "日期",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "2025-12-20",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "時間",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "14:00",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              spacing: "sm",
-              contents: [
-                {
-                  type: "button",
-                  style: "primary",
-                  height: "sm",
-                  action: {
-                    type: "uri",
-                    label: "查看預約詳情",
-                    uri: liffId
-                      ? `https://liff.line.me/${liffId}`
-                      : "https://line.me",
-                  },
-                },
-              ],
-              flex: 0,
-            },
-          },
-        },
-        // 3. 服務完成通知
-        {
-          type: "flex",
-          altText: "測試寵物的服務已完成！",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "完成分享",
-                  weight: "bold",
-                  size: "lg",
-                  margin: "sm",
-                },
-                {
-                  type: "separator",
-                  margin: "md",
-                },
-                {
-                  type: "text",
-                  text: "服務已順利完成",
-                  margin: "lg",
-                  size: "md",
-                  wrap: true,
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "寵物",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試寵物",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "服務",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試服務",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "日期",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "2025-12-20",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "時間",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "14:00",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "狀態",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "服務完成",
-                          wrap: true,
-                          color: "#000000",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: "separator",
-                  margin: "lg",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  contents: [
-                    {
-                      type: "text",
-                      text: "期待再次為 測試寵物 服務",
-                      wrap: true,
-                      color: "#999999",
-                      size: "sm",
-                      align: "center",
-                    },
-                  ],
-                },
-              ],
-            },
-          },
-        },
-        // 4. 即時回報通知
-        {
-          type: "flex",
-          altText: "測試寵物的服務即時回報",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "text",
-                  text: "服務即時回報",
-                  weight: "bold",
-                  size: "lg",
-                  margin: "sm",
-                },
-                {
-                  type: "separator",
-                  margin: "md",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "寵物",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試寵物",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "服務",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "測試服務",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "日期",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "2025-12-20",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "時間",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "14:00",
-                          wrap: true,
-                          color: "#666666",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                    {
-                      type: "box",
-                      layout: "baseline",
-                      spacing: "sm",
-                      contents: [
-                        {
-                          type: "text",
-                          text: "狀態",
-                          color: "#aaaaaa",
-                          size: "sm",
-                          flex: 2,
-                        },
-                        {
-                          type: "text",
-                          text: "服務進行中",
-                          wrap: true,
-                          color: "#000000",
-                          size: "sm",
-                          flex: 5,
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: "separator",
-                  margin: "lg",
-                },
-                {
-                  type: "box",
-                  layout: "vertical",
-                  margin: "lg",
-                  spacing: "sm",
-                  contents: [
-                    {
-                      type: "text",
-                      text: "訊息",
-                      color: "#aaaaaa",
-                      size: "xs",
-                    },
-                    {
-                      type: "text",
-                      text: "這是測試訊息，服務進行中！",
-                      wrap: true,
-                      color: "#000000",
-                      size: "md",
-                      margin: "sm",
-                      weight: "bold",
-                    },
-                  ],
-                },
-                {
-                  type: "separator",
-                  margin: "lg",
-                },
-              ],
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              spacing: "sm",
-              contents: [
-                {
-                  type: "text",
-                  text: "為 測試寵物 提供最好的照顧",
-                  wrap: true,
-                  color: "#999999",
-                  size: "sm",
-                  align: "center",
-                },
-              ],
-            },
-          },
-        },
-      ];
-
-      // 發送所有測試訊息
-      const messagePayload = {
-        to: userId,
-        messages: messages,
-      };
-
-      logger.info("準備發送測試訊息", {
-        userId: userId.substring(0, 5) + "***",
-        messageCount: messages.length,
-      });
-
-      const pushResponse = await fetch(
-        "https://api.line.me/v2/bot/message/push",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${channelAccessToken}`,
-          },
-          body: JSON.stringify(messagePayload),
-        }
-      );
-
-      if (!pushResponse.ok) {
-        const errorText = await pushResponse.text();
-        let errorDetail;
-        try {
-          errorDetail = JSON.parse(errorText);
-        } catch {
-          errorDetail = errorText;
-        }
-
-        logger.error("發送測試訊息失敗", {
-          status: pushResponse.status,
-          error: errorDetail,
-          userId: userId.substring(0, 5) + "***",
-        });
-
-        res.status(500).send({
-          error: "Failed to send test messages",
-          details: errorDetail,
-          status: pushResponse.status,
-        });
-        return;
-      }
-
-      logger.info("測試訊息發送成功", {
-        userId,
-        messageCount: messages.length,
-      });
-
-      res.status(200).send({
-        success: true,
-        messageCount: messages.length,
-      });
-    } catch (error) {
-      logger.error("發送測試訊息時發生錯誤", error);
       res.status(500).send({ error: "Internal server error" });
     }
   }

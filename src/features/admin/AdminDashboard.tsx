@@ -3,6 +3,7 @@ import { ShopSettings } from "./ShopSettings";
 import { CalendarView } from "./CalendarView";
 import { CustomerList } from "./CustomerList";
 import { ServiceRecords } from "./ServiceRecords";
+import { LineManagement } from "./LineManagement";
 import AutoReplyManagement from "./AutoReplyManagement";
 import { useAdminAuth } from "../../contexts/AdminAuthProvider";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,7 @@ export const AdminDashboard = () => {
     | "customers"
     | "records"
     | "settings"
+    | "line-management"
     | "auto-reply"
   >("appointments");
 
@@ -343,6 +345,8 @@ export const AdminDashboard = () => {
         return "服務紀錄";
       case "settings":
         return "店鋪設定";
+      case "line-management":
+        return "LINE 管理";
       case "auto-reply":
         return "自動回覆";
       default:
@@ -404,6 +408,15 @@ export const AdminDashboard = () => {
                 <span className="material-symbols-rounded nav-icon">
                   history
                 </span>
+              </button>
+              <button
+                onClick={() => setActiveTab("line-management")}
+                className={`nav-item ${
+                  activeTab === "line-management" ? "active" : ""
+                }`}
+                title="LINE 管理"
+              >
+                <span className="material-symbols-rounded nav-icon">insert_chart</span>
               </button>
               <button
                 onClick={() => setActiveTab("auto-reply")}
@@ -696,6 +709,9 @@ export const AdminDashboard = () => {
                       shopId={shopId}
                       isEditing={isEditingSettings}
                     />
+                  )}
+                  {activeTab === "line-management" && (
+                    <LineManagement shopId={shopId} />
                   )}
                   {activeTab === "auto-reply" && (
                     <AutoReplyManagement shopId={shopId} />
