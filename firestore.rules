@@ -122,6 +122,23 @@ service cloud.firestore {
           allow read: if true;
         }
       }
+      
+      // 自動回覆規則子集合（Multi-Tenant）
+      match /autoReplyRules/{ruleId} {
+        // Cloud Function 需要讀取規則來匹配關鍵字
+        // 管理員可以讀取和寫入
+        allow read: if true; // 允許 Cloud Function 讀取
+        allow write: if isShopAdmin(shopId);
+      }
+      
+      // LINE 訊息統計子集合
+      match /messageStats/{yearMonth} {
+        // 管理員可以讀取統計
+        allow read: if isShopAdmin(shopId);
+        
+        // Cloud Function 需要寫入統計
+        allow write: if true;
+      }
     }
     
     // ==========================================

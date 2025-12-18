@@ -153,7 +153,7 @@ export const AppointmentForm = () => {
             weekday: "long",
           });
 
-          // 發送預約成功訊息到聊天室
+          // 發送預約成功訊息到聊天室（免費，不計入配額）
           await liff.sendMessages([
             {
               type: "text",
