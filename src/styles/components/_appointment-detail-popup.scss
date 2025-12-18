@@ -127,7 +127,6 @@
   display: flex;
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
-  background: white;
 }
 
 .popup-tab {
@@ -153,11 +152,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  &:hover {
-    color: #1f2937;
-    background: #f9fafb;
-  }
 
   // 點擊/觸控時的即時反饋
   &:active:not(.active) {

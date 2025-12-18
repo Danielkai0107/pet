@@ -28,7 +28,7 @@ export const ServiceHistory = () => {
           await liff.sendMessages([
             {
               type: "text",
-              text: `【預約已取消】\n\n日期：${appointment.date}\n時間：${appointment.time}\n服務：${appointment.serviceType}\n\n您的預約已成功取消。`,
+              text: `【取消通知】\n\n日期：${appointment.date}\n時間：${appointment.time}\n服務：${appointment.serviceType}\n\n已成功取消。`,
             },
           ]);
         } catch (msgError) {

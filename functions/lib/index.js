@@ -1903,9 +1903,188 @@ exports.lineWebhook = (0, https_1.onRequest)({
         }
         // 處理每個事件
         for (const event of webhookData.events) {
-            // 只處理文字訊息事件
+            // 處理 follow 事件（用戶加入好友）
+            if (event.type === "follow") {
+                const userId = event.source.userId;
+                const destination = webhookData.destination;
+                const replyToken = event.replyToken;
+                logger.info("收到 follow 事件", {
+                    userId: userId.substring(0, 5) + "***",
+                    destination: destination.substring(0, 5) + "***",
+                });
+                // 查找對應的商家
+                const shopInfo = await findShopForFollowEvent(userId, destination);
+                if (!shopInfo) {
+                    logger.error("找不到對應的商家", {
+                        destination: destination.substring(0, 5) + "***",
+                    });
+                    continue;
+                }
+                const { shopId, channelAccessToken } = shopInfo;
+                // 呼叫 LINE Profile API 取得用戶資料
+                try {
+                    const profileResponse = await fetch(`https://api.line.me/v2/bot/profile/${userId}`, {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${channelAccessToken}`,
+                        },
+                    });
+                    if (!profileResponse.ok) {
+                        const errorText = await profileResponse.text();
+                        logger.error("取得用戶資料失敗", {
+                            status: profileResponse.status,
+                            error: errorText,
+                        });
+                        continue;
+                    }
+                    const profile = await profileResponse.json();
+                    logger.info("取得用戶資料成功", {
+                        userId: userId.substring(0, 5) + "***",
+                        displayName: profile.displayName,
+                    });
+                    // 寫入 Firestore（使用 merge 避免覆蓋現有資料）
+                    const { FieldValue } = await Promise.resolve().then(() => __importStar(require("firebase-admin/firestore")));
+                    await db
+                        .collection("shops")
+                        .doc(shopId)
+                        .collection("users")
+                        .doc(userId)
+                        .set({
+                        uid: userId,
+                        displayName: profile.displayName,
+                        pictureUrl: profile.pictureUrl || "",
+                        shopId: shopId,
+                        followedAt: new Date().toISOString(),
+                        status: "active",
+                        role: "customer",
+                        createdAt: FieldValue.serverTimestamp(),
+                    }, { merge: true });
+                    logger.info("用戶資料已寫入 Firestore", {
+                        shopId,
+                        userId: userId.substring(0, 5) + "***",
+                    });
+                    // 取得歡迎訊息設定
+                    try {
+                        const welcomeDoc = await db
+                            .collection("shops")
+                            .doc(shopId)
+                            .collection("settings")
+                            .doc("welcome")
+                            .get();
+                        if (welcomeDoc.exists) {
+                            const welcomeData = welcomeDoc.data();
+                            if ((welcomeData === null || welcomeData === void 0 ? void 0 : welcomeData.isActive) && (welcomeData === null || welcomeData === void 0 ? void 0 : welcomeData.message)) {
+                                // 發送歡迎訊息
+                                const replyPayload = {
+                                    replyToken: replyToken,
+                                    messages: [
+                                        {
+                                            type: "text",
+                                            text: welcomeData.message,
+                                        },
+                                    ],
+                                };
+                                const replyResponse = await fetch("https://api.line.me/v2/bot/message/reply", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        Authorization: `Bearer ${channelAccessToken}`,
+                                    },
+                                    body: JSON.stringify(replyPayload),
+                                });
+                                if (replyResponse.ok) {
+                                    logger.info("歡迎訊息發送成功", {
+                                        shopId,
+                                        userId: userId.substring(0, 5) + "***",
+                                    });
+                                }
+                                else {
+                                    const errorText = await replyResponse.text();
+                                    logger.error("歡迎訊息發送失敗", {
+                                        status: replyResponse.status,
+                                        error: errorText,
+                                    });
+                                }
+                            }
+                            else {
+                                logger.info("歡迎訊息未啟用或未設定", { shopId });
+                            }
+                        }
+                    }
+                    catch (welcomeError) {
+                        logger.error("取得或發送歡迎訊息時發生錯誤", {
+                            error: welcomeError,
+                        });
+                        // 不影響主流程，繼續執行
+                    }
+                }
+                catch (error) {
+                    logger.error("處理 follow 事件時發生錯誤", { error });
+                }
+                continue;
+            }
+            // 處理 unfollow 事件（用戶封鎖或取消好友）
+            if (event.type === "unfollow") {
+                const userId = event.source.userId;
+                const destination = webhookData.destination;
+                logger.info("收到 unfollow 事件", {
+                    userId: userId.substring(0, 5) + "***",
+                    destination: destination.substring(0, 5) + "***",
+                });
+                // 查找用戶所屬的商家（通過查詢 users collection）
+                const shopsSnapshot = await db.collection("shops").get();
+                let shopId = null;
+                for (const shopDoc of shopsSnapshot.docs) {
+                    const userDoc = await db
+                        .collection("shops")
+                        .doc(shopDoc.id)
+                        .collection("users")
+                        .doc(userId)
+                        .get();
+                    if (userDoc.exists) {
+                        shopId = shopDoc.id;
+                        break;
+                    }
+                }
+                if (!shopId) {
+                    logger.error("找不到對應的商家", {
+                        destination: destination.substring(0, 5) + "***",
+                    });
+                    continue;
+                }
+                // 更新用戶狀態為 blocked
+                try {
+                    const userRef = db
+                        .collection("shops")
+                        .doc(shopId)
+                        .collection("users")
+                        .doc(userId);
+                    const userDoc = await userRef.get();
+                    if (userDoc.exists) {
+                        await userRef.update({
+                            status: "blocked",
+                            unfollowedAt: new Date().toISOString(),
+                        });
+                        logger.info("用戶狀態已更新為 blocked", {
+                            shopId,
+                            userId: userId.substring(0, 5) + "***",
+                        });
+                    }
+                    else {
+                        logger.warn("找不到用戶資料", {
+                            shopId,
+                            userId: userId.substring(0, 5) + "***",
+                        });
+                    }
+                }
+                catch (error) {
+                    logger.error("處理 unfollow 事件時發生錯誤", { error });
+                }
+                continue;
+            }
+            // 處理文字訊息事件
             if (event.type !== "message" || ((_a = event.message) === null || _a === void 0 ? void 0 : _a.type) !== "text") {
-                logger.info("略過非文字訊息事件", { type: event.type });
+                logger.info("略過其他類型事件", { type: event.type });
                 continue;
             }
             const userMessage = ((_b = event.message.text) === null || _b === void 0 ? void 0 : _b.trim()) || "";
@@ -2068,6 +2247,60 @@ async function findShopIdByUserId(userId) {
     }
     catch (error) {
         logger.error("查詢用戶店鋪時發生錯誤", { error });
+        return null;
+    }
+}
+/**
+ * Helper function: 根據 LINE User ID 和 destination 查詢店鋪 ID
+ * 用於 follow/unfollow 事件，透過嘗試取得用戶 Profile 來識別商家
+ */
+async function findShopForFollowEvent(userId, destination) {
+    try {
+        // 取得所有商家
+        const shopsSnapshot = await db.collection("shops").get();
+        if (shopsSnapshot.empty) {
+            logger.warn("系統中沒有商家");
+            return null;
+        }
+        // 嘗試每個商家的 Channel Access Token
+        for (const shopDoc of shopsSnapshot.docs) {
+            const shopData = shopDoc.data();
+            const token = shopData.lineChannelAccessToken;
+            if (!token)
+                continue;
+            try {
+                // 嘗試使用此商家的 token 取得用戶資料
+                const profileResponse = await fetch(`https://api.line.me/v2/bot/profile/${userId}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (profileResponse.ok) {
+                    // 成功取得用戶資料，表示找到正確的商家
+                    logger.info("找到對應的商家", {
+                        shopId: shopDoc.id,
+                        userId: userId.substring(0, 5) + "***",
+                    });
+                    return {
+                        shopId: shopDoc.id,
+                        channelAccessToken: token,
+                    };
+                }
+            }
+            catch (err) {
+                // 繼續嘗試下一個商家
+                continue;
+            }
+        }
+        logger.warn("找不到對應的商家", {
+            userId: userId.substring(0, 5) + "***",
+            destination: destination.substring(0, 5) + "***",
+        });
+        return null;
+    }
+    catch (error) {
+        logger.error("查詢商家時發生錯誤", { error });
         return null;
     }
 }

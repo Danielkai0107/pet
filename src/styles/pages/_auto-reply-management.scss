@@ -102,10 +102,6 @@
 // Actions Bar Widget
 .auto-reply-actions-widget {
   width: 100%;
-  background-color: #ffffff;
-  border-radius: 1.4rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
 
   .actions-bar {
     display: flex;
@@ -627,6 +623,70 @@
           }
         }
       }
+    }
+  }
+}
+
+// Tabs (線條樣式)
+.popup-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+
+  .tab-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+
+    &.active {
+      color: $primary-color;
+      border-bottom-color: $primary-color;
+    }
+
+    @media (max-width: 640px) {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+// Form Info (提示資訊)
+.form-info {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  p {
+    font-size: 0.875rem;
+    color: #166534;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: #166534;
+    line-height: 1.75;
+
+    li {
+      margin-bottom: 0.25rem;
     }
   }
 }

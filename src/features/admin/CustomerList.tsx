@@ -31,7 +31,7 @@ export const CustomerList = ({ shopId, searchQuery }: CustomerListProps) => {
   // 顧客注記狀態
   const [showReminders, setShowReminders] = useState(false);
 
-  // 從預約中提取唯一客戶
+  // 從預約中提取唯一客戶（只顯示有預約過的客戶）
   const customers = useMemo(() => {
     const customerMap = new Map<string, Customer>();
 

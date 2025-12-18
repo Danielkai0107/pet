@@ -131,6 +131,24 @@ service cloud.firestore {
         allow write: if isShopAdmin(shopId);
       }
       
+      // 商家設定子集合（Multi-Tenant）
+      match /settings/{settingId} {
+        // 管理員可以讀取和寫入
+        allow read, write: if isShopAdmin(shopId);
+        
+        // Cloud Function 需要讀取歡迎訊息設定
+        allow read: if true;
+      }
+      
+      // 商家會員子集合（Multi-Tenant）
+      match /users/{userId} {
+        // 管理員可以讀取所有會員
+        allow read: if isShopAdmin(shopId);
+        
+        // Cloud Function 需要寫入會員資料
+        allow write: if true;
+      }
+      
       // LINE 訊息統計子集合
       match /messageStats/{yearMonth} {
         // 管理員可以讀取統計

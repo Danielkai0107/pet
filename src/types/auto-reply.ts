@@ -32,6 +32,23 @@ export interface AutoReplyRule {
 }
 
 /**
+ * 歡迎訊息設定
+ */
+export interface WelcomeMessage {
+  /** 歡迎訊息內容 */
+  message: string;
+
+  /** 是否啟用 */
+  isActive: boolean;
+
+  /** 更新時間（ISO 8601 格式） */
+  updatedAt: string;
+
+  /** 建立時間（ISO 8601 格式） */
+  createdAt?: string;
+}
+
+/**
  * 新增自動回覆規則的輸入
  */
 export interface CreateAutoReplyRuleInput {
