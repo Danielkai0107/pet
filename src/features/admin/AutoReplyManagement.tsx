@@ -5,7 +5,7 @@ import type {
   AutoReplyRule,
   CreateAutoReplyRuleInput,
 } from "../../types/auto-reply";
-import { MessageSquare, Search, Plus, WavesIcon as Wave } from "lucide-react";
+import { MessageSquare, Search, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface AutoReplyManagementProps {

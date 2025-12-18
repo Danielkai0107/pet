@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useShopUsers } from "../../hooks/useShopUsers";
-import { UserCheck, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 interface MemberListProps {
   shopId: string;
