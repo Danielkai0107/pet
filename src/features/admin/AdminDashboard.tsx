@@ -430,7 +430,9 @@ export const AdminDashboard = () => {
                 }`}
                 title="LINE 管理"
               >
-                <span className="material-symbols-rounded nav-icon">insert_chart</span>
+                <span className="material-symbols-rounded nav-icon">
+                  insert_chart
+                </span>
               </button>
               <button
                 onClick={() => setActiveTab("auto-reply")}
@@ -709,10 +711,7 @@ export const AdminDashboard = () => {
                     />
                   )}
                   {activeTab === "members" && (
-                    <MemberList
-                      shopId={shopId}
-                      searchQuery={customerSearch}
-                    />
+                    <MemberList shopId={shopId} searchQuery={customerSearch} />
                   )}
                   {activeTab === "records" && (
                     <ServiceRecords

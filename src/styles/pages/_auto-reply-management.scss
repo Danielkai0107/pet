@@ -669,160 +669,30 @@
   }
 }
 
-// Welcome Message Container
-.welcome-message-container {
-  padding: 1rem 0;
+// Form Info (提示資訊)
+.form-info {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 
-  .welcome-card {
-    background: white;
-    border-radius: 1rem;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
+  p {
+    font-size: 0.875rem;
+    color: #166534;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+  }
 
-    .card-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: #166534;
+    line-height: 1.75;
 
-      h4 {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0 0 0.5rem 0;
-      }
-
-      .card-description {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin: 0;
-        line-height: 1.5;
-      }
-    }
-
-    .card-content {
-      padding: 1.5rem;
-
-      .form-group {
-        margin-bottom: 1.5rem;
-
-        .form-label {
-          display: block;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #374151;
-          margin-bottom: 0.5rem;
-        }
-
-        .form-textarea {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.75rem;
-          font-size: 0.875rem;
-          line-height: 1.5;
-          resize: vertical;
-          font-family: inherit;
-          transition: all 0.2s ease;
-
-          &:focus {
-            outline: none;
-            border-color: $primary-color;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-
-          &::placeholder {
-            color: #9ca3af;
-          }
-        }
-
-        .form-hint {
-          font-size: 0.75rem;
-          color: #9ca3af;
-          margin-top: 0.5rem;
-          margin-bottom: 0;
-          text-align: right;
-        }
-      }
-
-      .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-
-        .form-checkbox {
-          width: 18px;
-          height: 18px;
-          border: 2px solid #d1d5db;
-          border-radius: 0.25rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:checked {
-            background-color: $primary-color;
-            border-color: $primary-color;
-          }
-        }
-
-        label {
-          font-size: 0.875rem;
-          color: #374151;
-          font-weight: 500;
-          cursor: pointer;
-        }
-      }
-
-      .card-info {
-        background: #f0fdf4;
-        border: 1px solid #86efac;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-
-        p {
-          font-size: 0.875rem;
-          color: #166534;
-          margin: 0 0 0.5rem 0;
-          font-weight: 600;
-        }
-
-        ul {
-          margin: 0;
-          padding-left: 1.5rem;
-          font-size: 0.875rem;
-          color: #166534;
-          line-height: 1.75;
-
-          li {
-            margin-bottom: 0.25rem;
-          }
-        }
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-
-        .submit-button {
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 0.75rem;
-          background-color: $primary-color;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover:not(:disabled) {
-            background-color: darken($primary-color, 10%);
-          }
-
-          &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
-        }
-      }
+    li {
+      margin-bottom: 0.25rem;
     }
   }
 }

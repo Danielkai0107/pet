@@ -13,11 +13,14 @@ interface LineManagementProps {
   shopId: string;
 }
 
+type TabType = "quota" | "liff";
+
 export const LineManagement = ({ shopId }: LineManagementProps) => {
   const { shop, loading } = useShopSettings(shopId);
   const quota = useLineMessageQuota(shopId);
   const [copied, setCopied] = useState(false);
   const [refreshingQuota, setRefreshingQuota] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>("quota");
 
   // Multi-Tenant: 使用商家專屬的 LIFF ID 生成 URL
   const liffUrl =
@@ -126,9 +129,27 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
         </div>
       )}
 
+      {/* Tabs */}
+      <div className="popup-tabs" style={{ marginTop: "1rem" }}>
+        <button
+          className={`tab-button ${activeTab === "quota" ? "active" : ""}`}
+          onClick={() => setActiveTab("quota")}
+        >
+          <MessageCircle size={18} />
+          <span>訊息配額</span>
+        </button>
+        <button
+          className={`tab-button ${activeTab === "liff" ? "active" : ""}`}
+          onClick={() => setActiveTab("liff")}
+        >
+          <LinkIcon size={18} />
+          <span>預約連結</span>
+        </button>
+      </div>
+
       <div className="row-container">
-        {/* LIFF Booking Link Widget */}
-        {liffUrl && (
+        {/* Tab Content: LIFF Booking Link */}
+        {activeTab === "liff" && liffUrl && (
           <div className="settings-widget liff-widget flex-1">
             <div className="widget-header">
               <div className="header-icon">
@@ -160,8 +181,9 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
           </div>
         )}
 
-        {/* LINE Message Quota Widget */}
-        <div className="settings-widget quota-widget flex-1">
+        {/* Tab Content: LINE Message Quota */}
+        {activeTab === "quota" && (
+          <div className="settings-widget quota-widget flex-1">
           <div className="widget-header">
             <div className="header-icon">
               <MessageCircle size={24} />
@@ -303,6 +325,7 @@ export const LineManagement = ({ shopId }: LineManagementProps) => {
             )}
           </div>
         </div>
+        )}
       </div>
     </div>
   );
