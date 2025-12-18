@@ -41,7 +41,6 @@ export interface Shop {
   liffId: string; // 該商家專屬的 LIFF ID（必填）
   lineChannelId: string; // LINE Messaging API Channel ID（必填）
   lineChannelAccessToken: string; // LINE Messaging API Channel Access Token（長期，必填）
-  lineBotUserId?: string; // LINE Bot 的 User ID（來自 webhook 的 destination 欄位，用於識別商家）
 
   // 訂閱制
   subscription?: Subscription; // 訂閱資訊（選填，向後兼容）

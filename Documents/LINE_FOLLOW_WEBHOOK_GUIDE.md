@@ -3,6 +3,7 @@
 ## 📋 功能說明
 
 當用戶在 LINE 中點擊「加入好友」時，系統會自動：
+
 1. 接收 LINE 平台發送的 follow 事件
 2. 透過 LINE Profile API 取得用戶的個人資料（暱稱、大頭貼）
 3. 將用戶資料自動寫入 Firestore 的 `shops/{shopId}/users/{userId}` collection
@@ -40,6 +41,7 @@
 ### 步驟 2：設定 Webhook 事件訂閱
 
 在同一頁面的 **Webhook settings**：
+
 1. 確保已啟用 **Use webhook**
 2. 建議關閉 **Auto-reply messages**（避免與自動回覆衝突）
 3. 建議關閉 **Greeting messages**（可選）
@@ -83,10 +85,10 @@
 match /shops/{shopId}/users/{userId} {
   // 客戶只能讀取自己的資料
   allow read: if request.auth != null && request.auth.uid == userId;
-  
+
   // 管理員可以讀取所有客戶資料
   allow read: if isShopAdmin(shopId);
-  
+
   // Cloud Function 可以寫入
   allow write: if request.auth == null; // 來自 Cloud Function
 }
@@ -99,20 +101,24 @@ match /shops/{shopId}/users/{userId} {
 ### 測試 1：Follow 事件（加入好友）
 
 1. **準備測試帳號**
+
    - 使用一個未加入過您 OA 的 LINE 帳號
    - 或先將測試帳號從好友列表中移除
 
 2. **執行測試**
+
    - 在 LINE 中搜尋您的 OA
    - 點擊「加入好友」
 
 3. **檢查 Cloud Function 日誌**
+
    ```bash
    # 查看即時日誌
    firebase functions:log --only lineWebhook
    ```
-   
+
    應該會看到類似以下的日誌：
+
    ```
    收到 LINE Webhook 請求
    收到 follow 事件 { userId: 'Uxxxx***', destination: 'Uxxxx***' }
@@ -122,6 +128,7 @@ match /shops/{shopId}/users/{userId} {
    ```
 
 4. **檢查 Firestore**
+
    - 前往 Firestore Console
    - 導航至 `shops/{您的商家ID}/users`
    - 應該會看到新增的用戶文檔，包含：
@@ -148,11 +155,13 @@ match /shops/{shopId}/users/{userId} {
 ### 測試 2：Unfollow 事件（封鎖或取消好友）
 
 1. **執行測試**
+
    - 在 LINE 中進入 OA 的聊天室
    - 點擊右上角的選單
    - 選擇「封鎖」或「刪除好友」
 
 2. **檢查日誌**
+
    ```
    收到 unfollow 事件 { userId: 'Uxxxx***', destination: 'Uxxxx***' }
    找到對應的商家 { shopId: 'your-shop-id' }
@@ -160,6 +169,7 @@ match /shops/{shopId}/users/{userId} {
    ```
 
 3. **檢查 Firestore**
+
    - 該用戶文檔應該更新為：
      ```javascript
      {
@@ -176,7 +186,6 @@ match /shops/{shopId}/users/{userId} {
 
 1. **執行測試**
    - 解除封鎖後再次加入好友
-   
 2. **預期結果**
    - 系統使用 `merge: true`，不會覆蓋現有資料
    - 會更新 `status` 為 `active`
@@ -189,11 +198,13 @@ match /shops/{shopId}/users/{userId} {
 ### 問題 1：Webhook 收不到事件
 
 **可能原因：**
+
 - Webhook URL 設定錯誤
 - Webhook 未啟用
 - Channel Access Token 過期
 
 **解決方法：**
+
 1. 檢查 LINE Developer Console 的 Webhook URL
 2. 確認 **Use webhook** 已啟用
 3. 點擊 **Verify** 測試連線
@@ -202,15 +213,18 @@ match /shops/{shopId}/users/{userId} {
 ### 問題 2：找不到對應商家
 
 **錯誤訊息：**
+
 ```
 找不到對應的商家 { botUserId: 'Uxxxx***' }
 ```
 
 **可能原因：**
+
 - 商家的 `lineBotUserId` 欄位未設定
 - `lineBotUserId` 值不正確
 
 **解決方法：**
+
 1. 從日誌中複製 `destination` 的值
 2. 在 Firestore 中設定 `shops/{shopId}/lineBotUserId` 為該值
 3. 再次測試
@@ -218,14 +232,17 @@ match /shops/{shopId}/users/{userId} {
 ### 問題 3：取得用戶資料失敗
 
 **錯誤訊息：**
+
 ```
 取得用戶資料失敗 { status: 401, error: '...' }
 ```
 
 **可能原因：**
+
 - Channel Access Token 過期或不正確
 
 **解決方法：**
+
 1. 前往 LINE Developer Console
 2. 重新發行 Channel Access Token
 3. 在 Firestore 更新 `shops/{shopId}/lineChannelAccessToken`
@@ -234,14 +251,17 @@ match /shops/{shopId}/users/{userId} {
 ### 問題 4：用戶資料寫入 Firestore 失敗
 
 **錯誤訊息：**
+
 ```
 Error: Missing or insufficient permissions
 ```
 
 **可能原因：**
+
 - Firestore Security Rules 設定錯誤
 
 **解決方法：**
+
 1. 檢查 Firestore Rules
 2. 確認 Cloud Function 有寫入權限
 3. 重新部署 Rules：
@@ -262,7 +282,7 @@ shops/
     - lineBotUserId: string ← 新增欄位
     - lineChannelAccessToken: string
     - ... 其他欄位
-    
+
     users/ ← 新增子集合
       {userId}/
         - uid: string (LINE User ID)
@@ -282,21 +302,25 @@ shops/
 ## 🎯 功能特點
 
 ### 1. 自動化會員註冊
+
 - ✅ 無需用戶手動填寫資料
 - ✅ 自動取得 LINE 個人資料
 - ✅ 即時寫入資料庫
 
 ### 2. 智慧資料合併
+
 - ✅ 合併預約客戶和 LINE 好友
 - ✅ 優先顯示有預約記錄的客戶
 - ✅ 使用 `merge: true` 避免覆蓋現有資料
 
 ### 3. 狀態追蹤
+
 - ✅ 追蹤用戶是否為好友
 - ✅ 記錄加入/取消好友時間
 - ✅ 過濾已封鎖的用戶
 
 ### 4. 前端整合
+
 - ✅ 客戶列表顯示 LINE 好友標記
 - ✅ 顯示 LINE 大頭貼
 - ✅ 顯示加入好友日期
@@ -306,7 +330,9 @@ shops/
 ## 📈 後續優化建議
 
 ### 1. 歡迎訊息（可選）
+
 在 follow 事件處理完成後，可以發送歡迎訊息：
+
 ```typescript
 // 在 follow 事件處理的最後
 await fetch("https://api.line.me/v2/bot/message/reply", {
@@ -328,7 +354,9 @@ await fetch("https://api.line.me/v2/bot/message/reply", {
 ```
 
 ### 2. 自動記錄 Bot User ID
+
 第一次收到 webhook 事件時，自動將 `destination` 寫入商家文檔：
+
 ```typescript
 if (!shopData.lineBotUserId) {
   await shopDoc.ref.update({
@@ -338,7 +366,9 @@ if (!shopData.lineBotUserId) {
 ```
 
 ### 3. 會員標籤系統
+
 可以為會員添加標籤（VIP、常客等）：
+
 ```typescript
 interface User {
   ...
@@ -347,7 +377,9 @@ interface User {
 ```
 
 ### 4. 統計分析
+
 在管理後台顯示會員統計：
+
 - 總會員數
 - 本月新增會員數
 - 活躍會員數
@@ -382,3 +414,4 @@ interface User {
 **最後更新**：2024-12-18  
 **版本**：v1.0.0  
 **作者**：AI Assistant
+

@@ -1,21 +1,37 @@
 import { useState } from "react";
 import { useAutoReplyRules } from "../../hooks/useAutoReplyRules";
+import { useWelcomeMessage } from "../../hooks/useWelcomeMessage";
 import type {
   AutoReplyRule,
   CreateAutoReplyRuleInput,
 } from "../../types/auto-reply";
-import { MessageSquare, Search, Plus } from "lucide-react";
+import { MessageSquare, Search, Plus, WavesIcon as Wave } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface AutoReplyManagementProps {
   shopId: string;
 }
 
+type TabType = "keywords" | "welcome";
+
 export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
   shopId,
 }) => {
+  // Tabs
+  const [activeTab, setActiveTab] = useState<TabType>("keywords");
+
+  // Keyword Rules Hook
   const { rules, loading, createRule, updateRule, deleteRule, toggleRule } =
     useAutoReplyRules(shopId);
 
+  // Welcome Message Hook
+  const {
+    welcomeMessage,
+    loading: welcomeLoading,
+    updateWelcomeMessage,
+  } = useWelcomeMessage(shopId);
+
+  // Keyword Rules States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutoReplyRule | null>(null);
   const [formData, setFormData] = useState<CreateAutoReplyRuleInput>({
@@ -26,6 +42,19 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Welcome Message States
+  const [welcomeText, setWelcomeText] = useState("");
+  const [welcomeActive, setWelcomeActive] = useState(false);
+  const [savingWelcome, setSavingWelcome] = useState(false);
+
+  // Update welcome message local state when data is loaded
+  useState(() => {
+    if (welcomeMessage) {
+      setWelcomeText(welcomeMessage.message);
+      setWelcomeActive(welcomeMessage.isActive);
+    }
+  });
 
   // 篩選規則
   const filteredRules = rules.filter((rule) =>
@@ -110,7 +139,31 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
     }
   };
 
-  if (loading) {
+  // 儲存歡迎訊息
+  const handleSaveWelcome = async () => {
+    if (!welcomeText.trim() && welcomeActive) {
+      toast.error("請輸入歡迎訊息內容");
+      return;
+    }
+
+    setSavingWelcome(true);
+    try {
+      await updateWelcomeMessage(welcomeText, welcomeActive);
+      toast.success("歡迎訊息已儲存");
+    } catch (err) {
+      toast.error("儲存失敗，請重試");
+    } finally {
+      setSavingWelcome(false);
+    }
+  };
+
+  // Update welcome state when data loads
+  if (welcomeMessage && welcomeText === "" && !welcomeActive) {
+    setWelcomeText(welcomeMessage.message);
+    setWelcomeActive(welcomeMessage.isActive);
+  }
+
+  if (loading || welcomeLoading) {
     return (
       <div className="auto-reply-loading">
         <div className="loading-spinner"></div>
@@ -130,14 +183,34 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
           <div className="header-content">
             <h3>自動回覆管理</h3>
             <p>
-              設定 LINE
-              關鍵字自動回覆，當客戶傳送包含關鍵字的訊息時，系統會自動回覆預設內容。
+              設定 LINE 自動回覆功能，包含關鍵字回覆和歡迎訊息。
             </p>
           </div>
         </div>
       </div>
 
-      {/* Actions Bar Widget */}
+      {/* Tabs */}
+      <div className="popup-tabs">
+        <button
+          className={`tab-button ${activeTab === "keywords" ? "active" : ""}`}
+          onClick={() => setActiveTab("keywords")}
+        >
+          <MessageSquare size={18} />
+          <span>關鍵字回覆</span>
+        </button>
+        <button
+          className={`tab-button ${activeTab === "welcome" ? "active" : ""}`}
+          onClick={() => setActiveTab("welcome")}
+        >
+          <Wave size={18} />
+          <span>歡迎訊息</span>
+        </button>
+      </div>
+
+      {/* Tab Content: Keywords */}
+      {activeTab === "keywords" && (
+        <>
+          {/* Actions Bar Widget */}
       <div className="auto-reply-actions-widget">
         <div className="actions-bar">
           <button onClick={handleOpenAddModal} className="add-button">
@@ -330,6 +403,70 @@ export const AutoReplyManagement: React.FC<AutoReplyManagementProps> = ({
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Tab Content: Welcome Message */}
+      {activeTab === "welcome" && (
+        <div className="welcome-message-container">
+          <div className="welcome-card">
+            <div className="card-header">
+              <h4>歡迎訊息設定</h4>
+              <p className="card-description">
+                當用戶加入 LINE 官方帳號成為好友時，系統會自動發送此歡迎訊息。
+              </p>
+            </div>
+
+            <div className="card-content">
+              <div className="form-group">
+                <label className="form-label">歡迎訊息內容</label>
+                <textarea
+                  value={welcomeText}
+                  onChange={(e) => setWelcomeText(e.target.value)}
+                  placeholder="例如：歡迎加入 XX 寵物美容！我們期待為您和您的寶貝提供最優質的服務 🐾"
+                  rows={8}
+                  className="form-textarea"
+                  maxLength={2000}
+                />
+                <p className="form-hint">{welcomeText.length} / 2000 字元</p>
+              </div>
+
+              <div className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="welcomeActive"
+                  checked={welcomeActive}
+                  onChange={(e) => setWelcomeActive(e.target.checked)}
+                  className="form-checkbox"
+                />
+                <label htmlFor="welcomeActive">啟用歡迎訊息</label>
+              </div>
+
+              <div className="card-info">
+                <p>
+                  💡 提示：歡迎訊息會在用戶加入好友後立即發送。建議在訊息中包含：
+                </p>
+                <ul>
+                  <li>友善的問候語</li>
+                  <li>店家簡介</li>
+                  <li>服務項目或特色</li>
+                  <li>預約方式說明</li>
+                </ul>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  onClick={handleSaveWelcome}
+                  disabled={savingWelcome}
+                  className="submit-button"
+                >
+                  {savingWelcome ? "儲存中..." : "儲存設定"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

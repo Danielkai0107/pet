@@ -2,6 +2,7 @@ import { AppointmentList } from "./AppointmentList";
 import { ShopSettings } from "./ShopSettings";
 import { CalendarView } from "./CalendarView";
 import { CustomerList } from "./CustomerList";
+import { MemberList } from "./MemberList";
 import { ServiceRecords } from "./ServiceRecords";
 import { LineManagement } from "./LineManagement";
 import AutoReplyManagement from "./AutoReplyManagement";
@@ -32,6 +33,7 @@ export const AdminDashboard = () => {
     | "appointments"
     | "calendar"
     | "customers"
+    | "members"
     | "records"
     | "settings"
     | "line-management"
@@ -341,6 +343,8 @@ export const AdminDashboard = () => {
         return "所有預約";
       case "customers":
         return "客戶列表";
+      case "members":
+        return "會員列表";
       case "records":
         return "服務紀錄";
       case "settings":
@@ -396,8 +400,18 @@ export const AdminDashboard = () => {
                 className={`nav-item ${
                   activeTab === "customers" ? "active" : ""
                 }`}
+                title="客戶列表"
               >
                 <span className="material-symbols-rounded nav-icon">group</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("members")}
+                className={`nav-item ${
+                  activeTab === "members" ? "active" : ""
+                }`}
+                title="會員列表"
+              >
+                <span className="material-symbols-rounded nav-icon">badge</span>
               </button>
               <button
                 onClick={() => setActiveTab("records")}
@@ -690,6 +704,12 @@ export const AdminDashboard = () => {
                   )}
                   {activeTab === "customers" && (
                     <CustomerList
+                      shopId={shopId}
+                      searchQuery={customerSearch}
+                    />
+                  )}
+                  {activeTab === "members" && (
+                    <MemberList
                       shopId={shopId}
                       searchQuery={customerSearch}
                     />
