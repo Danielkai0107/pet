@@ -67,22 +67,26 @@ export const AppointmentFormNew = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // 追蹤是否已初始化（防止逐字刪除時重新觸發自動填入）
+  const hasInitialized = useRef(false);
+
   // 自動填入用戶之前保存的飼主資料（只在首次載入時執行一次）
   useEffect(() => {
-    if (user) {
+    if (user && !hasInitialized.current) {
       // 如果用戶有保存過飼主姓名和手機號碼，自動填入
-      if (user.displayName && !customerName) {
+      if (user.displayName) {
         setCustomerName(user.displayName);
       }
-      if (user.phone && !phone) {
+      if (user.phone) {
         setPhone(user.phone);
       }
-      if (user.gender && !gender) {
+      if (user.gender) {
         setGender(user.gender);
       }
+      // 標記已初始化，後續不再自動填入
+      hasInitialized.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]); // 只依賴 user，避免輸入時重複觸發
+  }, [user]); // 只依賴 user
 
   // 當日期改變時，清空已選擇的時間
   useEffect(() => {

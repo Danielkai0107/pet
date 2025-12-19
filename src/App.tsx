@@ -111,17 +111,13 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="home-header">
-        {/* 顯示商家頭貼 */}
-        {shop?.logoUrl ? (
-          <img src={shop.logoUrl} alt={shop.name} className="user-avatar" />
-        ) : (
-          user?.pictureUrl && (
-            <img
-              src={user.pictureUrl}
-              alt={user.displayName}
-              className="user-avatar"
-            />
-          )
+        {/* 顯示用戶 LINE 頭像 */}
+        {user?.pictureUrl && (
+          <img
+            src={user.pictureUrl}
+            alt={user.displayName}
+            className="user-avatar"
+          />
         )}
 
         <div className="user-info">
