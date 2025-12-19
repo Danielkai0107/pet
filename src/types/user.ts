@@ -8,6 +8,7 @@ export interface User {
   pictureUrl: string;
   email?: string;
   phone?: string;
+  gender?: string; // 性別：'男' | '女'
   createdAt: Timestamp;
   role: "customer" | "admin";
 

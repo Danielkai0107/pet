@@ -8,19 +8,8 @@ import {
   useNavigate,
   Outlet,
 } from "react-router-dom";
-import { Edit2, Check, X } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useShopSettings } from "./hooks/useShopSettings";
-import { useState } from "react";
-import {
-  doc,
-  collection,
-  query,
-  where,
-  getDocs,
-  writeBatch,
-} from "firebase/firestore";
-import { db } from "./lib/firebase";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ServiceHistory } from "./features/appointments/ServiceHistory";
@@ -84,12 +73,6 @@ const Home = () => {
   const { user, loading, error } = useLineAuth();
   const navigate = useNavigate();
 
-  // 編輯模式狀態
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [saving, setSaving] = useState(false);
-
   // Multi-Tenant: 從 LineAuth context 獲取 shopId
   const { shopId } = useLineAuth();
 
@@ -125,80 +108,6 @@ const Home = () => {
     navigate("/booking" + window.location.search);
   };
 
-  // 開始編輯
-  const handleStartEdit = () => {
-    setEditName(user?.displayName || "");
-    setEditPhone(user?.phone || "");
-    setIsEditing(true);
-  };
-
-  // 取消編輯
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditName("");
-    setEditPhone("");
-  };
-
-  // 儲存編輯
-  const handleSaveEdit = async () => {
-    if (!user || !editName.trim()) return;
-
-    // 驗證手機號碼
-    if (editPhone && !/^09[0-9]{8}$/.test(editPhone)) {
-      alert("手機號碼格式不正確（需為 10 位數字且以 09 開頭）");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const isDevelopment = import.meta.env.DEV;
-      const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-
-      if (isDevelopment && !hasFirebaseConfig) {
-        // 開發模式：模擬儲存
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      } else {
-        // 使用 batch 操作確保資料一致性
-        const batch = writeBatch(db);
-
-        // 1. 更新用戶資料
-        const userRef = doc(db, "users", user.uid);
-        batch.set(
-          userRef,
-          {
-            displayName: editName.trim(),
-            phone: editPhone.trim(),
-          },
-          { merge: true }
-        );
-
-        // 2. 查詢並更新該用戶的所有訂單
-        const appointmentsRef = collection(db, "appointments");
-        const q = query(appointmentsRef, where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-
-        // 更新每個訂單的 customerName 和 phone
-        querySnapshot.forEach((docSnapshot) => {
-          batch.update(docSnapshot.ref, {
-            customerName: editName.trim(),
-            phone: editPhone.trim(),
-          });
-        });
-
-        // 執行批次更新
-        await batch.commit();
-      }
-
-      // 重新載入頁面以更新用戶資料
-      alert("儲存成功！");
-      window.location.reload();
-    } catch (error: any) {
-      alert(`儲存失敗：${error.message || "未知錯誤"}`);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
     <div className="home-container">
       <header className="home-header">
@@ -215,62 +124,12 @@ const Home = () => {
           )
         )}
 
-        {!isEditing ? (
-          // 顯示模式
-          <div className="user-info">
-            <h1>嗨，{user?.displayName || "訪客"}</h1>
-            <p className="welcome-text">
-              歡迎回來{shop?.name && `, ${shop.name}`}
-            </p>
-            {user?.phone && <p className="phone-text">{user.phone}</p>}
-          </div>
-        ) : (
-          // 編輯模式
-          <div className="user-info-edit">
-            <input
-              type="text"
-              className="edit-input"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              placeholder="姓名"
-              disabled={saving}
-            />
-            <input
-              type="tel"
-              className="edit-input"
-              value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
-              placeholder="手機號碼（選填）"
-              maxLength={10}
-              disabled={saving}
-            />
-          </div>
-        )}
-
-        {/* 編輯/儲存按鈕 */}
-        <div className="header-actions">
-          {!isEditing ? (
-            <button onClick={handleStartEdit} className="edit-button">
-              <Edit2 size={18} />
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleSaveEdit}
-                className="save-button"
-                disabled={saving || !editName.trim()}
-              >
-                <Check size={18} />
-              </button>
-              <button
-                onClick={handleCancelEdit}
-                className="cancel-button"
-                disabled={saving}
-              >
-                <X size={18} />
-              </button>
-            </>
-          )}
+        <div className="user-info">
+          <h1>嗨，{user?.displayName || "訪客"}</h1>
+          <p className="welcome-text">
+            歡迎回來{shop?.name && `, ${shop.name}`}
+          </p>
+          {user?.phone && <p className="phone-text">{user.phone}</p>}
         </div>
       </header>
 

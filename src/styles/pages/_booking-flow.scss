@@ -269,6 +269,43 @@
         }
       }
 
+      // 性別選擇區域
+      .gender-selection {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      .gender-button {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 48px;
+
+        &:hover {
+          border-color: #f86f03;
+          color: #f86f03;
+        }
+
+        &.selected {
+          border-color: #f86f03;
+          background: #f86f03;
+          color: white;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
       // 照片上傳區域
       .photo-upload-area {
         border: 2px dashed #d1d5db;

@@ -79,6 +79,7 @@ export const AdminWalkInBooking = () => {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [gender, setGender] = useState("");
   const [lineId, setLineId] = useState(""); // LINE ID 可選
   const [foundUserId, setFoundUserId] = useState<string | null>(null); // 找到的用戶 ID
   const [isSearchingUser, setIsSearchingUser] = useState(false); // 查詢中狀態
@@ -352,8 +353,9 @@ export const AdminWalkInBooking = () => {
         const userData = querySnapshot.docs[0].data();
         const userId = querySnapshot.docs[0].id;
 
-        // 自動帶入姓名和 LINE ID
+        // 自動帶入姓名、性別和 LINE ID
         setCustomerName(userData.displayName || "");
+        setGender(userData.gender || "");
         setLineId(userId); // 使用找到的 userId 作為 LINE ID
         setFoundUserId(userId);
 
@@ -364,6 +366,7 @@ export const AdminWalkInBooking = () => {
       } else {
         // 沒有找到用戶，清除之前的資料
         setCustomerName("");
+        setGender("");
         setLineId("");
         setFoundUserId(null);
         setUserPets([]);
@@ -392,6 +395,7 @@ export const AdminWalkInBooking = () => {
       // 清除之前找到的用戶資料
       if (foundUserId) {
         setCustomerName("");
+        setGender("");
         setLineId("");
         setFoundUserId(null);
         setUserPets([]);
@@ -404,6 +408,11 @@ export const AdminWalkInBooking = () => {
     e.preventDefault();
 
     if (!validatePhone(phone)) {
+      return;
+    }
+
+    if (!gender) {
+      toast.error("請選擇性別");
       return;
     }
 
@@ -632,6 +641,30 @@ export const AdminWalkInBooking = () => {
                         : {}
                     }
                   />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">性別 *</label>
+                  <div className="gender-selection">
+                    <button
+                      type="button"
+                      onClick={() => setGender("男")}
+                      className={`gender-button ${
+                        gender === "男" ? "selected" : ""
+                      }`}
+                    >
+                      男
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGender("女")}
+                      className={`gender-button ${
+                        gender === "女" ? "selected" : ""
+                      }`}
+                    >
+                      女
+                    </button>
+                  </div>
                 </div>
               </form>
             )}
@@ -934,7 +967,7 @@ export const AdminWalkInBooking = () => {
               {step === 1 && (
                 <button
                   onClick={handleStep1Submit}
-                  disabled={!customerName || !phone}
+                  disabled={!customerName || !phone || !gender}
                   className="btn btn-primary btn-full"
                 >
                   下一步

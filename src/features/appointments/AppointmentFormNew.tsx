@@ -43,6 +43,7 @@ export const AppointmentFormNew = () => {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [gender, setGender] = useState("");
 
   // Step 2: 寵物資料
   const [petName, setPetName] = useState("");
@@ -66,7 +67,7 @@ export const AppointmentFormNew = () => {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // 自動填入用戶之前保存的飼主資料
+  // 自動填入用戶之前保存的飼主資料（只在首次載入時執行一次）
   useEffect(() => {
     if (user) {
       // 如果用戶有保存過飼主姓名和手機號碼，自動填入
@@ -76,8 +77,12 @@ export const AppointmentFormNew = () => {
       if (user.phone && !phone) {
         setPhone(user.phone);
       }
+      if (user.gender && !gender) {
+        setGender(user.gender);
+      }
     }
-  }, [user, customerName, phone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // 只依賴 user，避免輸入時重複觸發
 
   // 當日期改變時，清空已選擇的時間
   useEffect(() => {
@@ -301,8 +306,14 @@ export const AppointmentFormNew = () => {
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 只在手機號碼不是唯讀狀態時驗證（第一次填寫）
-    if (!user?.phone && !validatePhone(phone)) {
+    // 驗證手機號碼
+    if (!validatePhone(phone)) {
+      return;
+    }
+
+    // 驗證性別
+    if (!gender) {
+      toast.error("請選擇性別");
       return;
     }
 
@@ -349,6 +360,7 @@ export const AppointmentFormNew = () => {
               uid: user.uid,
               displayName: customerName,
               phone: phone,
+              gender: gender,
               pictureUrl: user.pictureUrl || "",
               createdAt: Timestamp.now(),
               role: "customer",
@@ -501,20 +513,7 @@ export const AppointmentFormNew = () => {
             id="step1-form"
           >
             <div className="form-group">
-              <label className="form-label">
-                飼主姓名
-                {user?.displayName && (
-                  <span
-                    style={{
-                      fontSize: "0.875rem",
-                      color: "#6b7280",
-                      marginLeft: "0.5rem",
-                    }}
-                  >
-                    （如需修改請至首頁）
-                  </span>
-                )}
-              </label>
+              <label className="form-label">飼主姓名 *</label>
               <input
                 type="text"
                 required
@@ -522,30 +521,11 @@ export const AppointmentFormNew = () => {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="您的稱呼"
-                readOnly={!!user?.displayName}
-                style={
-                  user?.displayName
-                    ? { backgroundColor: "#f3f4f6", cursor: "not-allowed" }
-                    : {}
-                }
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                手機號碼
-                {user?.phone && (
-                  <span
-                    style={{
-                      fontSize: "0.875rem",
-                      color: "#6b7280",
-                      marginLeft: "0.5rem",
-                    }}
-                  >
-                    （如需修改請至首頁）
-                  </span>
-                )}
-              </label>
+              <label className="form-label">手機號碼 *</label>
               <input
                 type="tel"
                 required
@@ -555,14 +535,8 @@ export const AppointmentFormNew = () => {
                 onChange={handlePhoneChange}
                 placeholder="0912345678"
                 maxLength={10}
-                readOnly={!!user?.phone}
-                style={
-                  user?.phone
-                    ? { backgroundColor: "#f3f4f6", cursor: "not-allowed" }
-                    : {}
-                }
               />
-              {phoneError && !user?.phone && (
+              {phoneError && (
                 <div
                   style={{
                     color: "#ef4444",
@@ -573,6 +547,30 @@ export const AppointmentFormNew = () => {
                   {phoneError}
                 </div>
               )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">性別 *</label>
+              <div className="gender-selection">
+                <button
+                  type="button"
+                  onClick={() => setGender("男")}
+                  className={`gender-button ${
+                    gender === "男" ? "selected" : ""
+                  }`}
+                >
+                  男
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender("女")}
+                  className={`gender-button ${
+                    gender === "女" ? "selected" : ""
+                  }`}
+                >
+                  女
+                </button>
+              </div>
             </div>
           </form>
         )}
@@ -882,7 +880,7 @@ export const AppointmentFormNew = () => {
             <button
               type="submit"
               form="step1-form"
-              disabled={!customerName || !phone}
+              disabled={!customerName || !phone || !gender}
               className="btn btn-primary btn-full"
             >
               下一步
