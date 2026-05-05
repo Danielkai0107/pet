@@ -75,6 +75,35 @@ export async function pushLineText(opts: {
   }
 }
 
+/** Push a Flex message bubble (or carousel) to a LINE user. */
+export async function pushLineFlex(opts: {
+  to: string;
+  altText: string;
+  bubble: Record<string, unknown>;
+  channelAccessToken: string;
+}) {
+  const res = await fetch("https://api.line.me/v2/bot/message/push", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${opts.channelAccessToken}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      to: opts.to,
+      messages: [
+        {
+          type: "flex",
+          altText: opts.altText,
+          contents: opts.bubble,
+        },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`line flex push failed: ${res.status} ${await res.text()}`);
+  }
+}
+
 /** Reply to a LINE webhook event. */
 export async function replyLineText(opts: {
   replyToken: string;

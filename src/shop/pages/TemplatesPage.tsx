@@ -7,7 +7,12 @@ import type { NotificationKind, NotificationTemplate } from "@/lib/types";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { PageHeader } from "@/shop/components/PageHeader";
 
-const KIND_LABEL: Record<NotificationKind, string> = {
+// Subset of NotificationKind that maps to editable email templates.
+// `checked_in` / `checked_out` are LINE-only push events so they don't
+// appear here.
+type EmailKind = Exclude<NotificationKind, "checked_in" | "checked_out">;
+
+const KIND_LABEL: Record<EmailKind, string> = {
   booking_received: "預約收到（自動寄給消費者）",
   booking_confirmed: "預約已確認（您按下確認時寄出）",
   booking_declined: "預約已拒絕（您按下拒絕時寄出）",
@@ -20,7 +25,7 @@ interface DefaultTemplate {
   body: string;
 }
 
-const DEFAULTS: Record<NotificationKind, DefaultTemplate> = {
+const DEFAULTS: Record<EmailKind, DefaultTemplate> = {
   booking_received: {
     subject: "【{{shop_name}}】已收到您的預約 {{booking_code}}",
     body: `您好 {{guest_name}}：
@@ -99,7 +104,7 @@ const DEFAULTS: Record<NotificationKind, DefaultTemplate> = {
   },
 };
 
-const KINDS: NotificationKind[] = [
+const KINDS: EmailKind[] = [
   "booking_received",
   "booking_confirmed",
   "booking_declined",
@@ -124,9 +129,7 @@ export function ShopTemplatesPage() {
   const { shop } = useShopAuth();
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeKind, setActiveKind] = useState<NotificationKind>(
-    "booking_received",
-  );
+  const [activeKind, setActiveKind] = useState<EmailKind>("booking_received");
   const [draft, setDraft] = useState<{ subject: string; body: string }>({
     subject: "",
     body: "",

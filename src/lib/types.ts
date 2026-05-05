@@ -25,7 +25,9 @@ export type NotificationKind =
   | "booking_confirmed"
   | "booking_declined"
   | "booking_reminder"
-  | "booking_cancelled";
+  | "booking_cancelled"
+  | "checked_in"
+  | "checked_out";
 
 export type AdminRole = "admin" | "super_admin";
 

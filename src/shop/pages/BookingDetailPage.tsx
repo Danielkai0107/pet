@@ -24,6 +24,7 @@ import {
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { Booking, BookingStatus, PetSize, PetType, Room } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
+import { sendBookingLine } from "@/lib/notify";
 import { PageHeader } from "@/shop/components/PageHeader";
 
 export function ShopBookingDetailPage() {
@@ -74,10 +75,12 @@ export function ShopBookingDetailPage() {
       | "cancelled_at"
       | "checked_in_at"
       | "checked_out_at",
-    emailKind?:
+    notifyKind?:
       | "booking_confirmed"
       | "booking_declined"
       | "booking_cancelled"
+      | "checked_in"
+      | "checked_out"
       | null,
   ) => {
     if (!booking) return;
@@ -93,8 +96,19 @@ export function ShopBookingDetailPage() {
       toast.error(formatSupabaseError(error));
       return;
     }
-    if (emailKind) {
-      void sendBookingEmail({ bookingId: booking.id, kind: emailKind }).catch(
+    if (notifyKind) {
+      // Email only for the lifecycle events that warrant a long-form
+      // notification (skip for check-in / check-out — LINE-only).
+      if (
+        notifyKind === "booking_confirmed" ||
+        notifyKind === "booking_declined" ||
+        notifyKind === "booking_cancelled"
+      ) {
+        void sendBookingEmail({ bookingId: booking.id, kind: notifyKind }).catch(
+          () => undefined,
+        );
+      }
+      void sendBookingLine({ bookingId: booking.id, kind: notifyKind }).catch(
         () => undefined,
       );
     }
@@ -234,7 +248,9 @@ export function ShopBookingDetailPage() {
             <button
               className="btn-primary"
               disabled={busy}
-              onClick={() => updateStatus("checked_in", "checked_in_at", null)}
+              onClick={() =>
+                updateStatus("checked_in", "checked_in_at", "checked_in")
+              }
             >
               <LogIn className="h-4 w-4" />
               標記入住
@@ -244,7 +260,9 @@ export function ShopBookingDetailPage() {
             <button
               className="btn-primary"
               disabled={busy}
-              onClick={() => updateStatus("checked_out", "checked_out_at", null)}
+              onClick={() =>
+                updateStatus("checked_out", "checked_out_at", "checked_out")
+              }
             >
               <LogOut className="h-4 w-4" />
               標記退房

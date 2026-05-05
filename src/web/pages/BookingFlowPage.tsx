@@ -11,6 +11,7 @@ import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetSize, PetType, Room, RoomAvailabilityDay } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
+import { sendBookingLine } from "@/lib/notify";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { DateRangePicker } from "@/web/components/DateRangePicker";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
@@ -236,7 +237,8 @@ export function BookingFlowPage() {
 
     // In LIFF: implicitly bind this LINE user to the booking's phone/email,
     // so this booking + any past web bookings with the same phone show up
-    // on the user's "我的訂單" page.
+    // on the user's "我的訂單" page. We must await this before firing the
+    // LINE notify so notify-line can resolve a line_user_id.
     if (isLiff && liffAuth?.idToken) {
       try {
         await supabase.functions.invoke("line-claim-booking", {
@@ -247,13 +249,18 @@ export function BookingFlowPage() {
             bookingId: created.booking_id,
           },
         });
-        // Refresh customer in context so subsequent pages see the new
-        // phone/email and skip the "需要綁定" gate.
         void liffAuth.refresh().catch(() => undefined);
       } catch (e) {
         console.warn("[booking] line-claim-booking failed", e);
       }
     }
+
+    // Push the "已收到預約" Flex card. Server no-ops if there's still no
+    // bound LINE user (e.g. guest-only web booking).
+    void sendBookingLine({
+      bookingId: created.booking_id,
+      kind: "booking_received",
+    }).catch(() => undefined);
 
     toast.success("預約已送出！");
     navigate(`${bookingSuccessPrefix}/${created.booking_code}`);
