@@ -2,7 +2,6 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Bed,
-  ChevronLeft,
   MapPin,
   PawPrint,
   Phone,
@@ -79,15 +78,14 @@ export function ShopDetailPage() {
     <div className="bg-white pb-28 sm:pb-12">
       <div
         className={
-          "mx-auto max-w-5xl px-4 pt-3 sm:pt-5" +
+          "mx-auto max-w-5xl px-4 pt-3 text-center sm:pt-5" +
           (isLiff ? " pt-[max(env(safe-area-inset-top),12px)]" : "")
         }
       >
         <Link
           to={homeHref}
-          className="inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700"
+          className="text-xs text-neutral-500 hover:text-neutral-700"
         >
-          <ChevronLeft className="h-3.5 w-3.5" />
           回首頁
         </Link>
       </div>
