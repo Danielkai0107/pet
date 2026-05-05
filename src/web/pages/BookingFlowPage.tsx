@@ -291,11 +291,11 @@ export function BookingFlowPage() {
 
   return (
     <div className="bg-white pb-28 sm:pb-12">
-      {/* 頂部：只放步驟指示。返回行為改放底部 bar 的 outline 按鈕，
+      {/* 頂部：只放步驟指示。不放底線，讓 content 區無上下邊框。
           LIFF 加上安全區留白避免被 LINE 狀態列遮住。 */}
       <div
         className={
-          "sticky top-0 z-20 border-b border-neutral-200 bg-white" +
+          "sticky top-0 z-20 bg-white" +
           (isLiff ? " pt-[max(env(safe-area-inset-top),0px)]" : "")
         }
       >
@@ -653,7 +653,7 @@ function Steps({ step }: { step: Step }) {
           />
         ))}
       </div>
-      <div className="mt-2 flex justify-between text-[11px] font-medium">
+      <div className="mt-3 flex justify-between text-sm font-medium">
         {order.map((o, i) => (
           <span
             key={o.key}

@@ -83,7 +83,7 @@ export function ShopDetailPage() {
         }
       >
         <Link to={homeHref} className="btn-secondary">
-          回首頁
+          返回
         </Link>
       </div>
       <div className="mx-auto max-w-5xl px-4 pt-3 sm:pt-4">
