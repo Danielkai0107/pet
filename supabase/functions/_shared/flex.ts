@@ -82,129 +82,119 @@ export function buildBookingBubble(
 ): Record<string, unknown> {
   const meta = META[kind];
 
-  return {
+  const bubble: Record<string, unknown> = {
     type: "bubble",
     size: "kilo",
-    hero: buildHero(meta.statusLabel, vars),
-    body: buildBody(vars),
-    footer: buildFooter(meta.cta, vars),
+    body: buildBody(meta.statusLabel, vars),
+  };
+  const hero = buildHero(vars);
+  if (hero) bubble.hero = hero;
+  const footer = buildFooter(meta.cta, vars);
+  if (footer) bubble.footer = footer;
+  return bubble;
+}
+
+/** Hero：純商家封面圖 banner，比例 5:1；無封面則回 undefined（由 body 接手）。 */
+function buildHero(vars: FlexBookingVars): Record<string, unknown> | undefined {
+  if (!vars.shopCoverUrl) return undefined;
+  return {
+    type: "image",
+    url: vars.shopCoverUrl,
+    size: "full",
+    aspectRatio: "5:1",
+    aspectMode: "cover",
   };
 }
 
-/** Hero：商家封面圖 + 左上狀態 pill + 底部半透明黑底 + 店名 / 地址。 */
-function buildHero(
+/**
+ * Body：
+ *   - 第 1 行：狀態 pill（Airbnb 軟調 brand-50 + brand-700 字）
+ *   - 第 2 行：店名（lg bold）
+ *   - 第 3 行：地址（xs slate-500，可省略）
+ *   - separator
+ *   - 訂單編號 + 5 個 row 資料表 + 費用（slate-900 加粗）
+ */
+function buildBody(
   statusLabel: string,
   vars: FlexBookingVars,
 ): Record<string, unknown> {
-  // 狀態 pill — Airbnb 軟調 brand-50 + brand-700 字
-  const pill: Record<string, unknown> = {
-    type: "box",
-    layout: "vertical",
-    position: "absolute",
-    offsetTop: "12px",
-    offsetStart: "12px",
-    backgroundColor: BRAND_50,
-    cornerRadius: "md",
-    paddingTop: "5px",
-    paddingBottom: "5px",
-    paddingStart: "10px",
-    paddingEnd: "10px",
-    contents: [
-      {
-        type: "text",
-        text: statusLabel,
-        color: BRAND_700,
-        weight: "bold",
-        size: "xs",
-      },
-    ],
-  };
-
-  // 店名 + 地址 — 底部半透明黑底；圖片上的標題用白字可讀性最佳
-  const titleBar: Record<string, unknown> = {
-    type: "box",
-    layout: "vertical",
-    position: "absolute",
-    offsetBottom: "0px",
-    offsetStart: "0px",
-    offsetEnd: "0px",
-    backgroundColor: "#000000B3",
-    paddingTop: "12px",
-    paddingBottom: "12px",
-    paddingStart: "16px",
-    paddingEnd: "16px",
-    contents: [
-      {
-        type: "text",
-        text: vars.shopName,
-        color: "#FFFFFF",
-        weight: "bold",
-        size: "lg",
-        wrap: true,
-        maxLines: 1,
-      },
-      ...(vars.shopAddress
-        ? [
-            {
-              type: "text",
-              text: vars.shopAddress,
-              color: "#FFFFFFCC",
-              size: "xs",
-              margin: "xs",
-              wrap: true,
-              maxLines: 1,
-            },
-          ]
-        : []),
-    ],
-  };
-
-  if (vars.shopCoverUrl) {
-    return {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "0px",
-      contents: [
-        {
-          type: "image",
-          url: vars.shopCoverUrl,
-          size: "full",
-          aspectRatio: "20:13",
-          aspectMode: "cover",
-        },
-        pill,
-        titleBar,
-      ],
-    };
+  const headerContents: Record<string, unknown>[] = [
+    statusPill(statusLabel),
+    {
+      type: "text",
+      text: vars.shopName,
+      weight: "bold",
+      size: "lg",
+      color: SLATE_900,
+      wrap: true,
+      maxLines: 2,
+      margin: "md",
+    },
+  ];
+  if (vars.shopAddress) {
+    headerContents.push({
+      type: "text",
+      text: vars.shopAddress,
+      size: "xs",
+      color: SLATE_500,
+      wrap: true,
+      maxLines: 2,
+      margin: "xs",
+    });
   }
 
-  // Fallback：沒有封面圖 → 黑底白字（呼應「白為主、不用大彩色塊」）
-  return {
-    type: "box",
-    layout: "vertical",
-    backgroundColor: "#111111",
-    paddingAll: "0px",
-    height: "150px",
-    contents: [pill, titleBar],
-  };
-}
-
-/** Body：訂單編號 + 6 個 row 資料表；費用一律 slate-900 加粗（價格永遠黑色） */
-function buildBody(vars: FlexBookingVars): Record<string, unknown> {
   return {
     type: "box",
     layout: "vertical",
     paddingAll: "20px",
     spacing: "md",
     contents: [
-      row("訂單編號", vars.bookingCode, SLATE_900, true),
+      {
+        type: "box",
+        layout: "vertical",
+        contents: headerContents,
+      },
       { type: "separator", color: SLATE_200 },
+      row("訂單編號", vars.bookingCode, SLATE_900, true),
       row("入住", fmtDate(vars.checkInDate)),
       row("退房", fmtDate(vars.checkOutDate)),
       row("夜數", `${vars.nights} 晚`),
       row("房型", vars.roomName),
       row("寵物", vars.petName),
       row("費用", fmtMoney(vars.totalPrice), SLATE_900, true),
+    ],
+  };
+}
+
+/** 狀態 pill — 自包成 inline 小色塊，可放在 body 開頭。 */
+function statusPill(label: string): Record<string, unknown> {
+  // 用 horizontal box + 留白手法做出 inline pill 視覺
+  return {
+    type: "box",
+    layout: "horizontal",
+    contents: [
+      {
+        type: "box",
+        layout: "vertical",
+        backgroundColor: BRAND_50,
+        cornerRadius: "md",
+        paddingTop: "5px",
+        paddingBottom: "5px",
+        paddingStart: "10px",
+        paddingEnd: "10px",
+        flex: 0,
+        contents: [
+          {
+            type: "text",
+            text: label,
+            color: BRAND_700,
+            weight: "bold",
+            size: "xs",
+          },
+        ],
+      },
+      // 用一個 filler 把 pill 推到左邊
+      { type: "filler" },
     ],
   };
 }
