@@ -24,24 +24,34 @@ export function BookingSuccessPage() {
         </p>
 
         {isLiff ? (
-          <Link to="/liff" className="btn-primary mt-6 w-full">
-            查看我的訂單
-          </Link>
-        ) : (
-          LINE_ADD_FRIEND_URL && (
-            <a
-              href={LINE_ADD_FRIEND_URL}
-              target="_blank"
-              rel="noreferrer"
+          <>
+            <Link
+              to={`/liff/booking/${code}`}
               className="btn-primary mt-6 w-full"
             >
-              加入 {PLATFORM_NAME} LINE 追蹤訂單
-            </a>
-          )
+              查看訂單詳情
+            </Link>
+            <Link to="/liff" className="btn-ghost mt-2 w-full">
+              我的所有訂單
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to={`/booking/${code}`} className="btn-primary mt-6 w-full">
+              查看訂單詳情
+            </Link>
+            {LINE_ADD_FRIEND_URL && (
+              <a
+                href={LINE_ADD_FRIEND_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-ghost mt-2 w-full"
+              >
+                加入 {PLATFORM_NAME} LINE 追蹤訂單
+              </a>
+            )}
+          </>
         )}
-        <Link to={isLiff ? "/liff/discover" : "/"} className="btn-ghost mt-2 w-full">
-          {isLiff ? "繼續找其他旅館" : "回首頁"}
-        </Link>
       </div>
     </div>
   );

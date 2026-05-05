@@ -1,4 +1,5 @@
-import { Calendar, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Calendar, ChevronRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/Badge";
 import { fmtDate, fmtMoney } from "@/lib/format";
 import {
@@ -9,7 +10,10 @@ import type { LineBookingWithRefs } from "@/liff/hooks/useLineOrders";
 
 export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
   return (
-    <article className="card overflow-hidden">
+    <Link
+      to={`/liff/booking/${booking.code}`}
+      className="card block overflow-hidden transition-all hover:shadow-md"
+    >
       <div className="flex items-start gap-3 p-4">
         <div
           className="h-14 w-14 shrink-0 rounded-xl bg-slate-100 bg-cover bg-center"
@@ -38,6 +42,7 @@ export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
             </p>
           )}
         </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
       </div>
       <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-3 text-xs">
         <div className="flex items-center gap-2 text-slate-600">
@@ -54,6 +59,6 @@ export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
           <strong className="text-brand-700">{fmtMoney(booking.total_price)}</strong>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

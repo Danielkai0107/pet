@@ -91,6 +91,8 @@ Deno.serve(async (req: Request) => {
 
   const tpl = customTpl ?? DEFAULT_TEMPLATES[kind];
   const lineUrl = Deno.env.get("LINE_ADD_FRIEND_URL") ?? "";
+  const siteUrl = (Deno.env.get("PUBLIC_SITE_URL") ?? "").replace(/\/$/, "");
+  const detailUrl = siteUrl ? `${siteUrl}/booking/${booking.code}` : "";
   const vars: Record<string, string | number> = {
     shop_name: shop?.name ?? "",
     booking_code: booking.code,
@@ -102,6 +104,7 @@ Deno.serve(async (req: Request) => {
     nights: booking.nights,
     total_price: booking.total_price,
     line_add_friend_url: lineUrl,
+    booking_detail_url: detailUrl,
   };
 
   const subject = fillTemplate(tpl.subject, vars);

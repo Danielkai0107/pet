@@ -39,6 +39,11 @@ const BookingSuccessPage = lazy(() =>
     default: m.BookingSuccessPage,
   })),
 );
+const BookingViewPage = lazy(() =>
+  import("@/web/pages/BookingViewPage").then((m) => ({
+    default: m.BookingViewPage,
+  })),
+);
 const NotFoundPage = lazy(() =>
   import("@/web/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
 );
@@ -201,6 +206,9 @@ export default function App() {
                 path="/booking/success/:code"
                 element={<BookingSuccessPage />}
               />
+              {/* 任何拿到訂單代碼的人（從 email/簡訊連結）都可以查看詳情。
+                  code 本身就是 unguessable bearer token。 */}
+              <Route path="/booking/:code" element={<BookingViewPage />} />
             </Route>
 
             {/* Shop admin: shared auth context */}
@@ -245,6 +253,10 @@ export default function App() {
               <Route
                 path="/liff/booking/success/:code"
                 element={<BookingSuccessPage />}
+              />
+              <Route
+                path="/liff/booking/:code"
+                element={<BookingViewPage />}
               />
             </Route>
             <Route path="/liff/bind" element={<LiffBindPage />} />

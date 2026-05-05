@@ -17,6 +17,7 @@ export const DEFAULT_TEMPLATES: Record<NotificationKind, Tpl> = {
     body:
       "您好 {{guest_name}}：\n\n我們已收到您的預約申請，正在處理中：\n\n" +
       "訂單編號：{{booking_code}}\n寵物：{{pet_name}}\n入住：{{check_in_date}}\n退房：{{check_out_date}}\n房型：{{room_name}}\n\n" +
+      "查看訂單詳情 / 取消預約：\n{{booking_detail_url}}\n\n" +
       "我們會盡快與您聯繫確認，謝謝！\n\n— {{shop_name}}",
   },
   booking_confirmed: {
@@ -24,6 +25,7 @@ export const DEFAULT_TEMPLATES: Record<NotificationKind, Tpl> = {
     body:
       "您好 {{guest_name}}：\n\n您的預約已確認！\n\n" +
       "訂單編號：{{booking_code}}\n寵物：{{pet_name}}\n入住：{{check_in_date}}\n退房：{{check_out_date}}\n房型：{{room_name}}\n費用：NT$ {{total_price}}\n\n" +
+      "查看訂單詳情：\n{{booking_detail_url}}\n\n" +
       "加入我們的官方 LINE 即可隨時追蹤訂單狀態：\n{{line_add_friend_url}}\n\n期待迎接 {{pet_name}}！\n\n— {{shop_name}}",
   },
   booking_declined: {
@@ -38,6 +40,7 @@ export const DEFAULT_TEMPLATES: Record<NotificationKind, Tpl> = {
     body:
       "您好 {{guest_name}}：\n\n提醒您，{{pet_name}} 將於明天入住：\n\n" +
       "入住：{{check_in_date}}\n房型：{{room_name}}\n\n" +
+      "查看訂單詳情：\n{{booking_detail_url}}\n\n" +
       "請別忘了攜帶疫苗證明與飼料，明天見！\n\n— {{shop_name}}",
   },
   booking_cancelled: {

@@ -122,6 +122,7 @@ const VARIABLES = [
   "{{check_out_date}}",
   "{{total_price}}",
   "{{nights}}",
+  "{{booking_detail_url}}",
   "{{line_add_friend_url}}",
 ];
 

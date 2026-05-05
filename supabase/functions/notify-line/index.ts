@@ -144,10 +144,16 @@ Deno.serve(async (req: Request) => {
     .eq("id", booking.room_id)
     .maybeSingle<{ name: string }>();
 
+  // CTA deeplink — points straight to the booking detail page inside LIFF.
+  // Requires LIFF Endpoint URL in LINE Console to be set to
+  // `https://<your-domain>/liff/`; LIFF then appends `booking/<code>` to
+  // produce `/liff/booking/<code>` which renders BookingViewPage with the
+  // bottom "取消預約" CTA.
   const liffId = Deno.env.get("LIFF_ID");
   const detailUrl = liffId
-    ? `https://liff.line.me/${liffId}`
-    : Deno.env.get("LIFF_BIND_URL") ?? undefined;
+    ? `https://liff.line.me/${liffId}/booking/${booking.code}`
+    : (Deno.env.get("PUBLIC_SITE_URL") ?? "").replace(/\/$/, "") +
+      `/booking/${booking.code}`;
 
   const bubble = buildBookingBubble(body.kind, {
     shopName: shop?.name ?? "(店家)",
