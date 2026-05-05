@@ -14,6 +14,7 @@ import { sendBookingEmail } from "@/lib/email";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { DateRangePicker } from "@/web/components/DateRangePicker";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
+import { useOptionalLiffAuth } from "@/liff/auth/useOptionalLiffAuth";
 
 type Step = "dates" | "room" | "guest" | "review";
 
@@ -45,7 +46,8 @@ export function BookingFlowPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { data, loading, error } = useShopBySlug(slug);
-  const { shopPrefix, bookingSuccessPrefix } = useRoutePrefix();
+  const { shopPrefix, bookingSuccessPrefix, isLiff } = useRoutePrefix();
+  const liffAuth = useOptionalLiffAuth();
 
   const [step, setStep] = useState<Step>("dates");
   const [checkIn, setCheckIn] = useState<string | null>(null);
@@ -53,6 +55,17 @@ export function BookingFlowPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [guest, setGuest] = useState<GuestForm>(initialGuest);
   const [submitting, setSubmitting] = useState(false);
+
+  // Pre-fill guest form from the LINE customer record once it loads.
+  useEffect(() => {
+    if (!isLiff || !liffAuth?.customer) return;
+    setGuest((g) => ({
+      ...g,
+      guest_name: g.guest_name || liffAuth.profile?.displayName || "",
+      guest_email: g.guest_email || liffAuth.customer?.email || "",
+      guest_phone: g.guest_phone || liffAuth.customer?.phone || "",
+    }));
+  }, [isLiff, liffAuth?.customer, liffAuth?.profile?.displayName]);
 
   // Per-room availability map for next 3 months
   const [availabilityByRoom, setAvailabilityByRoom] = useState<
@@ -220,6 +233,27 @@ export function BookingFlowPage() {
       bookingId: created.booking_id,
       kind: "booking_received",
     }).catch(() => undefined);
+
+    // In LIFF: implicitly bind this LINE user to the booking's phone/email,
+    // so this booking + any past web bookings with the same phone show up
+    // on the user's "我的訂單" page.
+    if (isLiff && liffAuth?.idToken) {
+      try {
+        await supabase.functions.invoke("line-claim-booking", {
+          body: {
+            idToken: liffAuth.idToken,
+            phone: guest.guest_phone,
+            email: guest.guest_email,
+            bookingId: created.booking_id,
+          },
+        });
+        // Refresh customer in context so subsequent pages see the new
+        // phone/email and skip the "需要綁定" gate.
+        void liffAuth.refresh().catch(() => undefined);
+      } catch (e) {
+        console.warn("[booking] line-claim-booking failed", e);
+      }
+    }
 
     toast.success("預約已送出！");
     navigate(`${bookingSuccessPrefix}/${created.booking_code}`);
