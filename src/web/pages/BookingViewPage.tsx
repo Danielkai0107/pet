@@ -8,7 +8,6 @@ import {
   MapPin,
   PawPrint,
   Phone,
-  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
@@ -315,7 +314,6 @@ export function BookingViewPage() {
             className="btn-secondary justify-center"
           >
             再次預約 {booking.shop_name}
-            <ArrowRight className="h-4 w-4" />
           </Link>
           {canCancel && (
             <button
@@ -324,14 +322,14 @@ export function BookingViewPage() {
               disabled={cancelling}
               className="btn-danger justify-center"
             >
-              {cancelling ? <Spinner size="sm" /> : <X className="h-4 w-4" />}
+              {cancelling && <Spinner size="sm" />}
               取消預約
             </button>
           )}
         </div>
       </div>
 
-      {/* mobile sticky 操作列 */}
+      {/* mobile sticky 操作列：純文字按鈕，不放 icon */}
       <div className="sticky-bottom-bar sm:hidden">
         <div className="flex items-center gap-2">
           {canCancel ? (
@@ -348,7 +346,7 @@ export function BookingViewPage() {
                 disabled={cancelling}
                 className="btn-danger flex-1 justify-center"
               >
-                {cancelling ? <Spinner size="sm" /> : <X className="h-4 w-4" />}
+                {cancelling && <Spinner size="sm" />}
                 取消預約
               </button>
             </>
@@ -358,7 +356,6 @@ export function BookingViewPage() {
               className="btn-primary flex-1 justify-center"
             >
               再次預約 {booking.shop_name}
-              <ArrowRight className="h-4 w-4" />
             </Link>
           )}
         </div>

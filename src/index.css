@@ -88,10 +88,11 @@
 
   /* ============== Sticky bottom bar (mobile) ==============
    * 預約頁、訂單詳情：mobile 釘底，桌機隱藏。
+   * mobile 上下都加 12px 額外 breathing 空間，避免按鈕貼太緊。
    */
   .sticky-bottom-bar {
-    @apply fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200 bg-white px-4 pt-3 sm:static sm:border-0 sm:bg-transparent sm:p-0;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    @apply fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200 bg-white px-4 pt-4 sm:static sm:border-0 sm:bg-transparent sm:p-0;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.75rem);
   }
   @media (min-width: 640px) {
     .sticky-bottom-bar {

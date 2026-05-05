@@ -245,24 +245,24 @@ export function ShopDetailPage() {
         </div>
       </div>
 
-      {/* mobile sticky bottom 預約 bar */}
+      {/* mobile sticky bottom 預約 bar：
+          參考 Airbnb mobile：左側價格大、底色帶下劃線；右側按鈕僅佔需要寬度。 */}
       <div className="sticky-bottom-bar sm:hidden">
         <div className="flex items-center justify-between gap-3">
-          <div className="leading-none">
+          <div className="min-w-0 leading-none">
             {minPrice !== null ? (
               <>
-                <p className="text-base font-bold text-neutral-900">
+                <p className="text-xl font-bold text-neutral-900 underline decoration-neutral-900 underline-offset-4">
                   {fmtMoney(minPrice)}
                 </p>
-                <p className="mt-0.5 text-[11px] text-neutral-500">/ 晚起</p>
+                <p className="mt-1.5 text-[11px] text-neutral-500">/ 晚起</p>
               </>
             ) : (
               <span className="text-xs text-neutral-500">尚無房型</span>
             )}
           </div>
-          <Link to={bookHref} className="btn-primary flex-1 justify-center">
-            選擇日期 預約
-            <ArrowRight className="h-4 w-4" />
+          <Link to={bookHref} className="btn-primary shrink-0 px-6">
+            預訂
           </Link>
         </div>
       </div>

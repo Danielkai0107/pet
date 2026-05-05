@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { addDays, addMonths, format, parseISO } from "date-fns";
-import { ArrowLeft, ArrowRight, Bed, Info, PawPrint } from "lucide-react";
+import { Bed, Info, PawPrint } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
@@ -291,23 +291,15 @@ export function BookingFlowPage() {
 
   return (
     <div className="bg-white pb-28 sm:pb-12">
-      {/* 頂部：返回 + 步驟指示（LIFF 加上安全區留白避免被 LINE 狀態列遮住） */}
+      {/* 頂部：只放步驟指示。返回行為改放底部 bar 的 outline 按鈕，
+          LIFF 加上安全區留白避免被 LINE 狀態列遮住。 */}
       <div
         className={
           "sticky top-0 z-20 border-b border-neutral-200 bg-white" +
           (isLiff ? " pt-[max(env(safe-area-inset-top),0px)]" : "")
         }
       >
-        <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
-          <Link
-            to={`${shopPrefix}/${slug}`}
-            className="inline-flex min-w-0 items-center gap-1.5 text-sm text-neutral-700 hover:text-neutral-900"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" />
-            <span className="truncate">{data.shop.name}</span>
-          </Link>
-        </div>
-        <div className="mx-auto max-w-2xl px-4 pb-3">
+        <div className="mx-auto max-w-2xl px-4 py-4">
           <Steps step={step} />
         </div>
       </div>
@@ -596,21 +588,29 @@ export function BookingFlowPage() {
         )}
       </div>
 
-      {/* sticky 底部按鈕：mobile 釘底，desktop 為一般 inline 區 */}
+      {/* sticky 底部按鈕：mobile 釘底，desktop 為一般 inline 區。
+          第一步顯示「返回」(回到商家頁)，其它步驟顯示「上一步」。
+          所有按鈕不放 icon，文字導向。 */}
       <div className="sticky-bottom-bar mt-8">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
-          {step !== "dates" ? (
+          {step === "dates" ? (
+            <Link
+              to={`${shopPrefix}/${slug}`}
+              className="btn-secondary"
+            >
+              返回
+            </Link>
+          ) : (
             <button className="btn-secondary" onClick={goBack}>
-              <ArrowLeft className="h-4 w-4" />
               上一步
             </button>
-          ) : (
-            <span />
           )}
           {step !== "review" ? (
-            <button className="btn-primary flex-1 justify-center" onClick={goNext}>
+            <button
+              className="btn-primary flex-1 justify-center"
+              onClick={goNext}
+            >
               下一步
-              <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button

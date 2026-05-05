@@ -3,7 +3,6 @@ import { Calendar, ChevronDown, MapPin, PawPrint, Search, Wallet, X } from "luci
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
 import { LiffGate } from "@/liff/components/LiffGate";
-import { LiffHeader } from "@/liff/components/LiffHeader";
 import {
   emptyFilters,
   useShopSearch,
@@ -16,7 +15,7 @@ import { cn } from "@/lib/cn";
 
 /**
  * LIFF 找寵物旅館頁 — Mobile-first 簡化搜尋：
- *   - 頂部 LiffHeader 標題與副標
+ *   - 直接以搜尋元件為頁首，不重複呈現標題副標（LIFF Tab 已標示頁面為「找飯店」）
  *   - 主要篩選列只露兩個：城市 + 寵物類型（最常用）
  *   - 「進階篩選」可摺疊展開日期 / 預算 / 清除
  *   - 結果單欄列表（mobile 主視覺）
@@ -35,13 +34,8 @@ function DiscoverContent() {
   };
 
   return (
-    <div className="bg-white pb-12">
-      <LiffHeader
-        title="找寵物旅館"
-        description="搜尋並預約合作旅館，預約後會自動歸戶到此 LINE 帳號"
-      />
-
-      <div className="space-y-4 px-4 pt-4">
+    <div className="bg-white pb-12 pt-[max(env(safe-area-inset-top),12px)]">
+      <div className="space-y-4 px-4 pt-2">
         {/* 主要篩選 — 兩個 select 並排，mobile 觸控目標夠大 */}
         <div className="grid grid-cols-2 gap-2">
           <CompactSelect
