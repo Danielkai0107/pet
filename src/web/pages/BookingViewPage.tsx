@@ -193,7 +193,7 @@ export function BookingViewPage() {
     .join(" ");
 
   return (
-    <div className="bg-slate-50 pb-24 sm:pb-6">
+    <div className="bg-slate-50 pb-28 sm:pb-6">
       {/* ====== 狀態 Banner ====== */}
       <section className={`${banner.bg} text-white`}>
         <div className="mx-auto max-w-2xl px-4 py-5">

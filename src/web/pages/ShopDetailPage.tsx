@@ -57,7 +57,7 @@ export function ShopDetailPage() {
   }, null);
 
   return (
-    <div className="bg-slate-50 pb-32 sm:pb-16">
+    <div className="bg-slate-50 pb-36 sm:pb-16">
       {/* ====== Hero 圖 + 浮動價格卡（trip.com 風格：扁平 banner） ====== */}
       <section className="relative">
         <div

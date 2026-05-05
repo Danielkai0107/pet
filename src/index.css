@@ -103,7 +103,15 @@
    * 商家詳情、訂單詳情頁用：mobile 釘在底部，桌機隱藏。
    */
   .sticky-bottom-bar {
-    @apply fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-4 py-3 shadow-bar-up sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none;
+    /* mobile：上 12px，下 24px (＝原本 12px + 額外 12px)，並再加上 iOS
+       safe-area-inset-bottom 避免被 home indicator 蓋到 */
+    @apply fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-4 pt-3 shadow-bar-up sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+  @media (min-width: 640px) {
+    .sticky-bottom-bar {
+      padding-bottom: 0;
+    }
   }
 
   /* ============== Image overlays ==============

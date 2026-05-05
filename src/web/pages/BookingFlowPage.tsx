@@ -291,7 +291,7 @@ export function BookingFlowPage() {
   }
 
   return (
-    <div className="bg-slate-50 pb-24 sm:pb-8">
+    <div className="bg-slate-50 pb-28 sm:pb-8">
       {/* 頂部：返回 + 步驟指示 */}
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-3">
@@ -351,46 +351,64 @@ export function BookingFlowPage() {
                   您選擇的日期區間內沒有可訂房型，請回上一步調整日期。
                 </div>
               ) : (
-                eligibleRooms.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setSelectedRoomId(r.id)}
-                    className={
-                      "card flex w-full items-start gap-3 p-4 text-left transition-all " +
-                      (selectedRoomId === r.id
-                        ? "ring-2 ring-brand-500"
-                        : "hover:shadow-md")
-                    }
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                      <Bed className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900">{r.name}</p>
-                      {r.description && (
-                        <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">
-                          {r.description}
-                        </p>
-                      )}
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {r.pet_types.map((p) => (
-                          <Badge key={p} className="bg-slate-100 text-slate-700">
-                            {PET_TYPE_LABEL[p as PetType]}
-                          </Badge>
-                        ))}
+                eligibleRooms.map((r) => {
+                  const cover = r.photo_urls?.[0];
+                  const isSelected = selectedRoomId === r.id;
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setSelectedRoomId(r.id)}
+                      className={
+                        "card flex w-full items-stretch gap-3 overflow-hidden p-0 text-left transition-all " +
+                        (isSelected ? "ring-2 ring-brand-500" : "hover:shadow-md")
+                      }
+                    >
+                      <div className="relative aspect-[4/3] w-32 shrink-0 overflow-hidden bg-gradient-to-br from-brand-50 to-amber-50 sm:w-40">
+                        {cover ? (
+                          <img
+                            src={cover}
+                            alt={r.name}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-brand-600">
+                            <Bed className="h-7 w-7 opacity-40" />
+                          </div>
+                        )}
+                        {r.photo_urls && r.photo_urls.length > 1 && (
+                          <span className="absolute bottom-1 right-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                            {r.photo_urls.length} 張
+                          </span>
+                        )}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-brand-700">
-                        {fmtMoney(totalForRoom(r))}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        共 {nightsBetween(checkIn!, checkOut!)} 晚
-                      </p>
-                    </div>
-                  </button>
-                ))
+                      <div className="flex flex-1 flex-col py-3 pr-4">
+                        <p className="font-semibold text-slate-900">{r.name}</p>
+                        {r.description && (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">
+                            {r.description}
+                          </p>
+                        )}
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {r.pet_types.map((p) => (
+                            <Badge key={p} className="bg-slate-100 text-slate-700">
+                              {PET_TYPE_LABEL[p as PetType]}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+                          <p className="text-[11px] text-slate-500">
+                            共 {nightsBetween(checkIn!, checkOut!)} 晚
+                          </p>
+                          <p className="price-md">
+                            {fmtMoney(totalForRoom(r)).replace("NT$ ", "")}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
               )}
             </div>
           </div>
