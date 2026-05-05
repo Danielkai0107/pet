@@ -106,38 +106,20 @@ export function ShopOnboardingPage() {
       return;
     }
     setSubmitting(true);
-    const { data: created, error: shopErr } = await supabase
-      .from("shops")
-      .insert({
-        slug: shopForm.slug,
-        name: shopForm.name,
-        description: shopForm.description || null,
-        city: shopForm.city || null,
-        district: shopForm.district || null,
-        address: shopForm.address || null,
-        contact_phone: shopForm.contactPhone || null,
-        contact_email: shopForm.contactEmail || user.email,
-        pet_types: shopForm.petTypes,
-        status: "pending_review",
-      })
-      .select("*")
-      .single();
-
-    if (shopErr || !created) {
-      setSubmitting(false);
-      toast.error(formatSupabaseError(shopErr) || "建立商家失敗");
-      return;
-    }
-
-    const { error: memberErr } = await supabase.from("shop_members").insert({
-      shop_id: created.id,
-      user_id: user.id,
-      role: "owner",
-      display_name: user.email?.split("@")[0],
+    const { error } = await supabase.rpc("create_shop_with_owner", {
+      p_slug: shopForm.slug,
+      p_name: shopForm.name,
+      p_description: shopForm.description || null,
+      p_city: shopForm.city || null,
+      p_district: shopForm.district || null,
+      p_address: shopForm.address || null,
+      p_contact_phone: shopForm.contactPhone || null,
+      p_contact_email: shopForm.contactEmail || user.email || null,
+      p_pet_types: shopForm.petTypes,
     });
     setSubmitting(false);
-    if (memberErr) {
-      toast.error(formatSupabaseError(memberErr));
+    if (error) {
+      toast.error(formatSupabaseError(error) || "建立商家失敗");
       return;
     }
 
