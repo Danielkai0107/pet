@@ -15,7 +15,9 @@ export interface LineBookingWithRefs extends Booking {
   room: { id: string; name: string } | null;
 }
 
-export function useLineOrders(scope: "active" | "history" = "active") {
+export function useLineOrders(
+  scope: "active" | "history" | "all" = "active",
+) {
   const { idToken, customer } = useLiffAuth();
   const [bookings, setBookings] = useState<LineBookingWithRefs[]>([]);
   const [loading, setLoading] = useState(true);

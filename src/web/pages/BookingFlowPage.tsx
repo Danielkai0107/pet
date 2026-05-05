@@ -16,7 +16,7 @@ import { DateRangePicker } from "@/web/components/DateRangePicker";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
 import { useOptionalLiffAuth } from "@/liff/auth/useOptionalLiffAuth";
 
-type Step = "dates" | "room" | "guest" | "review";
+type Step = "dates" | "room" | "owner" | "pet" | "review";
 
 interface GuestForm {
   guest_name: string;
@@ -42,6 +42,18 @@ const initialGuest: GuestForm = {
   pet_note: "",
 };
 
+/**
+ * 用戶之前填過的寵物資料 — 從這位 LINE 用戶過去的訂單去重後產生，
+ * 點選後一鍵把整組資料帶入寵物步驟的表單。
+ */
+interface PastPet {
+  pet_name: string;
+  pet_type: PetType;
+  pet_size: PetSize | null;
+  pet_breed: string | null;
+  pet_note: string | null;
+}
+
 export function BookingFlowPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -66,6 +78,48 @@ export function BookingFlowPage() {
       guest_phone: g.guest_phone || liffAuth.customer?.phone || "",
     }));
   }, [isLiff, liffAuth?.customer, liffAuth?.profile?.displayName]);
+
+  // Past pets — 只有 LIFF 已登入用戶才有；同名同種類的寵物只保留最近一筆。
+  const [pastPets, setPastPets] = useState<PastPet[]>([]);
+  useEffect(() => {
+    if (!isLiff || !liffAuth?.idToken) {
+      setPastPets([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data: res, error: err } = await supabase.functions.invoke(
+        "line-orders",
+        { body: { idToken: liffAuth.idToken, scope: "all" } },
+      );
+      if (cancelled) return;
+      if (err) {
+        console.warn("[booking] past pets fetch err", err);
+        return;
+      }
+      const bookings =
+        (res as { bookings?: Array<Record<string, unknown>> })?.bookings ?? [];
+      const seen = new Map<string, PastPet>();
+      for (const b of bookings) {
+        const name = String(b.pet_name ?? "").trim();
+        const type = b.pet_type as PetType | undefined;
+        if (!name || !type) continue;
+        const key = `${name}|${type}`;
+        if (seen.has(key)) continue;
+        seen.set(key, {
+          pet_name: name,
+          pet_type: type,
+          pet_size: (b.pet_size ?? null) as PetSize | null,
+          pet_breed: (b.pet_breed ?? null) as string | null,
+          pet_note: (b.pet_note ?? null) as string | null,
+        });
+      }
+      setPastPets(Array.from(seen.values()));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLiff, liffAuth?.idToken, liffAuth?.customer?.id]);
 
   // Per-room availability map for next 3 months
   const [availabilityByRoom, setAvailabilityByRoom] = useState<
@@ -169,13 +223,12 @@ export function BookingFlowPage() {
         toast.error("請選擇一個房型");
         return;
       }
-      setStep("guest");
-    } else if (step === "guest") {
+      setStep("owner");
+    } else if (step === "owner") {
       const required: (keyof GuestForm)[] = [
         "guest_name",
         "guest_phone",
         "guest_email",
-        "pet_name",
       ];
       for (const f of required) {
         if (!String(guest[f]).trim()) {
@@ -187,14 +240,21 @@ export function BookingFlowPage() {
         toast.error("Email 格式不正確");
         return;
       }
+      setStep("pet");
+    } else if (step === "pet") {
+      if (!guest.pet_name.trim()) {
+        toast.error("請填寫寵物名字");
+        return;
+      }
       setStep("review");
     }
   };
 
   const goBack = () => {
     if (step === "room") setStep("dates");
-    else if (step === "guest") setStep("room");
-    else if (step === "review") setStep("guest");
+    else if (step === "owner") setStep("room");
+    else if (step === "pet") setStep("owner");
+    else if (step === "review") setStep("pet");
   };
 
   const handleSubmit = async () => {
@@ -430,106 +490,152 @@ export function BookingFlowPage() {
           </div>
         )}
 
-        {step === "guest" && selectedRoom && (
+        {step === "owner" && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-              填寫您的資料
+              填寫主人資料
             </h1>
             <p className="mt-1 text-sm text-neutral-500">
               店家會以 Email 與您聯繫確認預約
             </p>
 
-            <div className="mt-5 space-y-5">
-              <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-neutral-900">
-                  您的聯絡資料
-                </legend>
+            <div className="mt-5 space-y-3">
+              <Input
+                label="姓名 *"
+                value={guest.guest_name}
+                onChange={(v) => setGuest({ ...guest, guest_name: v })}
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Input
-                  label="姓名 *"
-                  value={guest.guest_name}
-                  onChange={(v) => setGuest({ ...guest, guest_name: v })}
+                  label="手機 *"
+                  type="tel"
+                  value={guest.guest_phone}
+                  onChange={(v) => setGuest({ ...guest, guest_phone: v })}
                 />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    label="手機 *"
-                    type="tel"
-                    value={guest.guest_phone}
-                    onChange={(v) => setGuest({ ...guest, guest_phone: v })}
-                  />
-                  <Input
-                    label="Email *"
-                    type="email"
-                    value={guest.guest_email}
-                    onChange={(v) => setGuest({ ...guest, guest_email: v })}
-                  />
-                </div>
-                <Textarea
-                  label="給店家的話"
-                  value={guest.guest_note}
-                  onChange={(v) => setGuest({ ...guest, guest_note: v })}
+                <Input
+                  label="Email *"
+                  type="email"
+                  value={guest.guest_email}
+                  onChange={(v) => setGuest({ ...guest, guest_email: v })}
                 />
-              </fieldset>
+              </div>
+              <Textarea
+                label="給店家的話"
+                value={guest.guest_note}
+                onChange={(v) => setGuest({ ...guest, guest_note: v })}
+              />
+            </div>
+          </div>
+        )}
 
-              <fieldset className="space-y-3 border-t border-neutral-200 pt-5">
-                <legend className="text-sm font-semibold text-neutral-900">
-                  寵物資料
-                </legend>
-                <Input
-                  label="寵物名字 *"
-                  value={guest.pet_name}
-                  onChange={(v) => setGuest({ ...guest, pet_name: v })}
-                />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="label">類型</label>
-                    <select
-                      className="input"
-                      value={guest.pet_type}
-                      onChange={(e) =>
-                        setGuest({
-                          ...guest,
-                          pet_type: e.target.value as PetType,
-                        })
-                      }
-                    >
-                      {selectedRoom.pet_types.map((p) => (
-                        <option key={p} value={p}>
-                          {PET_TYPE_LABEL[p as PetType]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label">體型</label>
-                    <select
-                      className="input"
-                      value={guest.pet_size}
-                      onChange={(e) =>
-                        setGuest({
-                          ...guest,
-                          pet_size: e.target.value as PetSize,
-                        })
-                      }
-                    >
-                      {selectedRoom.pet_sizes.map((s) => (
-                        <option key={s} value={s}>
-                          {PET_SIZE_LABEL.default[s]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+        {step === "pet" && selectedRoom && (
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+              填寫寵物資料
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              店家依據寵物資訊安排住宿
+            </p>
+
+            {/* 過去紀錄：點擊一鍵帶入整組寵物資料 */}
+            {pastPets.length > 0 && (
+              <div className="mt-5">
+                <p className="text-xs font-medium text-neutral-500">
+                  選擇曾經填寫過的寵物
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {pastPets.map((p) => {
+                    const active =
+                      guest.pet_name === p.pet_name &&
+                      guest.pet_type === p.pet_type;
+                    return (
+                      <button
+                        key={`${p.pet_name}-${p.pet_type}`}
+                        type="button"
+                        onClick={() =>
+                          setGuest((g) => ({
+                            ...g,
+                            pet_name: p.pet_name,
+                            pet_type: p.pet_type,
+                            pet_size: (p.pet_size ?? g.pet_size) as PetSize,
+                            pet_breed: p.pet_breed ?? "",
+                            pet_note: p.pet_note ?? "",
+                          }))
+                        }
+                        className={
+                          "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors " +
+                          (active
+                            ? "border-brand-500 bg-brand-50 text-brand-700"
+                            : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50")
+                        }
+                      >
+                        {p.pet_name}
+                        <span className="ml-1 text-neutral-400">
+                          · {PET_TYPE_LABEL[p.pet_type]}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <Input
-                  label="品種（選填）"
-                  value={guest.pet_breed}
-                  onChange={(v) => setGuest({ ...guest, pet_breed: v })}
-                />
-                <Textarea
-                  label="寵物個性 / 特殊需求（選填）"
-                  value={guest.pet_note}
-                  onChange={(v) => setGuest({ ...guest, pet_note: v })}
-                />
-              </fieldset>
+              </div>
+            )}
+
+            <div className="mt-5 space-y-3">
+              <Input
+                label="寵物名字 *"
+                value={guest.pet_name}
+                onChange={(v) => setGuest({ ...guest, pet_name: v })}
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="label">類型</label>
+                  <select
+                    className="input"
+                    value={guest.pet_type}
+                    onChange={(e) =>
+                      setGuest({
+                        ...guest,
+                        pet_type: e.target.value as PetType,
+                      })
+                    }
+                  >
+                    {selectedRoom.pet_types.map((p) => (
+                      <option key={p} value={p}>
+                        {PET_TYPE_LABEL[p as PetType]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">體型</label>
+                  <select
+                    className="input"
+                    value={guest.pet_size}
+                    onChange={(e) =>
+                      setGuest({
+                        ...guest,
+                        pet_size: e.target.value as PetSize,
+                      })
+                    }
+                  >
+                    {selectedRoom.pet_sizes.map((s) => (
+                      <option key={s} value={s}>
+                        {PET_SIZE_LABEL.default[s]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <Input
+                label="品種（選填）"
+                value={guest.pet_breed}
+                onChange={(v) => setGuest({ ...guest, pet_breed: v })}
+              />
+              <Textarea
+                label="寵物個性 / 特殊需求（選填）"
+                value={guest.pet_note}
+                onChange={(v) => setGuest({ ...guest, pet_note: v })}
+              />
             </div>
           </div>
         )}
@@ -634,7 +740,7 @@ export function BookingFlowPage() {
  * 進度條不再附文字以保持頂部簡潔。
  */
 function Steps({ step }: { step: Step }) {
-  const order: Step[] = ["dates", "room", "guest", "review"];
+  const order: Step[] = ["dates", "room", "owner", "pet", "review"];
   const idx = order.indexOf(step);
   return (
     <div className="flex items-center gap-1.5">
