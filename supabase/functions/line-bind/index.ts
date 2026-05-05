@@ -64,9 +64,13 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "method not allowed" }, { status: 405 });
   }
 
-  const channelId = Deno.env.get("LINE_CHANNEL_ID");
+  const channelId =
+    Deno.env.get("LINE_LOGIN_CHANNEL_ID") ?? Deno.env.get("LINE_CHANNEL_ID");
   if (!channelId) {
-    return jsonResponse({ error: "LINE_CHANNEL_ID not set" }, { status: 500 });
+    return jsonResponse(
+      { error: "LINE_LOGIN_CHANNEL_ID (or LINE_CHANNEL_ID) not set" },
+      { status: 500 },
+    );
   }
 
   let body: Payload = {};
