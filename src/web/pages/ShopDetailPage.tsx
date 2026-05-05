@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Bed,
@@ -28,11 +28,24 @@ import { getFeatureIcon } from "@/lib/featureIcon";
  */
 export function ShopDetailPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { data, loading, error } = useShopBySlug(slug);
   const { features: allFeatures } = useServiceFeatures();
   const { isLiff, shopPrefix } = useRoutePrefix();
   const { petTypeLabel } = useManagedOptions();
   const bookHref = `${shopPrefix}/${slug}/book`;
+
+  // 「返回」優先回上一頁，這樣從訂單詳情 popup 點店家 → 進來後再返回，
+  // 才會回到原本的訂單詳情而不是直接跳到搜尋頁。
+  // 只有當沒有 history（如直接開分享連結）才退回搜尋頁。
+  const fallbackHomeHref = isLiff ? "/liff/discover" : "/shops";
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate(fallbackHomeHref, { replace: true });
+    }
+  };
 
   if (loading) {
     return (
@@ -71,10 +84,6 @@ export function ShopDetailPage() {
 
   const cover = shop.cover_image_url;
 
-  // 上方「回首頁」連結 — 小字灰色，導向搜尋首頁。
-  // LIFF 內回到 /liff/discover，公開站回到 /shops。
-  const homeHref = isLiff ? "/liff/discover" : "/shops";
-
   return (
     <div className="bg-white pb-28 sm:pb-12">
       <div
@@ -83,9 +92,9 @@ export function ShopDetailPage() {
           (isLiff ? " pt-[max(env(safe-area-inset-top),12px)]" : "")
         }
       >
-        <Link to={homeHref} className="btn-secondary">
+        <button type="button" onClick={handleBack} className="btn-secondary">
           返回
-        </Link>
+        </button>
       </div>
       <div className="mx-auto max-w-5xl px-4 pt-3 sm:pt-4">
         {/* Hero 圖牆：desktop 1 大圖 + 4 小圖；mobile 單張 16:10。
