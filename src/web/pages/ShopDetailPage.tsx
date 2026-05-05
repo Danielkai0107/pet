@@ -78,14 +78,11 @@ export function ShopDetailPage() {
     <div className="bg-white pb-28 sm:pb-12">
       <div
         className={
-          "mx-auto max-w-5xl px-4 pt-3 text-center sm:pt-5" +
+          "mx-auto max-w-5xl px-4 pt-3 sm:pt-5" +
           (isLiff ? " pt-[max(env(safe-area-inset-top),12px)]" : "")
         }
       >
-        <Link
-          to={homeHref}
-          className="text-xs text-neutral-500 hover:text-neutral-700"
-        >
+        <Link to={homeHref} className="btn-secondary">
           回首頁
         </Link>
       </div>

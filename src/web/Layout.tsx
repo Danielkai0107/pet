@@ -1,14 +1,16 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { PLATFORM_NAME } from "@/lib/constants";
 
 /**
  * Airbnb 風 Web 公開頁外層：
- *   - 純白頂欄、底部細灰線；左側黑色 logo、右側「開始搜尋」膠囊。
- *   - 不再放重複意義的 tabs（房源 / 找旅館 → 都會走到 /shops），
- *     讓「開始搜尋」成為唯一進入點。
+ *   - 純白頂欄、底部細灰線；左側黑色 logo。
+ *   - 「返回搜尋」膠囊只在非首頁（內頁）顯示，因為首頁本身就是入口。
  *   - footer 簡化只留版權與必要連結（探索旅館 / 成為店家 / 店家後台）。
  */
 export function WebLayout() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
+
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white">
@@ -23,12 +25,14 @@ export function WebLayout() {
             </span>
           </Link>
 
-          <Link
-            to="/shops"
-            className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition-shadow hover:shadow-md"
-          >
-            開始搜尋
-          </Link>
+          {!isHome && (
+            <Link
+              to="/shops"
+              className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition-shadow hover:shadow-md"
+            >
+              返回搜尋
+            </Link>
+          )}
         </div>
       </header>
 
