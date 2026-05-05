@@ -372,7 +372,9 @@ export function BookingViewPage() {
 
     if (canCancel || canBookAgain) {
       footer = (
-        <div className="border-t border-neutral-200 bg-white px-4 py-3 sm:px-5">
+        // pt-3 pb-6 = 上 12px / 下 24px（比 py-3 多 12px 呼吸空間，
+        // 避免按鈕貼到 sheet 底邊或 iPhone home indicator）
+        <div className="border-t border-neutral-200 bg-white px-4 pt-3 pb-6 sm:px-5">
           <div className="mx-auto flex max-w-md items-center gap-2">
             {canCancel && (
               <button
