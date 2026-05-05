@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Bed,
   Calendar,
+  Camera,
   Clock,
   MapPin,
   PawPrint,
@@ -26,6 +27,13 @@ import { sendBookingEmail } from "@/lib/email";
 import { sendBookingLine } from "@/lib/notify";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
 import { LiffBackBar } from "@/liff/components/LiffBackBar";
+
+interface PublicBookingLog {
+  id: string;
+  photo_urls: string[];
+  note: string | null;
+  created_at: string;
+}
 
 interface BookingViewRow {
   id: string;
@@ -77,6 +85,7 @@ export function BookingViewPage() {
   const { code } = useParams<{ code: string }>();
   const { isLiff, shopPrefix } = useRoutePrefix();
   const [booking, setBooking] = useState<BookingViewRow | null>(null);
+  const [logs, setLogs] = useState<PublicBookingLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -85,21 +94,25 @@ export function BookingViewPage() {
   const reload = async () => {
     if (!code) return;
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_booking_by_code", {
-      p_code: code,
-    });
-    if (error) {
-      toast.error(formatSupabaseError(error));
+    const [bookingRes, logsRes] = await Promise.all([
+      supabase.rpc("get_booking_by_code", { p_code: code }),
+      supabase.rpc("get_booking_logs_by_code", { p_code: code }),
+    ]);
+    if (bookingRes.error) {
+      toast.error(formatSupabaseError(bookingRes.error));
       setLoading(false);
       return;
     }
-    const row = (Array.isArray(data) ? data[0] : data) as
-      | BookingViewRow
-      | undefined;
+    const row = (Array.isArray(bookingRes.data)
+      ? bookingRes.data[0]
+      : bookingRes.data) as BookingViewRow | undefined;
     if (!row) {
       setNotFound(true);
     } else {
       setBooking(row);
+    }
+    if (!logsRes.error) {
+      setLogs((logsRes.data ?? []) as PublicBookingLog[]);
     }
     setLoading(false);
   };
@@ -159,12 +172,23 @@ export function BookingViewPage() {
 
   const canCancel =
     booking.status === "pending" || booking.status === "confirmed";
+  // 「再次預約」只在訂單已結束（退房 / 拒絕 / 取消）時出現，避免在
+  // pending / confirmed / checked_in 階段就提示客戶開新單造成混淆。
+  const canBookAgain =
+    booking.status === "checked_out" ||
+    booking.status === "declined" ||
+    booking.status === "cancelled";
+  const hasMobileBar = canCancel || canBookAgain;
   const locationText = [booking.shop_city, booking.shop_district]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div className="bg-white pb-28 sm:pb-12">
+    <div
+      className={
+        "bg-white sm:pb-12 " + (hasMobileBar ? "pb-28" : "pb-8")
+      }
+    >
       {isLiff && <LiffBackBar back="/liff" caption={booking.code} />}
       <div className="mx-auto max-w-2xl px-4 pt-6">
         {/* 狀態列：dot + 文字 + 訂單編號（無大色塊） */}
@@ -305,39 +329,52 @@ export function BookingViewPage() {
           </div>
         </section>
 
+        {/* 入住日誌（家長視角，唯讀） */}
+        {logs.length > 0 && (
+          <section className="mt-5">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <Camera className="h-3.5 w-3.5" />
+              店家報平安
+            </h3>
+            <div className="mt-2 space-y-3">
+              {logs.map((log) => (
+                <LogCard key={log.id} log={log} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* desktop 操作 */}
-        <div className="mt-6 hidden flex-col gap-2 sm:flex">
-          <Link
-            to={`${shopPrefix}/${booking.shop_slug}`}
-            className="btn-secondary justify-center"
-          >
-            再次預約 {booking.shop_name}
-          </Link>
-          {canCancel && (
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="btn-danger justify-center"
-            >
-              {cancelling && <Spinner size="sm" />}
-              取消預約
-            </button>
-          )}
-        </div>
+        {(canCancel || canBookAgain) && (
+          <div className="mt-6 hidden flex-col gap-2 sm:flex">
+            {canBookAgain && (
+              <Link
+                to={`${shopPrefix}/${booking.shop_slug}`}
+                className="btn-primary justify-center"
+              >
+                再次預約 {booking.shop_name}
+              </Link>
+            )}
+            {canCancel && (
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="btn-danger justify-center"
+              >
+                {cancelling && <Spinner size="sm" />}
+                取消預約
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* mobile sticky 操作列：純文字按鈕，不放 icon */}
-      <div className="sticky-bottom-bar sm:hidden">
-        <div className="flex items-center gap-2">
-          {canCancel ? (
-            <>
-              <Link
-                to={`${shopPrefix}/${booking.shop_slug}`}
-                className="btn-secondary flex-1 justify-center"
-              >
-                再次預約
-              </Link>
+      {hasMobileBar && (
+        <div className="sticky-bottom-bar sm:hidden">
+          <div className="flex items-center gap-2">
+            {canCancel && (
               <button
                 type="button"
                 onClick={handleCancel}
@@ -347,18 +384,66 @@ export function BookingViewPage() {
                 {cancelling && <Spinner size="sm" />}
                 取消預約
               </button>
-            </>
-          ) : (
-            <Link
-              to={`${shopPrefix}/${booking.shop_slug}`}
-              className="btn-primary flex-1 justify-center"
-            >
-              再次預約 {booking.shop_name}
-            </Link>
-          )}
+            )}
+            {canBookAgain && (
+              <Link
+                to={`${shopPrefix}/${booking.shop_slug}`}
+                className="btn-primary flex-1 justify-center"
+              >
+                再次預約
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
+  );
+}
+
+function LogCard({ log }: { log: PublicBookingLog }) {
+  return (
+    <article className="rounded-card border border-neutral-200 bg-white p-3">
+      {log.photo_urls.length > 0 && (
+        <div
+          className={
+            "mb-2 grid gap-1.5 " +
+            (log.photo_urls.length === 1
+              ? "grid-cols-1"
+              : "grid-cols-3 sm:grid-cols-4")
+          }
+        >
+          {log.photo_urls.map((url) => (
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className={
+                "block overflow-hidden rounded-lg bg-neutral-100 " +
+                (log.photo_urls.length === 1
+                  ? "aspect-[4/3]"
+                  : "aspect-square")
+              }
+            >
+              <img
+                src={url}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform hover:scale-[1.02]"
+              />
+            </a>
+          ))}
+        </div>
+      )}
+      {log.note && (
+        <p className="whitespace-pre-line text-sm text-neutral-800">
+          {log.note}
+        </p>
+      )}
+      <p className="mt-2 text-[11px] text-neutral-500">
+        {fmtDateTime(log.created_at)}
+      </p>
+    </article>
   );
 }
 
