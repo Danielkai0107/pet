@@ -3,9 +3,12 @@
 
 export type ShopStatus = "pending_review" | "active" | "suspended" | "rejected";
 
-export type PetType = "dog" | "cat" | "rabbit" | "other";
+// PetType / PetSize 自 0013 migration 起改為 SuperAdmin 可管理的動態選項；
+// 鍵名（dog/cat/small/medium…）仍維持為字串識別碼，但不再以 union 鎖死，
+// 顯示文字統一改由 ManagedOptionsContext 查表。
+export type PetType = string;
 
-export type PetSize = "small" | "medium" | "large" | "xlarge";
+export type PetSize = string;
 
 export type ShopMemberRole = "owner" | "staff";
 

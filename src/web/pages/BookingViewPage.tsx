@@ -13,10 +13,7 @@ import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusDot } from "@/components/StatusDot";
-import {
-  PET_SIZE_LABEL,
-  PET_TYPE_LABEL,
-} from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import {
   fmtDate,
   fmtDateTime,
@@ -83,6 +80,7 @@ export function BookingViewPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const { petTypeLabel, petSizeLabel } = useManagedOptions();
 
   const reload = async () => {
     if (!code) return;
@@ -279,9 +277,9 @@ export function BookingViewPage() {
                 <>
                   {booking.pet_name}
                   <span className="ml-1 text-xs text-neutral-500">
-                    ({PET_TYPE_LABEL[booking.pet_type]}
+                    ({petTypeLabel(booking.pet_type)}
                     {booking.pet_size
-                      ? ` · ${PET_SIZE_LABEL.default[booking.pet_size]}`
+                      ? ` · ${petSizeLabel(booking.pet_type, booking.pet_size)}`
                       : ""}
                     {booking.pet_breed ? ` · ${booking.pet_breed}` : ""})
                   </span>

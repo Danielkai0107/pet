@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { PawPrint, Star } from "lucide-react";
 import { fmtMoney } from "@/lib/format";
-import { PET_TYPE_LABEL } from "@/lib/constants";
-import type { PetType, ShopSearchResult } from "@/lib/types";
+import { useManagedOptions } from "@/lib/managedOptions";
+import type { ShopSearchResult } from "@/lib/types";
 
 interface Props {
   shop: ShopSearchResult;
@@ -18,6 +18,7 @@ interface Props {
  *   - 價格大字黑色加粗 + /晚 灰字。
  */
 export function ShopCard({ shop, prefix = "/shop" }: Props) {
+  const { petTypeLabel } = useManagedOptions();
   return (
     <Link
       to={`${prefix}/${shop.slug}`}
@@ -59,7 +60,7 @@ export function ShopCard({ shop, prefix = "/shop" }: Props) {
           <div className="mt-1.5 flex flex-wrap gap-1">
             {shop.pet_types.slice(0, 3).map((p) => (
               <span key={p} className="tag-outline">
-                {PET_TYPE_LABEL[p as PetType]}
+                {petTypeLabel(p)}
               </span>
             ))}
           </div>

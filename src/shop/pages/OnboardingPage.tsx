@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
-import { PET_TYPE_LABEL, PLATFORM_NAME, TAIWAN_CITIES } from "@/lib/constants";
+import { PLATFORM_NAME } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import type { PetType } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
@@ -51,6 +52,9 @@ function slugify(input: string): string {
 export function ShopOnboardingPage() {
   const { user, member, refresh, ready } = useShopAuth();
   const navigate = useNavigate();
+  const { petTypes, cities, petTypeLabel } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activeCities = cities.filter((c) => c.is_active);
 
   const initialStep: Step = !user ? "account" : member ? "done" : "shop";
   const [step, setStep] = useState<Step>(initialStep);
@@ -251,9 +255,9 @@ export function ShopOnboardingPage() {
                     onChange={(e) => setShopForm((s) => ({ ...s, city: e.target.value }))}
                   >
                     <option value="">— 選擇 —</option>
-                    {TAIWAN_CITIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                    {activeCities.map((c) => (
+                      <option key={c.name} value={c.name}>
+                        {c.name}
                       </option>
                     ))}
                   </select>
@@ -305,18 +309,18 @@ export function ShopOnboardingPage() {
                 <div className="sm:col-span-2">
                   <label className="label">收的寵物類型</label>
                   <div className="flex flex-wrap gap-2">
-                    {(Object.keys(PET_TYPE_LABEL) as PetType[]).map((p) => {
-                      const checked = shopForm.petTypes.includes(p);
+                    {activePetTypes.map((p) => {
+                      const checked = shopForm.petTypes.includes(p.key);
                       return (
                         <button
                           type="button"
-                          key={p}
+                          key={p.key}
                           onClick={() =>
                             setShopForm((s) => ({
                               ...s,
                               petTypes: checked
-                                ? s.petTypes.filter((x) => x !== p)
-                                : [...s.petTypes, p],
+                                ? s.petTypes.filter((x) => x !== p.key)
+                                : [...s.petTypes, p.key],
                             }))
                           }
                           className={
@@ -326,7 +330,7 @@ export function ShopOnboardingPage() {
                               : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50")
                           }
                         >
-                          {PET_TYPE_LABEL[p]}
+                          {p.label}
                         </button>
                       );
                     })}
@@ -386,7 +390,7 @@ export function ShopOnboardingPage() {
               <ReviewRow
                 label="寵物類型"
                 value={
-                  shopForm.petTypes.map((p) => PET_TYPE_LABEL[p]).join("、") ||
+                  shopForm.petTypes.map((p) => petTypeLabel(p)).join("、") ||
                   "—"
                 }
               />

@@ -9,7 +9,7 @@ import {
   type ShopSearchFilters,
 } from "@/web/hooks/useShopSearch";
 import { ShopCard } from "@/web/components/ShopCard";
-import { PET_TYPE_LABEL, TAIWAN_CITIES } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import type { PetType } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +24,9 @@ function DiscoverContent() {
   const [filters, setFilters] = useState<ShopSearchFilters>(emptyFilters);
   const { shops, loading, error } = useShopSearch(filters);
   const [advanced, setAdvanced] = useState(false);
+  const { petTypes, cities } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activeCities = cities.filter((c) => c.is_active);
 
   const hasAdvanced =
     filters.checkIn || filters.checkOut || filters.maxPrice !== null;
@@ -45,7 +48,9 @@ function DiscoverContent() {
             onChange={(v) => setFilters({ ...filters, city: v })}
             options={[
               ["", "全部城市"],
-              ...TAIWAN_CITIES.map((c) => [c, c] as [string, string]),
+              ...activeCities.map(
+                (c) => [c.name, c.name] as [string, string],
+              ),
             ]}
           />
           <CompactSelect
@@ -57,8 +62,8 @@ function DiscoverContent() {
             }
             options={[
               ["", "不限寵物"],
-              ...(Object.keys(PET_TYPE_LABEL) as PetType[]).map(
-                (p) => [p, PET_TYPE_LABEL[p]] as [string, string],
+              ...activePetTypes.map(
+                (p) => [p.key, p.label] as [string, string],
               ),
             ]}
           />

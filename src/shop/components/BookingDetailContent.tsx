@@ -13,15 +13,9 @@ import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { StatusDot } from "@/components/StatusDot";
 import { fmtDate, fmtDateTime, fmtMoney, formatPhone } from "@/lib/format";
-import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
-import type {
-  Booking,
-  BookingStatus,
-  PetSize,
-  PetType,
-  Room,
-} from "@/lib/types";
+import type { Booking, BookingStatus, Room } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
 import { sendBookingLine } from "@/lib/notify";
 
@@ -42,6 +36,7 @@ export function BookingDetailContent({ bookingId, onChanged }: Props) {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const { petTypeLabel, petSizeLabel } = useManagedOptions();
 
   const reload = async () => {
     setLoading(true);
@@ -200,9 +195,9 @@ export function BookingDetailContent({ bookingId, onChanged }: Props) {
           <Row label="寵物">
             {booking.pet_name}
             <span className="ml-1 text-xs text-neutral-500">
-              ({PET_TYPE_LABEL[booking.pet_type as PetType]}
+              ({petTypeLabel(booking.pet_type)}
               {booking.pet_size
-                ? ` · ${PET_SIZE_LABEL.default[booking.pet_size as PetSize]}`
+                ? ` · ${petSizeLabel(booking.pet_type, booking.pet_size)}`
                 : ""}
               {booking.pet_breed ? ` · ${booking.pet_breed}` : ""})
             </span>

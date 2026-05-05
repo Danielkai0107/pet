@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
 import { fmtDate, fmtMoney, nightsBetween } from "@/lib/format";
-import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetSize, PetType, Room, RoomAvailabilityDay } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
@@ -67,6 +67,7 @@ export function BookingFlowPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [guest, setGuest] = useState<GuestForm>(initialGuest);
   const [submitting, setSubmitting] = useState(false);
+  const { petTypeLabel, petSizeLabel } = useManagedOptions();
 
   // Pre-fill guest form from the LINE customer record once it loads.
   useEffect(() => {
@@ -469,7 +470,7 @@ export function BookingFlowPage() {
                         <div className="mt-2 flex flex-wrap gap-1">
                           {r.pet_types.map((p) => (
                             <span key={p} className="tag-outline">
-                              {PET_TYPE_LABEL[p as PetType]}
+                              {petTypeLabel(p)}
                             </span>
                           ))}
                         </div>
@@ -571,7 +572,7 @@ export function BookingFlowPage() {
                       >
                         {p.pet_name}
                         <span className="ml-1 text-neutral-400">
-                          · {PET_TYPE_LABEL[p.pet_type]}
+                          · {petTypeLabel(p.pet_type)}
                         </span>
                       </button>
                     );
@@ -601,7 +602,7 @@ export function BookingFlowPage() {
                   >
                     {selectedRoom.pet_types.map((p) => (
                       <option key={p} value={p}>
-                        {PET_TYPE_LABEL[p as PetType]}
+                        {petTypeLabel(p)}
                       </option>
                     ))}
                   </select>
@@ -620,7 +621,7 @@ export function BookingFlowPage() {
                   >
                     {selectedRoom.pet_sizes.map((s) => (
                       <option key={s} value={s}>
-                        {PET_SIZE_LABEL.default[s]}
+                        {petSizeLabel(guest.pet_type, s)}
                       </option>
                     ))}
                   </select>
@@ -669,7 +670,7 @@ export function BookingFlowPage() {
               <Row label="Email" value={guest.guest_email} />
               <Row
                 label="寵物"
-                value={`${guest.pet_name} (${PET_TYPE_LABEL[guest.pet_type]})`}
+                value={`${guest.pet_name} (${petTypeLabel(guest.pet_type)})`}
               />
               {guest.guest_note && <Row label="備註" value={guest.guest_note} />}
             </dl>

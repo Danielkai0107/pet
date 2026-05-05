@@ -6,8 +6,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { Spinner } from "@/components/Spinner";
 import { StatusDot } from "@/components/StatusDot";
 import { fmtDate, fmtMoney } from "@/lib/format";
-import { PET_TYPE_LABEL } from "@/lib/constants";
-import type { Booking, PetType } from "@/lib/types";
+import { useManagedOptions } from "@/lib/managedOptions";
+import type { Booking } from "@/lib/types";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { useBookings } from "@/shop/hooks/useBookings";
 import { PageHeader } from "@/shop/components/PageHeader";
@@ -44,6 +44,7 @@ export function ShopBookingsPage() {
   );
   const [keyword, setKeyword] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const { petTypeLabel } = useManagedOptions();
 
   // Sync tab → URL search param so links from TodayPage stat cards work
   // and refreshing the page preserves selection.
@@ -157,7 +158,7 @@ export function ShopBookingsPage() {
                     </div>
                     <p className="mt-1 truncate font-semibold text-neutral-900">
                       {b.guest_name} · {b.pet_name}（
-                      {PET_TYPE_LABEL[b.pet_type as PetType]}）
+                      {petTypeLabel(b.pet_type)}）
                     </p>
                     <p className="mt-0.5 text-xs text-neutral-500">
                       {fmtDate(b.check_in_date)} → {fmtDate(b.check_out_date)} ·{" "}

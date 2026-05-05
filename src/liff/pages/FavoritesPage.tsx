@@ -3,14 +3,14 @@ import { Heart, MapPin, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
-import { PET_TYPE_LABEL } from "@/lib/constants";
-import type { PetType } from "@/lib/types";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { LiffGate } from "@/liff/components/LiffGate";
 import { LiffHeader } from "@/liff/components/LiffHeader";
 import { useFavorites } from "@/liff/hooks/useFavorites";
 
 function FavoritesContent() {
   const { favorites, loading, remove } = useFavorites();
+  const { petTypeLabel } = useManagedOptions();
 
   return (
     <div className="bg-white pb-12">
@@ -71,7 +71,7 @@ function FavoritesContent() {
                       <div className="mt-1.5 flex flex-wrap gap-1">
                         {f.shop.pet_types.map((p) => (
                           <span key={p} className="tag-outline">
-                            {PET_TYPE_LABEL[p as PetType]}
+                            {petTypeLabel(p)}
                           </span>
                         ))}
                       </div>

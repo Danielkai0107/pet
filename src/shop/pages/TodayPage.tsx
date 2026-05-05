@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { StatusDot } from "@/components/StatusDot";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
-import { PET_TYPE_LABEL } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { fmtMoney, formatPhone } from "@/lib/format";
 import type {
   Booking,
@@ -279,6 +279,7 @@ function BookingListItem({
   onSelect: () => void;
 }) {
   const status = booking.status as BookingStatus;
+  const { petTypeLabel } = useManagedOptions();
   return (
     <li>
       <button
@@ -297,7 +298,7 @@ function BookingListItem({
             <StatusDot status={status} className="shrink-0" />
           </div>
           <p className="mt-0.5 truncate text-xs text-neutral-500">
-            {booking.pet_name} · {PET_TYPE_LABEL[booking.pet_type]} ·{" "}
+            {booking.pet_name} · {petTypeLabel(booking.pet_type)} ·{" "}
             {booking.room?.name ?? "—"}
             {booking.guest_phone && (
               <>
@@ -356,6 +357,9 @@ function makeInitial(): WalkInForm {
 function WalkInPanel({ onCreated }: { onCreated: () => void }) {
   const { shop } = useShopAuth();
   const navigate = useNavigate();
+  const { petTypes, petSizes, petSizeLabel } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activePetSizes = petSizes.filter((s) => s.is_active);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [form, setForm] = useState<WalkInForm>(makeInitial);
   const [submitting, setSubmitting] = useState(false);
@@ -486,18 +490,16 @@ function WalkInPanel({ onCreated }: { onCreated: () => void }) {
               label="類型"
               value={form.pet_type}
               onChange={(v) => setForm({ ...form, pet_type: v as PetType })}
-              options={Object.entries(PET_TYPE_LABEL).map(([k, v]) => [k, v])}
+              options={activePetTypes.map((t) => [t.key, t.label])}
             />
             <SelectField
               label="體型"
               value={form.pet_size}
               onChange={(v) => setForm({ ...form, pet_size: v as PetSize })}
-              options={[
-                ["small", "小型"],
-                ["medium", "中型"],
-                ["large", "大型"],
-                ["xlarge", "超大型"],
-              ]}
+              options={activePetSizes.map((s) => [
+                s.key,
+                petSizeLabel(form.pet_type, s.key),
+              ])}
             />
             <Field
               label="品種（選填）"

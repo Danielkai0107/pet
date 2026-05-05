@@ -1,9 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
-import {
-  PET_TYPE_LABEL,
-  TAIWAN_CITIES,
-} from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetType, ShopStatus } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
@@ -45,6 +42,9 @@ interface FormState {
 export function ShopSettingsPage() {
   const { shop, refresh } = useShopAuth();
   const { features } = useServiceFeatures();
+  const { petTypes, cities } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activeCities = cities.filter((c) => c.is_active);
   const [form, setForm] = useState<FormState | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -160,9 +160,9 @@ export function ShopSettingsPage() {
               onChange={(e) => setForm({ ...form, city: e.target.value })}
             >
               <option value="">— 選擇 —</option>
-              {TAIWAN_CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {activeCities.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -216,18 +216,18 @@ export function ShopSettingsPage() {
 
         <Field label="收的寵物類型">
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(PET_TYPE_LABEL) as PetType[]).map((p) => {
-              const checked = form.pet_types.includes(p);
+            {activePetTypes.map((p) => {
+              const checked = form.pet_types.includes(p.key);
               return (
                 <button
-                  key={p}
+                  key={p.key}
                   type="button"
                   onClick={() =>
                     setForm({
                       ...form,
                       pet_types: checked
-                        ? form.pet_types.filter((x) => x !== p)
-                        : [...form.pet_types, p],
+                        ? form.pet_types.filter((x) => x !== p.key)
+                        : [...form.pet_types, p.key],
                     })
                   }
                   className={
@@ -237,7 +237,7 @@ export function ShopSettingsPage() {
                       : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50")
                   }
                 >
-                  {PET_TYPE_LABEL[p]}
+                  {p.label}
                 </button>
               );
             })}

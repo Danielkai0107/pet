@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { Spinner } from "@/components/Spinner";
 import { fmtMoney } from "@/lib/format";
-import { PET_TYPE_LABEL } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { Room } from "@/lib/types";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
@@ -27,6 +27,7 @@ export function ShopRoomsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Room | null>(null);
   const [scheduleRoom, setScheduleRoom] = useState<Room | null>(null);
+  const { petTypeLabel } = useManagedOptions();
 
   const openNew = () => {
     setEditing(null);
@@ -148,7 +149,7 @@ export function ShopRoomsPage() {
                     </strong>
                   </span>
                   <span>
-                    {room.pet_types.map((p) => PET_TYPE_LABEL[p]).join("、")}
+                    {room.pet_types.map((p) => petTypeLabel(p)).join("、")}
                   </span>
                 </div>
               </div>

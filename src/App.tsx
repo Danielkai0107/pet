@@ -13,6 +13,7 @@ import { ShopAuthProvider } from "@/shop/auth/ShopAuthProvider";
 import { RequireShopAuth } from "@/shop/auth/RequireShopAuth";
 import { AdminAuthProvider } from "@/admin/auth/AdminAuthProvider";
 import { RequireAdmin } from "@/admin/auth/RequireAdmin";
+import { ManagedOptionsProvider } from "@/lib/managedOptions";
 
 // --- Web (public) ---
 const WebLayout = lazy(() =>
@@ -185,6 +186,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <ManagedOptionsProvider>
         <Toaster
           position="top-center"
           toastOptions={{
@@ -295,6 +297,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
+        </ManagedOptionsProvider>
       </ErrorBoundary>
     </BrowserRouter>
   );

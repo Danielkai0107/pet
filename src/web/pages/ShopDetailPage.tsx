@@ -11,8 +11,8 @@ import {
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
 import { fmtMoney } from "@/lib/format";
-import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
-import type { PetType, Room } from "@/lib/types";
+import { useManagedOptions } from "@/lib/managedOptions";
+import type { Room } from "@/lib/types";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { FavoriteButton } from "@/web/components/FavoriteButton";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
@@ -31,6 +31,7 @@ export function ShopDetailPage() {
   const { data, loading, error } = useShopBySlug(slug);
   const { features: allFeatures } = useServiceFeatures();
   const { isLiff, shopPrefix } = useRoutePrefix();
+  const { petTypeLabel } = useManagedOptions();
   const bookHref = `${shopPrefix}/${slug}/book`;
 
   if (loading) {
@@ -160,7 +161,7 @@ export function ShopDetailPage() {
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
                 {shop.pet_types.map((p) => (
                   <span key={p} className="tag-outline">
-                    {PET_TYPE_LABEL[p as PetType]}
+                    {petTypeLabel(p)}
                   </span>
                 ))}
                 <span className="tag-outline">
@@ -307,6 +308,7 @@ function FeatureChip({
 
 function RoomCard({ room, bookHref }: { room: Room; bookHref: string }) {
   const lowStock = room.total_count > 0 && room.total_count <= 3;
+  const { petTypeLabel, petSizeLabel } = useManagedOptions();
   return (
     <article className="overflow-hidden rounded-card border border-neutral-200 bg-white transition-shadow hover:shadow-md">
       <div className="flex flex-col gap-4 p-4 sm:flex-row">
@@ -357,12 +359,12 @@ function RoomCard({ room, bookHref }: { room: Room; bookHref: string }) {
           <div className="mt-2 flex flex-wrap gap-1">
             {room.pet_types.map((p) => (
               <span key={p} className="tag-outline">
-                {PET_TYPE_LABEL[p as PetType]}
+                {petTypeLabel(p)}
               </span>
             ))}
             {room.pet_sizes.map((s) => (
               <span key={s} className="tag-outline">
-                {PET_SIZE_LABEL.default[s]}
+                {petSizeLabel(null, s)}
               </span>
             ))}
           </div>

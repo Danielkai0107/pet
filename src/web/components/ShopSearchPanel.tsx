@@ -1,5 +1,5 @@
 import { Calendar, MapPin, PawPrint, Search, Wallet, X } from "lucide-react";
-import { PET_TYPE_LABEL, TAIWAN_CITIES } from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import type { PetType } from "@/lib/types";
 import {
   emptyFilters,
@@ -25,6 +25,9 @@ interface Props {
  *   - Mobile：垂直堆疊；底部一顆全寬的搜尋按鈕。
  */
 export function ShopSearchPanel({ filters, onChange, onSubmit }: Props) {
+  const { petTypes, cities } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activeCities = cities.filter((c) => c.is_active);
   const hasFilters =
     filters.city ||
     filters.petType ||
@@ -42,9 +45,9 @@ export function ShopSearchPanel({ filters, onChange, onSubmit }: Props) {
             onChange={(e) => onChange({ ...filters, city: e.target.value })}
           >
             <option value="">全部</option>
-            {TAIWAN_CITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {activeCities.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -59,9 +62,9 @@ export function ShopSearchPanel({ filters, onChange, onSubmit }: Props) {
             }
           >
             <option value="">不限</option>
-            {(Object.keys(PET_TYPE_LABEL) as PetType[]).map((p) => (
-              <option key={p} value={p}>
-                {PET_TYPE_LABEL[p]}
+            {activePetTypes.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.label}
               </option>
             ))}
           </select>

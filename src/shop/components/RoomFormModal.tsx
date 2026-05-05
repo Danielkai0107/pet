@@ -3,10 +3,7 @@ import toast from "react-hot-toast";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
 import { ImageUploader } from "@/components/ImageUploader";
-import {
-  PET_SIZE_LABEL,
-  PET_TYPE_LABEL,
-} from "@/lib/constants";
+import { useManagedOptions } from "@/lib/managedOptions";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetSize, PetType, Room } from "@/lib/types";
 
@@ -51,6 +48,9 @@ export function RoomFormModal({
 }: RoomFormModalProps) {
   const [form, setForm] = useState<RoomForm>(empty);
   const [submitting, setSubmitting] = useState(false);
+  const { petTypes, petSizes, petSizeLabel } = useManagedOptions();
+  const activePetTypes = petTypes.filter((t) => t.is_active);
+  const activePetSizes = petSizes.filter((s) => s.is_active);
 
   useEffect(() => {
     if (open) {
@@ -180,22 +180,22 @@ export function RoomFormModal({
 
         <Field label="適合的寵物類型 *">
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(PET_TYPE_LABEL) as PetType[]).map((p) => {
-              const checked = form.pet_types.includes(p);
+            {activePetTypes.map((p) => {
+              const checked = form.pet_types.includes(p.key);
               return (
                 <Pill
-                  key={p}
+                  key={p.key}
                   active={checked}
                   onClick={() =>
                     setForm({
                       ...form,
                       pet_types: checked
-                        ? form.pet_types.filter((x) => x !== p)
-                        : [...form.pet_types, p],
+                        ? form.pet_types.filter((x) => x !== p.key)
+                        : [...form.pet_types, p.key],
                     })
                   }
                 >
-                  {PET_TYPE_LABEL[p]}
+                  {p.label}
                 </Pill>
               );
             })}
@@ -204,22 +204,22 @@ export function RoomFormModal({
 
         <Field label="適合的體型">
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(PET_SIZE_LABEL.default) as PetSize[]).map((s) => {
-              const checked = form.pet_sizes.includes(s);
+            {activePetSizes.map((s) => {
+              const checked = form.pet_sizes.includes(s.key);
               return (
                 <Pill
-                  key={s}
+                  key={s.key}
                   active={checked}
                   onClick={() =>
                     setForm({
                       ...form,
                       pet_sizes: checked
-                        ? form.pet_sizes.filter((x) => x !== s)
-                        : [...form.pet_sizes, s],
+                        ? form.pet_sizes.filter((x) => x !== s.key)
+                        : [...form.pet_sizes, s.key],
                     })
                   }
                 >
-                  {PET_SIZE_LABEL.default[s]}
+                  {petSizeLabel(null, s.key)}
                 </Pill>
               );
             })}
