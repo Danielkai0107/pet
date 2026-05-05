@@ -1,13 +1,17 @@
-export const LoadingScreen = () => {
+interface LoadingScreenProps {
+  label?: string;
+}
+
+export function LoadingScreen({ label = "載入中…" }: LoadingScreenProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
-      <div className="text-center">
-        <div className="relative w-16 h-16 mx-auto mb-4">
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-orange-200 rounded-full animate-ping opacity-75"></div>
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-[#f86f03] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative h-12 w-12">
+          <div className="absolute inset-0 animate-ping rounded-full border-2 border-brand-300 opacity-60" />
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
         </div>
-        <p className="text-gray-600 text-sm font-medium">載入中...</p>
+        <p className="text-sm font-medium text-slate-600">{label}</p>
       </div>
     </div>
   );
-};
+}

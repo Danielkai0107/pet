@@ -1,14 +1,21 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  { ignores: ['dist', 'functions'] },
   {
-    files: ['**/*.{ts,tsx}'],
+    ignores: [
+      "dist",
+      "_legacy",
+      "supabase/functions",
+      "src/lib/database.types.ts",
+    ],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -19,5 +26,15 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // React 19's new rules are too strict for legitimate patterns we
+      // use throughout the app (fetch-on-mount, reading Date.now in render).
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/purity": "off",
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+    },
   },
-])
+]);

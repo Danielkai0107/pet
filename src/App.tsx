@@ -1,219 +1,256 @@
 import { lazy, Suspense } from "react";
-import { LineAuthProvider, useLineAuth } from "./contexts/LineAuthProvider";
-import { AdminAuthProvider } from "./contexts/AdminAuthProvider";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-  Outlet,
-} from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useShopSettings } from "./hooks/useShopSettings";
-import { LoadingScreen } from "./components/LoadingScreen";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { ServiceHistory } from "./features/appointments/ServiceHistory";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { ShopAuthProvider } from "@/shop/auth/ShopAuthProvider";
+import { RequireShopAuth } from "@/shop/auth/RequireShopAuth";
+import { AdminAuthProvider } from "@/admin/auth/AdminAuthProvider";
+import { RequireAdmin } from "@/admin/auth/RequireAdmin";
 
-// Code Splitting: 動態載入組件（處理命名導出）
-const AppointmentFormNew = lazy(() =>
-  import("./features/appointments/AppointmentFormNew").then((module) => ({
-    default: module.AppointmentFormNew,
-  }))
+// --- Web (public) ---
+const WebLayout = lazy(() =>
+  import("@/web/Layout").then((m) => ({ default: m.WebLayout })),
+);
+const HomePage = lazy(() =>
+  import("@/web/pages/HomePage").then((m) => ({ default: m.HomePage })),
+);
+const ShopsPage = lazy(() =>
+  import("@/web/pages/ShopsPage").then((m) => ({ default: m.ShopsPage })),
+);
+const ShopDetailPage = lazy(() =>
+  import("@/web/pages/ShopDetailPage").then((m) => ({
+    default: m.ShopDetailPage,
+  })),
+);
+const BookingFlowPage = lazy(() =>
+  import("@/web/pages/BookingFlowPage").then((m) => ({
+    default: m.BookingFlowPage,
+  })),
+);
+const BookingSuccessPage = lazy(() =>
+  import("@/web/pages/BookingSuccessPage").then((m) => ({
+    default: m.BookingSuccessPage,
+  })),
+);
+const NotFoundPage = lazy(() =>
+  import("@/web/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
 );
 
-const AdminDashboard = lazy(() =>
-  import("./features/admin/AdminDashboard").then((module) => ({
-    default: module.AdminDashboard,
-  }))
+// --- Shop admin ---
+const ShopLayout = lazy(() =>
+  import("@/shop/Layout").then((m) => ({ default: m.ShopLayout })),
+);
+const ShopLoginPage = lazy(() =>
+  import("@/shop/pages/LoginPage").then((m) => ({ default: m.ShopLoginPage })),
+);
+const ShopOnboardingPage = lazy(() =>
+  import("@/shop/pages/OnboardingPage").then((m) => ({
+    default: m.ShopOnboardingPage,
+  })),
+);
+const ShopTodayPage = lazy(() =>
+  import("@/shop/pages/TodayPage").then((m) => ({ default: m.ShopTodayPage })),
+);
+const ShopBookingsPage = lazy(() =>
+  import("@/shop/pages/BookingsPage").then((m) => ({
+    default: m.ShopBookingsPage,
+  })),
+);
+const ShopBookingDetailPage = lazy(() =>
+  import("@/shop/pages/BookingDetailPage").then((m) => ({
+    default: m.ShopBookingDetailPage,
+  })),
+);
+const ShopRoomsPage = lazy(() =>
+  import("@/shop/pages/RoomsPage").then((m) => ({ default: m.ShopRoomsPage })),
+);
+const ShopInventoryPage = lazy(() =>
+  import("@/shop/pages/InventoryPage").then((m) => ({
+    default: m.ShopInventoryPage,
+  })),
+);
+const ShopTemplatesPage = lazy(() =>
+  import("@/shop/pages/TemplatesPage").then((m) => ({
+    default: m.ShopTemplatesPage,
+  })),
+);
+const ShopSettingsPage = lazy(() =>
+  import("@/shop/pages/SettingsPage").then((m) => ({
+    default: m.ShopSettingsPage,
+  })),
+);
+const ShopStaffPage = lazy(() =>
+  import("@/shop/pages/StaffPage").then((m) => ({ default: m.ShopStaffPage })),
+);
+const ShopBillingPage = lazy(() =>
+  import("@/shop/pages/BillingPage").then((m) => ({
+    default: m.ShopBillingPage,
+  })),
 );
 
-const AdminLogin = lazy(() =>
-  import("./features/admin/AdminLogin").then((module) => ({
-    default: module.AdminLogin,
-  }))
+// --- LIFF ---
+const LiffLayout = lazy(() =>
+  import("@/liff/Layout").then((m) => ({ default: m.LiffLayout })),
+);
+const LiffOrdersPage = lazy(() =>
+  import("@/liff/pages/OrdersPage").then((m) => ({
+    default: m.LiffOrdersPage,
+  })),
+);
+const LiffHistoryPage = lazy(() =>
+  import("@/liff/pages/HistoryPage").then((m) => ({
+    default: m.LiffHistoryPage,
+  })),
+);
+const LiffDiscoverPage = lazy(() =>
+  import("@/liff/pages/DiscoverPage").then((m) => ({
+    default: m.LiffDiscoverPage,
+  })),
+);
+const LiffFavoritesPage = lazy(() =>
+  import("@/liff/pages/FavoritesPage").then((m) => ({
+    default: m.LiffFavoritesPage,
+  })),
+);
+const LiffProfilePage = lazy(() =>
+  import("@/liff/pages/ProfilePage").then((m) => ({
+    default: m.LiffProfilePage,
+  })),
+);
+const LiffBindPage = lazy(() =>
+  import("@/liff/pages/BindPage").then((m) => ({ default: m.LiffBindPage })),
 );
 
-const AdminRedirect = lazy(() =>
-  import("./features/admin/AdminRedirect").then((module) => ({
-    default: module.AdminRedirect,
-  }))
+// --- Super Admin ---
+const AdminLayout = lazy(() =>
+  import("@/admin/Layout").then((m) => ({ default: m.AdminLayout })),
+);
+const AdminLoginPage = lazy(() =>
+  import("@/admin/pages/LoginPage").then((m) => ({
+    default: m.AdminLoginPage,
+  })),
+);
+const AdminShopsPage = lazy(() =>
+  import("@/admin/pages/ShopsPage").then((m) => ({
+    default: m.AdminShopsPage,
+  })),
+);
+const AdminCustomersPage = lazy(() =>
+  import("@/admin/pages/CustomersPage").then((m) => ({
+    default: m.AdminCustomersPage,
+  })),
+);
+const AdminBookingsPage = lazy(() =>
+  import("@/admin/pages/BookingsPage").then((m) => ({
+    default: m.AdminBookingsPage,
+  })),
 );
 
-const MobileDailyView = lazy(() =>
-  import("./features/admin/MobileDailyView").then((module) => ({
-    default: module.MobileDailyView,
-  }))
-);
-
-const AdminWalkInBooking = lazy(() =>
-  import("./features/admin/AdminWalkInBooking").then((module) => ({
-    default: module.AdminWalkInBooking,
-  }))
-);
-
-const SuperAdminLayout = lazy(() =>
-  import("./features/superadmin/SuperAdminLayout").then((module) => ({
-    default: module.SuperAdminLayout,
-  }))
-);
-
-const ShopManager = lazy(() =>
-  import("./features/superadmin/ShopManager").then((module) => ({
-    default: module.ShopManager,
-  }))
-);
-
-const SuperAdminDashboard = lazy(() =>
-  import("./features/superadmin/SuperAdminDashboard").then((module) => ({
-    default: module.SuperAdminDashboard,
-  }))
-);
-
-const Home = () => {
-  const { user, loading, error } = useLineAuth();
-  const navigate = useNavigate();
-
-  // Multi-Tenant: 從 LineAuth context 獲取 shopId
-  const { shopId } = useLineAuth();
-
-  // 載入商家資訊
-  const { shop } = useShopSettings(shopId);
-
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  if (error) {
-    return (
-      <div className="home-container">
-        <div className="home-error">
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            <h2 style={{ marginBottom: "0.5rem" }}>載入超時</h2>
-            <p style={{ color: "#666", fontSize: "0.9rem" }}>{error}</p>
-            {/* LIFF 環境會自動關閉，瀏覽器環境顯示重新整理提示 */}
-            <p
-              style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#999" }}
-            >
-              視窗即將關閉...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 處理預約按鈕點擊，保持 URL 參數傳遞
-  const handleBookingClick = () => {
-    // 直接傳遞目前的 URL 參數到預約頁面
-    navigate("/booking" + window.location.search);
-  };
-
+/** Wraps every /shop/* route with the ShopAuthProvider context. */
+function ShopAuthScope() {
   return (
-    <div className="home-container">
-      <header className="home-header">
-        {/* 顯示用戶 LINE 頭像 */}
-        {user?.pictureUrl && (
-          <img
-            src={user.pictureUrl}
-            alt={user.displayName}
-            className="user-avatar"
-          />
-        )}
-
-        <div className="user-info">
-          <h1>嗨，{user?.displayName || "訪客"}</h1>
-          <p className="welcome-text">
-            歡迎回來{shop?.name && `, ${shop.name}`}
-          </p>
-          {user?.phone && <p className="phone-text">{user.phone}</p>}
-        </div>
-      </header>
-
-      <main className="home-main">
-        {/* Service History */}
-        <ServiceHistory />
-      </main>
-
-      {/* 固定在底部的預約按鈕 */}
-      <div className="booking-section">
-        <button onClick={handleBookingClick} className="booking-button">
-          <span>我要預約</span>
-        </button>
-      </div>
-    </div>
+    <ShopAuthProvider>
+      <Outlet />
+    </ShopAuthProvider>
   );
-};
+}
 
-// Wrapper components for Layout & Auth
-const UserLayout = () => (
-  <LineAuthProvider>
-    <Outlet />
-  </LineAuthProvider>
-);
+/** Wraps every /admin/* route with the AdminAuthProvider context. */
+function AdminAuthScope() {
+  return (
+    <AdminAuthProvider>
+      <Outlet />
+    </AdminAuthProvider>
+  );
+}
 
-const AdminLayout = () => (
-  <AdminAuthProvider>
-    <Outlet />
-  </AdminAuthProvider>
-);
-
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
-            duration: 5000,
+            duration: 4000,
             style: {
-              background: "#363636",
+              background: "#1e293b",
               color: "#fff",
+              fontSize: "14px",
+              borderRadius: "12px",
             },
-            success: {
-              duration: 4000,
-              iconTheme: {
-                primary: "#10b981",
-                secondary: "#fff",
-              },
-            },
-            error: {
-              duration: 4000,
-              iconTheme: {
-                primary: "#ef4444",
-                secondary: "#fff",
-              },
-            },
+            success: { iconTheme: { primary: "#10b981", secondary: "#fff" } },
+            error: { iconTheme: { primary: "#ef4444", secondary: "#fff" } },
           }}
         />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* User Routes (Protected by LINE LIFF) */}
-            <Route element={<UserLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/booking" element={<AppointmentFormNew />} />
+            {/* Public Web */}
+            <Route element={<WebLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/shops" element={<ShopsPage />} />
+              <Route path="/shop/:slug" element={<ShopDetailPage />} />
+              <Route path="/shop/:slug/book" element={<BookingFlowPage />} />
+              <Route
+                path="/booking/success/:code"
+                element={<BookingSuccessPage />}
+              />
             </Route>
 
-            {/* Admin Routes (Protected by Firebase Auth) */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminRedirect />} />
-              <Route path="login" element={<AdminLogin />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="mobile" element={<MobileDailyView />} />
-              <Route path="walk-in-booking" element={<AdminWalkInBooking />} />
-            </Route>
-            {/* Super Admin Routes */}
-            <Route path="/superadmin" element={<AdminLayout />}>
-              <Route element={<SuperAdminLayout />}>
-                <Route index element={<SuperAdminDashboard />} />
-                <Route path="dashboard" element={<SuperAdminDashboard />} />
-                <Route path="shops" element={<ShopManager />} />
+            {/* Shop admin: shared auth context */}
+            <Route element={<ShopAuthScope />}>
+              <Route path="/shop/login" element={<ShopLoginPage />} />
+              <Route path="/shop/onboarding" element={<ShopOnboardingPage />} />
+              <Route element={<RequireShopAuth />}>
+                <Route element={<ShopLayout />}>
+                  <Route path="/shop/today" element={<ShopTodayPage />} />
+                  <Route path="/shop/bookings" element={<ShopBookingsPage />} />
+                  <Route
+                    path="/shop/bookings/:id"
+                    element={<ShopBookingDetailPage />}
+                  />
+                  <Route path="/shop/rooms" element={<ShopRoomsPage />} />
+                  <Route path="/shop/inventory" element={<ShopInventoryPage />} />
+                  <Route path="/shop/templates" element={<ShopTemplatesPage />} />
+                  <Route path="/shop/settings" element={<ShopSettingsPage />} />
+                  <Route path="/shop/staff" element={<ShopStaffPage />} />
+                  <Route path="/shop/billing" element={<ShopBillingPage />} />
+                </Route>
               </Route>
             </Route>
+
+            {/* LIFF */}
+            <Route element={<LiffLayout />}>
+              <Route path="/liff" element={<LiffOrdersPage />} />
+              <Route path="/liff/history" element={<LiffHistoryPage />} />
+              <Route path="/liff/discover" element={<LiffDiscoverPage />} />
+              <Route path="/liff/favorites" element={<LiffFavoritesPage />} />
+              <Route path="/liff/profile" element={<LiffProfilePage />} />
+            </Route>
+            <Route path="/liff/bind" element={<LiffBindPage />} />
+
+            {/* Super Admin */}
+            <Route element={<AdminAuthScope />}>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route element={<RequireAdmin />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/admin/shops" element={<AdminShopsPage />} />
+                  <Route
+                    path="/admin/customers"
+                    element={<AdminCustomersPage />}
+                  />
+                  <Route
+                    path="/admin/bookings"
+                    element={<AdminBookingsPage />}
+                  />
+                </Route>
+              </Route>
+            </Route>
+
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
     </BrowserRouter>
   );
 }
-
-export default App;
