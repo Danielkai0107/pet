@@ -14,6 +14,7 @@ import imageCompression from "browser-image-compression";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { fmtDateTime } from "@/lib/format";
+import { PLATFORM_NAME } from "@/lib/constants";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import type { BookingLog, BookingStatus } from "@/lib/types";
@@ -31,10 +32,10 @@ const MAX_SIZE_MB = 1;
 
 /**
  * 入住日誌區 — 入住中 / 已退房 訂單可拍照＋寫文字回報家長。
- *   - checked_in：「儲存並回報家長」按鈕會推 LINE Flex
+ *   - checked_in：「儲存並回報家長」按鈕會推 圖文通知（LINE Flex）
  *   - checked_out：「儲存（不發送）」只記錄，跳過 push
- *   - 若家長未綁 LINE，server 端會回 notify_status='no_line'，這裡也會
- *     正確顯示「未綁 LINE，僅紀錄」徽章
+ *   - 若家長未開通圖文通知（未加入 PetLink 官方帳號或未綁手機），
+ *     server 端會回 notify_status='no_line'，這裡顯示「未開通圖文通知」徽章
  */
 export function StayLogPanel({ bookingId, shopId, status }: Props) {
   const [logs, setLogs] = useState<BookingLog[]>([]);
@@ -349,11 +350,12 @@ function NewLogForm({
         ) : (
           <CheckCircle2 className="h-4 w-4" />
         )}
-        {shouldPush ? "儲存並回報家長" : "儲存（不發送）"}
+        {shouldPush ? "儲存並發送圖文通知給家長" : "儲存（不發送）"}
       </button>
       {shouldPush && (
         <p className="text-center text-[11px] text-neutral-400">
-          若家長尚未綁定 LINE，會以「僅紀錄」狀態保存
+          家長需加入 {PLATFORM_NAME} 官方帳號並綁定手機才會收到通知；
+          否則僅留為店內紀錄
         </p>
       )}
     </form>
@@ -410,15 +412,18 @@ function NotifyBadge({
     return (
       <span className="inline-flex items-center gap-1 text-emerald-700">
         <CheckCircle2 className="h-3 w-3" />
-        已發送 LINE{sentAt ? ` · ${fmtDateTime(sentAt)}` : ""}
+        已發送圖文通知{sentAt ? ` · ${fmtDateTime(sentAt)}` : ""}
       </span>
     );
   }
   if (status === "no_line") {
     return (
-      <span className="inline-flex items-center gap-1 text-neutral-500">
+      <span
+        className="inline-flex items-center gap-1 text-neutral-500"
+        title={`需請家長加入 ${PLATFORM_NAME} 官方帳號並綁定手機`}
+      >
         <PawPrint className="h-3 w-3" />
-        未綁 LINE，僅紀錄
+        未開通圖文通知，僅留紀錄
       </span>
     );
   }
