@@ -1,5 +1,11 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -199,6 +205,10 @@ export default function App() {
 
             {/* Shop admin: shared auth context */}
             <Route element={<ShopAuthScope />}>
+              <Route
+                path="/shop"
+                element={<Navigate to="/shop/today" replace />}
+              />
               <Route path="/shop/login" element={<ShopLoginPage />} />
               <Route path="/shop/onboarding" element={<ShopOnboardingPage />} />
               <Route element={<RequireShopAuth />}>
@@ -231,6 +241,10 @@ export default function App() {
 
             {/* Super Admin */}
             <Route element={<AdminAuthScope />}>
+              <Route
+                path="/admin"
+                element={<Navigate to="/admin/shops" replace />}
+              />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route element={<RequireAdmin />}>
                 <Route element={<AdminLayout />}>
