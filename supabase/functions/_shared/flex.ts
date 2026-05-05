@@ -87,30 +87,16 @@ export function buildBookingBubble(
     size: "kilo",
     body: buildBody(meta.statusLabel, vars),
   };
-  const hero = buildHero(vars);
-  if (hero) bubble.hero = hero;
   const footer = buildFooter(meta.cta, vars);
   if (footer) bubble.footer = footer;
   return bubble;
 }
 
-/** Hero：純商家封面圖 banner，比例 5:1；無封面則回 undefined（由 body 接手）。 */
-function buildHero(vars: FlexBookingVars): Record<string, unknown> | undefined {
-  if (!vars.shopCoverUrl) return undefined;
-  return {
-    type: "image",
-    url: vars.shopCoverUrl,
-    size: "full",
-    aspectRatio: "5:1",
-    aspectMode: "cover",
-  };
-}
-
 /**
- * Body：
- *   - 第 1 行：狀態 pill（Airbnb 軟調 brand-50 + brand-700 字）
- *   - 第 2 行：店名（lg bold）
- *   - 第 3 行：地址（xs slate-500，可省略）
+ * Body：純文字版面，無 hero 圖。
+ *   - 第 1 行：店名（lg bold）
+ *   - 第 2 行：地址（xs slate-500，可省略）
+ *   - 第 3 行：狀態 pill（brand-50 / brand-700）
  *   - separator
  *   - 訂單編號 + 5 個 row 資料表 + 費用（slate-900 加粗）
  */
@@ -119,7 +105,6 @@ function buildBody(
   vars: FlexBookingVars,
 ): Record<string, unknown> {
   const headerContents: Record<string, unknown>[] = [
-    statusPill(statusLabel),
     {
       type: "text",
       text: vars.shopName,
@@ -128,7 +113,6 @@ function buildBody(
       color: SLATE_900,
       wrap: true,
       maxLines: 2,
-      margin: "md",
     },
   ];
   if (vars.shopAddress) {
@@ -142,6 +126,8 @@ function buildBody(
       margin: "xs",
     });
   }
+  // 狀態 pill 放在地址底下
+  headerContents.push({ ...statusPill(statusLabel), margin: "md" });
 
   return {
     type: "box",
