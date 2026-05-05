@@ -3,8 +3,8 @@
 -- All tables are multi-tenant by `shop_id`; RLS isolates data per shop.
 -- =====================================================================
 
-create extension if not exists "pgcrypto";
-create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto" with schema extensions;
+-- gen_random_uuid() is provided by pgcrypto; uuid-ossp not required.
 
 -- ---------- enums ----------
 
@@ -51,7 +51,7 @@ end$$;
 -- ---------- tables ----------
 
 create table if not exists shops (
-  id                 uuid primary key default uuid_generate_v4(),
+  id                 uuid primary key default gen_random_uuid(),
   slug               text not null unique,
   name               text not null,
   description        text,
@@ -72,7 +72,7 @@ create index if not exists idx_shops_status on shops(status);
 create index if not exists idx_shops_city   on shops(city);
 
 create table if not exists shop_members (
-  id           uuid primary key default uuid_generate_v4(),
+  id           uuid primary key default gen_random_uuid(),
   shop_id      uuid not null references shops(id) on delete cascade,
   user_id      uuid not null references auth.users(id) on delete cascade,
   role         shop_member_role not null default 'staff',
@@ -83,7 +83,7 @@ create table if not exists shop_members (
 create index if not exists idx_shop_members_user on shop_members(user_id);
 
 create table if not exists rooms (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   shop_id         uuid not null references shops(id) on delete cascade,
   name            text not null,
   description     text,
@@ -100,7 +100,7 @@ create table if not exists rooms (
 create index if not exists idx_rooms_shop on rooms(shop_id);
 
 create table if not exists room_inventory_overrides (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   room_id         uuid not null references rooms(id) on delete cascade,
   date            date not null,
   available_count integer,
@@ -111,7 +111,7 @@ create table if not exists room_inventory_overrides (
 );
 
 create table if not exists customers (
-  id             uuid primary key default uuid_generate_v4(),
+  id             uuid primary key default gen_random_uuid(),
   line_user_id   text unique,
   display_name   text,
   picture_url    text,
@@ -124,7 +124,7 @@ create index if not exists idx_customers_phone on customers(phone);
 create index if not exists idx_customers_email on customers(email);
 
 create table if not exists bookings (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   code            text not null unique,
   shop_id         uuid not null references shops(id) on delete restrict,
   room_id         uuid not null references rooms(id) on delete restrict,
@@ -166,7 +166,7 @@ create index if not exists idx_bookings_phone     on bookings(guest_phone);
 create index if not exists idx_bookings_dates     on bookings(check_in_date, check_out_date);
 
 create table if not exists booking_occupancies (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   booking_id  uuid not null references bookings(id) on delete cascade,
   room_id     uuid not null references rooms(id) on delete cascade,
   date        date not null
@@ -175,7 +175,7 @@ create index if not exists idx_occ_room_date on booking_occupancies(room_id, dat
 create index if not exists idx_occ_booking   on booking_occupancies(booking_id);
 
 create table if not exists notification_templates (
-  id         uuid primary key default uuid_generate_v4(),
+  id         uuid primary key default gen_random_uuid(),
   shop_id    uuid not null references shops(id) on delete cascade,
   kind       notification_kind not null,
   subject    text not null,
@@ -186,7 +186,7 @@ create table if not exists notification_templates (
 );
 
 create table if not exists notifications (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   booking_id  uuid references bookings(id) on delete set null,
   customer_id uuid references customers(id) on delete set null,
   channel     notification_channel not null,
@@ -202,7 +202,7 @@ create table if not exists notifications (
 create index if not exists idx_notif_booking on notifications(booking_id);
 
 create table if not exists favorites (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   customer_id uuid not null references customers(id) on delete cascade,
   shop_id     uuid not null references shops(id) on delete cascade,
   created_at  timestamptz not null default now(),
@@ -210,7 +210,7 @@ create table if not exists favorites (
 );
 
 create table if not exists admins (
-  id         uuid primary key default uuid_generate_v4(),
+  id         uuid primary key default gen_random_uuid(),
   user_id    uuid not null unique references auth.users(id) on delete cascade,
   role       admin_role not null default 'admin',
   created_at timestamptz not null default now()
@@ -218,7 +218,7 @@ create table if not exists admins (
 
 -- One-time email OTPs used to bind LINE user → existing bookings via email.
 create table if not exists email_otps (
-  id         uuid primary key default uuid_generate_v4(),
+  id         uuid primary key default gen_random_uuid(),
   email      text not null,
   code_hash  text not null,
   attempts   integer not null default 0,

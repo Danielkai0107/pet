@@ -133,7 +133,7 @@ begin
 
   -- 4) generate human-friendly code: PS-yyMMdd-XXXXXX
   v_code := 'PS-' || to_char(now() at time zone 'Asia/Taipei', 'YYMMDD')
-            || '-' || upper(substr(replace(uuid_generate_v4()::text, '-', ''), 1, 6));
+            || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6));
 
   insert into bookings (
     code, shop_id, room_id, customer_id,

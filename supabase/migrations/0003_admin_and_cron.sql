@@ -37,7 +37,7 @@ begin
 end$$;
 
 create table if not exists shop_subscriptions (
-  id           uuid primary key default uuid_generate_v4(),
+  id           uuid primary key default gen_random_uuid(),
   shop_id      uuid not null unique references shops(id) on delete cascade,
   plan         subscription_plan not null default 'trial',
   starts_at    timestamptz not null default now(),
