@@ -337,7 +337,11 @@ function Field({
         {required && <span className="ml-1 text-rose-600">*</span>}
       </label>
       {children}
-      {hint && <p className="helper">{hint}</p>}
+      {hint && (
+        <p className="mt-2.5 text-xs leading-relaxed text-neutral-500">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
