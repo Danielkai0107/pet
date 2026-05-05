@@ -9,6 +9,7 @@ import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetType, ShopStatus } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
 import { Badge } from "@/components/Badge";
+import { ImageUploader } from "@/components/ImageUploader";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { PageHeader } from "@/shop/components/PageHeader";
 
@@ -35,6 +36,7 @@ interface FormState {
   contact_phone: string;
   contact_email: string;
   line_oa_url: string;
+  cover_image_url: string | null;
   pet_types: PetType[];
 }
 
@@ -54,6 +56,7 @@ export function ShopSettingsPage() {
       contact_phone: shop.contact_phone ?? "",
       contact_email: shop.contact_email ?? "",
       line_oa_url: shop.line_oa_url ?? "",
+      cover_image_url: shop.cover_image_url ?? null,
       pet_types: shop.pet_types,
     });
   }, [shop]);
@@ -73,6 +76,7 @@ export function ShopSettingsPage() {
         contact_phone: form.contact_phone || null,
         contact_email: form.contact_email || null,
         line_oa_url: form.line_oa_url || null,
+        cover_image_url: form.cover_image_url,
         pet_types: form.pet_types,
       })
       .eq("id", shop.id);
@@ -106,6 +110,19 @@ export function ShopSettingsPage() {
       />
 
       <form onSubmit={handleSubmit} className="card space-y-5 p-6">
+        <Field
+          label="商家封面圖"
+          hint="會顯示在搜尋結果、店家頁，以及 LINE 通知卡片頂端，建議 16:9"
+        >
+          <ImageUploader
+            mode="single"
+            value={form.cover_image_url}
+            onChange={(url) => setForm({ ...form, cover_image_url: url })}
+            pathPrefix={`${shop.id}/cover`}
+            aspectRatio="16/9"
+          />
+        </Field>
+
         <Field label="店名 *" required>
           <input
             className="input"

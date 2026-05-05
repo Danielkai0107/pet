@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
+import { ImageUploader } from "@/components/ImageUploader";
 import {
   PET_SIZE_LABEL,
   PET_TYPE_LABEL,
@@ -26,6 +27,7 @@ interface RoomForm {
   pet_sizes: PetSize[];
   is_active: boolean;
   sort_order: number;
+  photo_urls: string[];
 }
 
 const empty: RoomForm = {
@@ -37,6 +39,7 @@ const empty: RoomForm = {
   pet_sizes: ["small", "medium"],
   is_active: true,
   sort_order: 0,
+  photo_urls: [],
 };
 
 export function RoomFormModal({
@@ -62,6 +65,7 @@ export function RoomFormModal({
               pet_sizes: initial.pet_sizes,
               is_active: initial.is_active,
               sort_order: initial.sort_order,
+              photo_urls: initial.photo_urls ?? [],
             }
           : empty,
       );
@@ -93,6 +97,7 @@ export function RoomFormModal({
       pet_sizes: form.pet_sizes,
       is_active: form.is_active,
       sort_order: form.sort_order,
+      photo_urls: form.photo_urls,
     };
     const { error } = initial
       ? await supabase.from("rooms").update(payload).eq("id", initial.id)
@@ -131,6 +136,16 @@ export function RoomFormModal({
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder="例：獨立 3 坪空間，含寵物床、自動飲水器"
+          />
+        </Field>
+
+        <Field label="房型照片" hint="最多 6 張，第一張會作為房型封面顯示">
+          <ImageUploader
+            mode="multi"
+            value={form.photo_urls}
+            onChange={(urls) => setForm({ ...form, photo_urls: urls })}
+            pathPrefix={`${shopId}/rooms/${initial?.id ?? "new"}`}
+            max={6}
           />
         </Field>
 

@@ -1,9 +1,13 @@
 // LINE Flex Message bubble builders for booking lifecycle events.
 //
-// All bubbles share the same body skeleton (店家 / 寵物 / 入住 / 退房 / 房型 /
-// 費用) and differ only in the header colour + status label + headline copy
-// + footer CTA. This keeps the visual language consistent across all six
-// states the customer might receive.
+// 設計：對標 inline 訂位通知卡片
+//   - hero 區為「商家封面圖」，狀態 pill 浮在左上角；店名 + 地址疊在
+//     圖底部漸層上（白字）
+//   - body 為純資訊欄位（訂單編號 / 入住 / 退房 / 夜數 / 房型 / 寵物 /
+//     費用），標籤淺灰、值深色，費用以 brand teal 強調
+//   - footer 為兩個堆疊的軟調按鈕（teal-100 底 + teal-700 字），
+//     主 CTA 在上、致電店家在下
+//   - 無任何 emoji，全部以文字呈現
 
 export type LineNotifyKind =
   | "booking_received"
@@ -16,6 +20,9 @@ export type LineNotifyKind =
 
 export interface FlexBookingVars {
   shopName: string;
+  shopAddress?: string;
+  shopPhone?: string;
+  shopCoverUrl?: string;
   bookingCode: string;
   guestName: string;
   petName: string;
@@ -29,72 +36,31 @@ export interface FlexBookingVars {
 }
 
 interface KindMeta {
-  /** Solid hex used for the header bar. */
-  headerColor: string;
-  /** Status badge text shown in the header. */
+  /** 狀態 pill 文字 */
   statusLabel: string;
-  /** Big H1 sentence in the body. */
-  headline: string;
-  /** Small grey paragraph under the headline. */
-  subline: string;
-  /** Footer button label. */
+  /** 主 CTA 標籤（footer 第一顆按鈕） */
   cta: string;
 }
 
 const META: Record<LineNotifyKind, KindMeta> = {
-  booking_received: {
-    headerColor: "#0EA5E9",
-    statusLabel: "預約已送出",
-    headline: "我們已收到您的預約申請",
-    subline: "店家確認後會再通知您，請耐心稍候。",
-    cta: "查看我的訂單",
-  },
-  booking_confirmed: {
-    headerColor: "#16A34A",
-    statusLabel: "預約已確認",
-    headline: "店家已確認您的預約",
-    subline: "請於入住當天攜帶寵物的疫苗證明與飼料，期待相見！",
-    cta: "查看訂單詳情",
-  },
-  booking_declined: {
-    headerColor: "#DC2626",
-    statusLabel: "預約未受理",
-    headline: "很抱歉，店家無法接受此預約",
-    subline: "可能是該時段已客滿。歡迎改選其他日期或其他旅館。",
-    cta: "找其他旅館",
-  },
-  booking_cancelled: {
-    headerColor: "#64748B",
-    statusLabel: "預約已取消",
-    headline: "您的預約已取消",
-    subline: "如有需要，歡迎隨時再次預約。",
-    cta: "再次預約",
-  },
-  booking_reminder: {
-    headerColor: "#F59E0B",
-    statusLabel: "明天入住提醒",
-    headline: "別忘了，明天就要入住囉！",
-    subline: "請攜帶寵物的疫苗證明、飼料與隨身用品。",
-    cta: "查看訂單",
-  },
-  checked_in: {
-    headerColor: "#A855F7",
-    statusLabel: "已入住",
-    headline: "已成功入住",
-    subline: "我們會悉心照顧您的寶貝，有任何訊息會主動通知您。",
-    cta: "查看訂單",
-  },
-  checked_out: {
-    headerColor: "#D97706",
-    statusLabel: "退房完成",
-    headline: "感謝您本次的光顧！",
-    subline: "希望這次的住宿體驗讓您與毛孩都滿意，期待再次相見。",
-    cta: "再次預約",
-  },
+  booking_received: { statusLabel: "預約已送出", cta: "查看訂單詳情" },
+  booking_confirmed: { statusLabel: "預約已確認", cta: "查看訂單詳情" },
+  booking_declined: { statusLabel: "預約未受理", cta: "查看訂單詳情" },
+  booking_cancelled: { statusLabel: "預約已取消", cta: "再次預約" },
+  booking_reminder: { statusLabel: "明天入住提醒", cta: "查看訂單詳情" },
+  checked_in: { statusLabel: "已入住", cta: "查看訂單詳情" },
+  checked_out: { statusLabel: "退房完成", cta: "再次預約" },
 };
 
+// Brand teal — 跟前端後台 .btn-primary / 主色一致 (#0d9488 / #0f766e)
+const TEAL_700 = "#0F766E";
+const TEAL_100 = "#CCFBF1";
+const SLATE_900 = "#0F172A";
+const SLATE_500 = "#64748B";
+const SLATE_400 = "#94A3B8";
+const SLATE_200 = "#E2E8F0";
+
 function fmtDate(iso: string): string {
-  // Render as YYYY/MM/DD (週X) — pure string ops, no date-fns in Deno.
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!m) return iso;
   const d = new Date(`${iso}T00:00:00Z`);
@@ -113,102 +79,192 @@ export function buildBookingBubble(
 ): Record<string, unknown> {
   const meta = META[kind];
 
-  const detailButton: Record<string, unknown> | null = vars.detailUrl
-    ? {
-        type: "button",
-        style: "primary",
-        height: "sm",
-        color: meta.headerColor,
-        action: {
-          type: "uri",
-          label: meta.cta,
-          uri: vars.detailUrl,
-        },
-      }
-    : null;
-
   return {
     type: "bubble",
     size: "kilo",
-    header: {
+    hero: buildHero(meta.statusLabel, vars),
+    body: buildBody(vars),
+    footer: buildFooter(meta.cta, vars),
+  };
+}
+
+/** Hero：商家封面圖 + 左上狀態 pill + 底部漸層 + 店名 / 地址疊字。 */
+function buildHero(
+  statusLabel: string,
+  vars: FlexBookingVars,
+): Record<string, unknown> {
+  const overlays: Record<string, unknown>[] = [
+    // 左上角狀態 pill
+    {
       type: "box",
-      layout: "vertical",
-      backgroundColor: meta.headerColor,
-      paddingAll: "lg",
+      layout: "horizontal",
+      position: "absolute",
+      offsetTop: "12px",
+      offsetStart: "12px",
+      backgroundColor: TEAL_100,
+      cornerRadius: "md",
+      paddingAll: "6px",
+      paddingStart: "10px",
+      paddingEnd: "10px",
+      width: "fit-content" as unknown as string,
       contents: [
         {
           type: "text",
-          text: meta.statusLabel,
-          color: "#FFFFFF",
+          text: statusLabel,
+          color: TEAL_700,
           weight: "bold",
-          size: "sm",
+          size: "xs",
         },
+      ],
+    },
+    // 底部黑色漸層 — LINE Flex 沒有原生 gradient，用半透明黑色 box 模擬
+    {
+      type: "box",
+      layout: "vertical",
+      position: "absolute",
+      offsetBottom: "0px",
+      offsetStart: "0px",
+      offsetEnd: "0px",
+      height: "84px",
+      backgroundColor: "#00000077",
+      contents: [],
+    },
+    // 店名 + 地址疊在底部
+    {
+      type: "box",
+      layout: "vertical",
+      position: "absolute",
+      offsetBottom: "12px",
+      offsetStart: "16px",
+      offsetEnd: "16px",
+      contents: [
         {
           type: "text",
           text: vars.shopName,
           color: "#FFFFFF",
           weight: "bold",
-          size: "xl",
-          margin: "sm",
+          size: "lg",
           wrap: true,
         },
-        {
-          type: "text",
-          text: `訂單 ${vars.bookingCode}`,
-          color: "#FFFFFFCC",
-          size: "xs",
-          margin: "sm",
-        },
+        ...(vars.shopAddress
+          ? [
+              {
+                type: "text",
+                text: vars.shopAddress,
+                color: "#FFFFFFCC",
+                size: "xs",
+                margin: "xs",
+                wrap: true,
+                maxLines: 1,
+              },
+            ]
+          : []),
       ],
     },
-    body: {
+  ];
+
+  if (vars.shopCoverUrl) {
+    return {
       type: "box",
       layout: "vertical",
-      spacing: "md",
-      paddingAll: "lg",
+      paddingAll: "0px",
       contents: [
         {
-          type: "text",
-          text: meta.headline,
-          weight: "bold",
-          size: "md",
-          color: "#0F172A",
-          wrap: true,
+          type: "image",
+          url: vars.shopCoverUrl,
+          size: "full",
+          aspectRatio: "20:13",
+          aspectMode: "cover",
         },
-        {
-          type: "text",
-          text: meta.subline,
-          size: "xs",
-          color: "#64748B",
-          wrap: true,
-          margin: "sm",
-        },
-        { type: "separator", margin: "lg" },
-        {
-          type: "box",
-          layout: "vertical",
-          spacing: "sm",
-          margin: "md",
-          contents: [
-            row("入住", fmtDate(vars.checkInDate)),
-            row("退房", fmtDate(vars.checkOutDate)),
-            row("夜數", `${vars.nights} 晚`),
-            row("房型", vars.roomName),
-            row("寵物", vars.petName),
-            row("費用", fmtMoney(vars.totalPrice), "#0EA5E9", true),
-          ],
-        },
+        ...overlays,
       ],
+    };
+  }
+
+  // Fallback：沒有封面圖 → 用 teal 底色 + 大字店名
+  return {
+    type: "box",
+    layout: "vertical",
+    backgroundColor: TEAL_700,
+    paddingAll: "0px",
+    height: "180px",
+    contents: overlays,
+  };
+}
+
+/** Body：訂單編號 + 6 個 row 資料表，跟 inline 排版一樣 label 淺、值深 */
+function buildBody(vars: FlexBookingVars): Record<string, unknown> {
+  return {
+    type: "box",
+    layout: "vertical",
+    paddingAll: "20px",
+    spacing: "md",
+    contents: [
+      row("訂單編號", vars.bookingCode, SLATE_900, true),
+      { type: "separator", color: SLATE_200 },
+      row("入住", fmtDate(vars.checkInDate)),
+      row("退房", fmtDate(vars.checkOutDate)),
+      row("夜數", `${vars.nights} 晚`),
+      row("房型", vars.roomName),
+      row("寵物", vars.petName),
+      row("費用", fmtMoney(vars.totalPrice), TEAL_700, true),
+    ],
+  };
+}
+
+/** Footer：兩顆堆疊的「軟調 teal」按鈕 — 主 CTA + 致電店家 */
+function buildFooter(
+  ctaLabel: string,
+  vars: FlexBookingVars,
+): Record<string, unknown> | undefined {
+  const buttons: Record<string, unknown>[] = [];
+
+  if (vars.detailUrl) {
+    buttons.push(softButton(ctaLabel, vars.detailUrl));
+  }
+  if (vars.shopPhone) {
+    buttons.push(
+      softButton(`致電店家 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
+    );
+  }
+
+  if (buttons.length === 0) return undefined;
+
+  return {
+    type: "box",
+    layout: "vertical",
+    spacing: "sm",
+    paddingAll: "16px",
+    paddingTop: "0px",
+    contents: buttons,
+  };
+}
+
+/** Inline-style soft pill button: teal-100 底 + teal-700 字 */
+function softButton(label: string, uri: string): Record<string, unknown> {
+  return {
+    type: "box",
+    layout: "vertical",
+    backgroundColor: TEAL_100,
+    cornerRadius: "lg",
+    paddingAll: "14px",
+    action: {
+      type: "uri",
+      label,
+      uri,
     },
-    footer: detailButton
-      ? {
-          type: "box",
-          layout: "vertical",
-          spacing: "sm",
-          paddingAll: "lg",
-          contents: [detailButton],
-        }
-      : undefined,
+    contents: [
+      {
+        type: "text",
+        text: label,
+        color: TEAL_700,
+        weight: "bold",
+        size: "sm",
+        align: "center",
+        wrap: false,
+        maxLines: 1,
+      },
+    ],
   };
 }
 
@@ -224,18 +280,18 @@ export function buildBookingAltText(
 function row(
   label: string,
   value: string,
-  valueColor = "#0F172A",
+  valueColor = SLATE_900,
   bold = false,
 ): Record<string, unknown> {
   return {
     type: "box",
-    layout: "baseline",
-    spacing: "sm",
+    layout: "horizontal",
+    spacing: "md",
     contents: [
       {
         type: "text",
         text: label,
-        color: "#94A3B8",
+        color: SLATE_400,
         size: "sm",
         flex: 2,
       },
@@ -247,7 +303,11 @@ function row(
         size: "sm",
         flex: 5,
         wrap: true,
+        align: "end",
       },
     ],
   };
 }
+
+// Suppress lint for SLATE_500 — kept for callers that may want subtle copy
+void SLATE_500;

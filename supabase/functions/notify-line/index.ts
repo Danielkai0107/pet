@@ -132,17 +132,29 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: true, sent: false, reason: "no_line_user" });
   }
 
-  // Look up display data for the bubble.
+  // Look up display data for the bubble (cover image, address, phone are
+  // used in the hero / footer overlays).
   const { data: shop } = await supa
     .from("shops")
-    .select("name")
+    .select("name, address, contact_phone, cover_image_url, city, district")
     .eq("id", booking.shop_id)
-    .maybeSingle<{ name: string }>();
+    .maybeSingle<{
+      name: string;
+      address: string | null;
+      contact_phone: string | null;
+      cover_image_url: string | null;
+      city: string | null;
+      district: string | null;
+    }>();
   const { data: room } = await supa
     .from("rooms")
     .select("name")
     .eq("id", booking.room_id)
     .maybeSingle<{ name: string }>();
+
+  const fullAddress = shop?.address
+    ? shop.address
+    : [shop?.city, shop?.district].filter(Boolean).join(" ") || undefined;
 
   // CTA deeplink — points straight to the booking detail page inside LIFF.
   // Requires LIFF Endpoint URL in LINE Console to be set to
@@ -155,8 +167,11 @@ Deno.serve(async (req: Request) => {
     : (Deno.env.get("PUBLIC_SITE_URL") ?? "").replace(/\/$/, "") +
       `/booking/${booking.code}`;
 
-  const bubble = buildBookingBubble(body.kind, {
+  const flexVars = {
     shopName: shop?.name ?? "(店家)",
+    shopAddress: fullAddress,
+    shopPhone: shop?.contact_phone ?? undefined,
+    shopCoverUrl: shop?.cover_image_url ?? undefined,
     bookingCode: booking.code,
     guestName: booking.guest_name,
     petName: booking.pet_name,
@@ -166,18 +181,9 @@ Deno.serve(async (req: Request) => {
     nights: booking.nights,
     totalPrice: booking.total_price,
     detailUrl,
-  });
-  const altText = buildBookingAltText(body.kind, {
-    shopName: shop?.name ?? "",
-    bookingCode: booking.code,
-    guestName: booking.guest_name,
-    petName: booking.pet_name,
-    roomName: room?.name ?? "",
-    checkInDate: booking.check_in_date,
-    checkOutDate: booking.check_out_date,
-    nights: booking.nights,
-    totalPrice: booking.total_price,
-  });
+  };
+  const bubble = buildBookingBubble(body.kind, flexVars);
+  const altText = buildBookingAltText(body.kind, flexVars);
 
   let sendStatus: "sent" | "failed" = "sent";
   let sendError: string | null = null;
