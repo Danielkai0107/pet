@@ -1,5 +1,4 @@
 import { Link, Outlet } from "react-router-dom";
-import { Search } from "lucide-react";
 import { PLATFORM_NAME } from "@/lib/constants";
 
 /**
@@ -26,9 +25,8 @@ export function WebLayout() {
 
           <Link
             to="/shops"
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition-shadow hover:shadow-md"
+            className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition-shadow hover:shadow-md"
           >
-            <Search className="h-4 w-4" />
             開始搜尋
           </Link>
         </div>
