@@ -4,8 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        // DM Sans 為主字體（拉丁），中文 fallback Noto Sans TC，其後為
+        // 系統字體保底。所有元件預設都會吃 .font-sans 這組 stack。
         sans: [
-          "Inter",
+          "DM Sans",
           "Noto Sans TC",
           "-apple-system",
           "system-ui",
