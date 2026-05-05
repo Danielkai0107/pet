@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Bed,
+  ChevronLeft,
   MapPin,
   PawPrint,
   Phone,
@@ -18,7 +19,6 @@ import { FavoriteButton } from "@/web/components/FavoriteButton";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
 import { useServiceFeatures } from "@/lib/useServiceFeatures";
 import { getFeatureIcon } from "@/lib/featureIcon";
-import { LiffBackBar } from "@/liff/components/LiffBackBar";
 
 /**
  * Airbnb 風房源詳情頁：
@@ -71,10 +71,27 @@ export function ShopDetailPage() {
 
   const cover = shop.cover_image_url;
 
+  // 上方「回首頁」連結 — 小字灰色，導向搜尋首頁。
+  // LIFF 內回到 /liff/discover，公開站回到 /shops。
+  const homeHref = isLiff ? "/liff/discover" : "/shops";
+
   return (
     <div className="bg-white pb-28 sm:pb-12">
-      {isLiff && <LiffBackBar caption={shop.name} />}
-      <div className="mx-auto max-w-5xl px-4 pt-5 sm:pt-8">
+      <div
+        className={
+          "mx-auto max-w-5xl px-4 pt-3 sm:pt-5" +
+          (isLiff ? " pt-[max(env(safe-area-inset-top),12px)]" : "")
+        }
+      >
+        <Link
+          to={homeHref}
+          className="inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+          回首頁
+        </Link>
+      </div>
+      <div className="mx-auto max-w-5xl px-4 pt-3 sm:pt-4">
         {/* 標題 + 評分 + 收藏 */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
