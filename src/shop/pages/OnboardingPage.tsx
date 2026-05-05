@@ -164,6 +164,7 @@ export function ShopOnboardingPage() {
                   type="email"
                   className="input"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={submitting}
@@ -176,6 +177,7 @@ export function ShopOnboardingPage() {
                   className="input"
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={submitting}

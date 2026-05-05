@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Calendar, Edit3 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Edit3,
+  CalendarRange,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
@@ -12,6 +18,7 @@ import type { Room, RoomAvailabilityDay } from "@/lib/types";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { useRooms } from "@/shop/hooks/useRooms";
 import { PageHeader } from "@/shop/components/PageHeader";
+import { BulkInventoryModal } from "@/shop/components/BulkInventoryModal";
 import { cn } from "@/lib/cn";
 
 export function ShopInventoryPage() {
@@ -23,6 +30,7 @@ export function ShopInventoryPage() {
   const [days, setDays] = useState<RoomAvailabilityDay[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingDay, setEditingDay] = useState<RoomAvailabilityDay | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   // Auto-select first room when list loads
   useEffect(() => {
@@ -138,6 +146,14 @@ export function ShopInventoryPage() {
               >
                 本月
               </button>
+              <button
+                className="btn-primary text-xs"
+                onClick={() => setBulkOpen(true)}
+                disabled={!selectedRoom}
+              >
+                <CalendarRange className="h-4 w-4" />
+                批次設定
+              </button>
             </div>
           </div>
 
@@ -220,6 +236,18 @@ export function ShopInventoryPage() {
           onClose={() => setEditingDay(null)}
           onSaved={async () => {
             setEditingDay(null);
+            await loadDays();
+          }}
+        />
+      )}
+
+      {selectedRoom && (
+        <BulkInventoryModal
+          room={selectedRoom}
+          open={bulkOpen}
+          onClose={() => setBulkOpen(false)}
+          onSaved={async () => {
+            setBulkOpen(false);
             await loadDays();
           }}
         />

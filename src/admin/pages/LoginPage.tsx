@@ -54,6 +54,7 @@ export function AdminLoginPage() {
             type="email"
             className="input"
             placeholder="Email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -62,6 +63,7 @@ export function AdminLoginPage() {
             type="password"
             className="input"
             placeholder="密碼"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
