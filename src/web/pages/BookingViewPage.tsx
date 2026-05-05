@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Bed,
@@ -9,6 +9,7 @@ import {
   MapPin,
   PawPrint,
   Phone,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
@@ -26,7 +27,6 @@ import type { BookingStatus, PetSize, PetType } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
 import { sendBookingLine } from "@/lib/notify";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
-import { LiffBackBar } from "@/liff/components/LiffBackBar";
 
 interface PublicBookingLog {
   id: string;
@@ -83,6 +83,7 @@ const STATUS_DESCRIPTION: Record<BookingStatus, string> = {
 
 export function BookingViewPage() {
   const { code } = useParams<{ code: string }>();
+  const navigate = useNavigate();
   const { isLiff, shopPrefix } = useRoutePrefix();
   const [booking, setBooking] = useState<BookingViewRow | null>(null);
   const [logs, setLogs] = useState<PublicBookingLog[]>([]);
@@ -90,6 +91,30 @@ export function BookingViewPage() {
   const [cancelling, setCancelling] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const { petTypeLabel, petSizeLabel } = useManagedOptions();
+
+  // 關閉 popup：優先回上一頁（從訂單列表進來會回列表並保留滾動位置），
+  // 沒有歷史時 fallback 到 LIFF 我的訂單 / 公開首頁。
+  const handleClose = useCallback(() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate(isLiff ? "/liff" : "/", { replace: true });
+    }
+  }, [navigate, isLiff]);
+
+  // popup 開啟期間鎖住背景捲動 + Esc 關閉
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [handleClose]);
 
   const reload = async () => {
     if (!code) return;
@@ -146,16 +171,23 @@ export function BookingViewPage() {
     await reload();
   };
 
+  // ── 渲染 ─────────────────────────────────────────────────────────────
+  // 整個訂單詳情當「popup」呈現：
+  //   • 手機：全螢幕 sheet（無 backdrop padding，圓角只在頂部）
+  //   • 桌機：置中卡片（最大 max-w-2xl，外圈半透明 backdrop 可點擊關閉）
+  // header / footer 黏在 sheet 上下緣，body 內部捲動。
+  let body: React.ReactNode;
+  let footer: React.ReactNode = null;
+
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+    body = (
+      <div className="flex min-h-[40vh] items-center justify-center">
         <Spinner />
       </div>
     );
-  }
-  if (notFound || !booking) {
-    return (
-      <div className="mx-auto max-w-md py-16">
+  } else if (notFound || !booking) {
+    body = (
+      <div className="py-12">
         <EmptyState
           icon={PawPrint}
           title="找不到這筆訂單"
@@ -168,29 +200,21 @@ export function BookingViewPage() {
         />
       </div>
     );
-  }
+  } else {
+    const canCancel =
+      booking.status === "pending" || booking.status === "confirmed";
+    // 「再次預約」只在訂單已結束（退房 / 拒絕 / 取消）時出現，避免在
+    // pending / confirmed / checked_in 階段就提示客戶開新單造成混淆。
+    const canBookAgain =
+      booking.status === "checked_out" ||
+      booking.status === "declined" ||
+      booking.status === "cancelled";
+    const locationText = [booking.shop_city, booking.shop_district]
+      .filter(Boolean)
+      .join(" ");
 
-  const canCancel =
-    booking.status === "pending" || booking.status === "confirmed";
-  // 「再次預約」只在訂單已結束（退房 / 拒絕 / 取消）時出現，避免在
-  // pending / confirmed / checked_in 階段就提示客戶開新單造成混淆。
-  const canBookAgain =
-    booking.status === "checked_out" ||
-    booking.status === "declined" ||
-    booking.status === "cancelled";
-  const hasMobileBar = canCancel || canBookAgain;
-  const locationText = [booking.shop_city, booking.shop_district]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <div
-      className={
-        "bg-white sm:pb-12 " + (hasMobileBar ? "pb-28" : "pb-8")
-      }
-    >
-      {isLiff && <LiffBackBar back="/liff" caption={booking.code} />}
-      <div className="mx-auto max-w-2xl px-4 pt-6">
+    body = (
+      <div className="px-4 pb-6 pt-4 sm:px-5">
         {/* 狀態列：dot + 文字 + 訂單編號（無大色塊） */}
         <div className="flex items-center justify-between gap-3 border-b border-neutral-200 pb-4">
           <div className="min-w-0">
@@ -343,37 +367,13 @@ export function BookingViewPage() {
             </div>
           </section>
         )}
-
-        {/* desktop 操作 */}
-        {(canCancel || canBookAgain) && (
-          <div className="mt-6 hidden flex-col gap-2 sm:flex">
-            {canBookAgain && (
-              <Link
-                to={`${shopPrefix}/${booking.shop_slug}`}
-                className="btn-primary justify-center"
-              >
-                再次預約 {booking.shop_name}
-              </Link>
-            )}
-            {canCancel && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={cancelling}
-                className="btn-danger justify-center"
-              >
-                {cancelling && <Spinner size="sm" />}
-                取消預約
-              </button>
-            )}
-          </div>
-        )}
       </div>
+    );
 
-      {/* mobile sticky 操作列：純文字按鈕，不放 icon */}
-      {hasMobileBar && (
-        <div className="sticky-bottom-bar sm:hidden">
-          <div className="flex items-center gap-2">
+    if (canCancel || canBookAgain) {
+      footer = (
+        <div className="border-t border-neutral-200 bg-white px-4 py-3 sm:px-5">
+          <div className="mx-auto flex max-w-md items-center gap-2">
             {canCancel && (
               <button
                 type="button"
@@ -395,7 +395,40 @@ export function BookingViewPage() {
             )}
           </div>
         </div>
-      )}
+      );
+    }
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex animate-fade-in items-stretch justify-center bg-slate-900/50 sm:items-center sm:p-6"
+      onClick={handleClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex h-full w-full max-h-screen flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+      >
+        {/* sticky header：標題 + X 關閉 */}
+        <header className="flex items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3 sm:px-5">
+          <h1 className="truncate text-base font-semibold text-neutral-900">
+            訂單詳情
+          </h1>
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="關閉"
+            className="-mr-1 rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">{body}</div>
+
+        {footer}
+      </div>
     </div>
   );
 }
