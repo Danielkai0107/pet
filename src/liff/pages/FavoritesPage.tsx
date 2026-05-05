@@ -39,7 +39,7 @@ function FavoritesContent() {
             f.shop ? (
               <li key={f.id} className="card">
                 <Link
-                  to={`/shop/${f.shop.slug}`}
+                  to={`/liff/shop/${f.shop.slug}`}
                   className="flex items-start gap-3 p-3"
                 >
                   <div

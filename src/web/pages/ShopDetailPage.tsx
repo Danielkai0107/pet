@@ -8,10 +8,13 @@ import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
 import type { PetType } from "@/lib/types";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { FavoriteButton } from "@/web/components/FavoriteButton";
+import { useRoutePrefix } from "@/lib/useRoutePrefix";
 
 export function ShopDetailPage() {
   const { slug } = useParams();
   const { data, loading, error } = useShopBySlug(slug);
+  const { shopPrefix } = useRoutePrefix();
+  const bookHref = `${shopPrefix}/${slug}/book`;
 
   if (loading) {
     return (
@@ -80,7 +83,7 @@ export function ShopDetailPage() {
 
             <div className="flex items-center gap-2 self-start">
               <FavoriteButton shopId={shop.id} />
-              <Link to={`/shop/${slug}/book`} className="btn-primary">
+              <Link to={bookHref} className="btn-primary">
                 立即預約
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -142,7 +145,7 @@ export function ShopDetailPage() {
         )}
 
         <div className="mt-8 flex justify-center">
-          <Link to={`/shop/${slug}/book`} className="btn-primary">
+          <Link to={bookHref} className="btn-primary">
             選擇日期與房型開始預約
             <ArrowRight className="h-4 w-4" />
           </Link>

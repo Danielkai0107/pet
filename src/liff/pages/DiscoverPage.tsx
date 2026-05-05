@@ -42,7 +42,7 @@ function DiscoverContent() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {shops.map((s) => (
-              <ShopCard key={s.id} shop={s} />
+              <ShopCard key={s.id} shop={s} prefix="/liff/shop" />
             ))}
           </div>
         )}

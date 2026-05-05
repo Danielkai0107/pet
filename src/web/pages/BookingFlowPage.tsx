@@ -13,6 +13,7 @@ import type { PetSize, PetType, Room, RoomAvailabilityDay } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { DateRangePicker } from "@/web/components/DateRangePicker";
+import { useRoutePrefix } from "@/lib/useRoutePrefix";
 
 type Step = "dates" | "room" | "guest" | "review";
 
@@ -44,6 +45,7 @@ export function BookingFlowPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { data, loading, error } = useShopBySlug(slug);
+  const { shopPrefix, bookingSuccessPrefix } = useRoutePrefix();
 
   const [step, setStep] = useState<Step>("dates");
   const [checkIn, setCheckIn] = useState<string | null>(null);
@@ -220,7 +222,7 @@ export function BookingFlowPage() {
     }).catch(() => undefined);
 
     toast.success("預約已送出！");
-    navigate(`/booking/success/${created.booking_code}`);
+    navigate(`${bookingSuccessPrefix}/${created.booking_code}`);
   };
 
   if (loading) {
@@ -250,7 +252,7 @@ export function BookingFlowPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-4 flex items-center justify-between">
-        <Link to={`/shop/${slug}`} className="btn-ghost text-sm">
+        <Link to={`${shopPrefix}/${slug}`} className="btn-ghost text-sm">
           <ArrowLeft className="h-4 w-4" />
           回 {data.shop.name}
         </Link>

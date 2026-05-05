@@ -1,9 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import { LINE_ADD_FRIEND_URL, PLATFORM_NAME } from "@/lib/constants";
+import { useRoutePrefix } from "@/lib/useRoutePrefix";
 
 export function BookingSuccessPage() {
   const { code } = useParams();
+  const { isLiff } = useRoutePrefix();
   return (
     <div className="mx-auto max-w-md px-4 py-12">
       <div className="card p-8 text-center">
@@ -16,21 +18,29 @@ export function BookingSuccessPage() {
           <span className="font-mono font-semibold text-brand-700">{code}</span>
         </p>
         <p className="mt-4 text-sm text-slate-600">
-          店家收到通知後會盡快確認，確認結果會以 Email 通知您。
+          {isLiff
+            ? "店家確認後會推播 LINE 通知您。可在「我的訂單」追蹤狀態。"
+            : "店家收到通知後會盡快確認，確認結果會以 Email 通知您。"}
         </p>
 
-        {LINE_ADD_FRIEND_URL && (
-          <a
-            href={LINE_ADD_FRIEND_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-primary mt-6 w-full"
-          >
-            加入 {PLATFORM_NAME} LINE 追蹤訂單
-          </a>
+        {isLiff ? (
+          <Link to="/liff" className="btn-primary mt-6 w-full">
+            查看我的訂單
+          </Link>
+        ) : (
+          LINE_ADD_FRIEND_URL && (
+            <a
+              href={LINE_ADD_FRIEND_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary mt-6 w-full"
+            >
+              加入 {PLATFORM_NAME} LINE 追蹤訂單
+            </a>
+          )
         )}
-        <Link to="/" className="btn-ghost mt-2 w-full">
-          回首頁
+        <Link to={isLiff ? "/liff/discover" : "/"} className="btn-ghost mt-2 w-full">
+          {isLiff ? "繼續找其他旅館" : "回首頁"}
         </Link>
       </div>
     </div>

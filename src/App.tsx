@@ -236,6 +236,16 @@ export default function App() {
               <Route path="/liff/discover" element={<LiffDiscoverPage />} />
               <Route path="/liff/favorites" element={<LiffFavoritesPage />} />
               <Route path="/liff/profile" element={<LiffProfilePage />} />
+              {/* 鏡像路由：在 LIFF 內看商家 / 訂房，避免跳出 LIFF 樣式 */}
+              <Route path="/liff/shop/:slug" element={<ShopDetailPage />} />
+              <Route
+                path="/liff/shop/:slug/book"
+                element={<BookingFlowPage />}
+              />
+              <Route
+                path="/liff/booking/success/:code"
+                element={<BookingSuccessPage />}
+              />
             </Route>
             <Route path="/liff/bind" element={<LiffBindPage />} />
 
