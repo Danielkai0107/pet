@@ -7,21 +7,19 @@ export function WebLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2 text-brand-700">
-            <PawPrint className="h-6 w-6" />
-            <span className="text-lg font-bold tracking-tight">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-brand-700 transition-colors hover:text-brand-800"
+          >
+            <PawPrint className="h-5 w-5" />
+            <span className="text-base font-extrabold tracking-tight">
               {PLATFORM_NAME}
             </span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
-            <NavItem to="/" icon={Search} label="探索" end />
+            <NavItem to="/" icon={Search} label="找旅館" end />
           </nav>
-          {/*
-            消費者導覽列不放「店家登入」/「收藏」。
-            - 店家入口移到 footer 的低調連結。
-            - 收藏為 LINE 用戶專屬功能，僅在 LIFF 內顯示。
-          */}
           <span />
         </div>
       </header>
@@ -67,10 +65,10 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
           isActive
-            ? "bg-brand-50 text-brand-700"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+            ? "text-brand-700"
+            : "text-slate-600 hover:text-brand-700",
         )
       }
     >

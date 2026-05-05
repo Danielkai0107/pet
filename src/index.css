@@ -15,33 +15,112 @@
 }
 
 @layer components {
+  /* ============== Buttons ==============
+   * Trip.com 風：略偏方的圓角 (8px)、實色、扎實 padding。
+   * 主 CTA 維持 teal 主色系。
+   */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800;
+    @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800;
+  }
+  /* 訂房 / 限時感 CTA：橘紅 accent，對應 Trip.com「立即預訂」鍵 */
+  .btn-cta {
+    @apply btn bg-price-500 text-white shadow-sm hover:bg-price-600 active:bg-price-700;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100;
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 active:bg-slate-100;
   }
   .btn-ghost {
     @apply btn text-slate-700 hover:bg-slate-100;
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700;
+    @apply btn bg-rose-600 text-white shadow-sm hover:bg-rose-700;
   }
 
+  /* ============== Cards ==============
+   * Trip.com 卡片：方角 (12px)、無邊框、淡陰影、hover 微浮起。
+   * `.card` 為基礎；`.card-flat` 給內嵌統計用；`.card-elevated` 給
+   * 主視覺卡如商家卡 hover 用。
+   */
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-card border border-slate-200/60 bg-white shadow-card;
+  }
+  .card-elevated {
+    @apply rounded-card bg-white shadow-card transition-shadow hover:shadow-card-hover;
+  }
+  .card-flat {
+    @apply rounded-card border border-slate-200 bg-white;
   }
 
+  /* ============== Inputs ==============
+   * Trip.com 風搜尋 input：較深 padding、明顯 focus ring。
+   */
   .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
   }
   .label {
     @apply block text-sm font-medium text-slate-700 mb-1.5;
   }
   .helper {
     @apply mt-1 text-xs text-slate-500;
+  }
+
+  /* ============== Tags / Pills ==============
+   * Trip.com 慣用：小型方角 pill (4px)、低彩度。
+   */
+  .tag {
+    @apply inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600;
+  }
+  .tag-brand {
+    @apply tag bg-brand-50 text-brand-700;
+  }
+  .tag-price {
+    @apply tag bg-price-50 text-price-700;
+  }
+  .tag-success {
+    @apply tag bg-emerald-50 text-emerald-700;
+  }
+
+  /* ============== Price ==============
+   * 大字、價格用 accent 紅橘色，對標 Trip.com「NT$ 1,200 起」
+   */
+  .price {
+    @apply font-bold tracking-tight text-price-600;
+  }
+  .price-lg {
+    @apply price text-2xl;
+  }
+  .price-md {
+    @apply price text-lg;
+  }
+  .price-sm {
+    @apply price text-base;
+  }
+
+  /* ============== Sticky bottom bar (mobile) ==============
+   * 商家詳情、訂單詳情頁用：mobile 釘在底部，桌機隱藏。
+   */
+  .sticky-bottom-bar {
+    @apply fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-4 py-3 shadow-bar-up sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none;
+  }
+
+  /* ============== Image overlays ==============
+   * 圖片右上角的小 badge / 圖片底部的漸層遮罩
+   */
+  .img-overlay-top {
+    @apply absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/50 px-1.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm;
+  }
+  .img-overlay-hot {
+    @apply absolute left-2 top-2 inline-flex items-center gap-0.5 rounded-md bg-price-500 px-1.5 py-0.5 text-[11px] font-bold text-white;
+  }
+
+  /* ============== Trip.com 風搜尋條欄位 ==============
+   * 用在 ShopSearchPanel 內每個欄位的 select / input：去掉預設邊框，
+   * 視覺上像跟 label 一體，但底層仍是真的 form control。
+   */
+  .search-select {
+    @apply w-full appearance-none border-0 bg-transparent p-0 text-sm font-medium text-slate-900 outline-none focus:ring-0;
   }
 }

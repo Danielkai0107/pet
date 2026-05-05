@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -9,25 +9,75 @@ import {
 } from "@/web/hooks/useShopSearch";
 import { ShopSearchPanel } from "@/web/components/ShopSearchPanel";
 import { ShopCard } from "@/web/components/ShopCard";
+import type { ShopSearchResult } from "@/lib/types";
+
+type SortKey = "recommended" | "price_asc" | "price_desc";
 
 export function ShopsPage() {
   const [filters, setFilters] = useState<ShopSearchFilters>(emptyFilters);
   const { shops, loading, error } = useShopSearch(filters);
+  const [sort, setSort] = useState<SortKey>("recommended");
+
+  const sortedShops = useMemo(() => {
+    const arr = [...shops];
+    if (sort === "price_asc") {
+      arr.sort(
+        (a, b) =>
+          (a.min_price ?? Number.MAX_SAFE_INTEGER) -
+          (b.min_price ?? Number.MAX_SAFE_INTEGER),
+      );
+    } else if (sort === "price_desc") {
+      arr.sort((a, b) => (b.min_price ?? 0) - (a.min_price ?? 0));
+    }
+    return arr;
+  }, [shops, sort]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <header className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900">找寵物旅館</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {loading
-            ? "搜尋中…"
-            : `共 ${shops.length} 家符合條件的合作旅館`}
-        </p>
-      </header>
+    <div className="bg-slate-50">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 pb-4 pt-6">
+          <h1 className="text-2xl font-bold text-slate-900">找寵物旅館</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {loading
+              ? "搜尋中…"
+              : `共 ${shops.length} 家符合條件的合作旅館`}
+          </p>
+          <div className="mt-4">
+            <ShopSearchPanel filters={filters} onChange={setFilters} />
+          </div>
+        </div>
+      </div>
 
-      <ShopSearchPanel filters={filters} onChange={setFilters} />
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        {/* 排序 / 結果摘要列 */}
+        <div className="mb-4 flex items-center justify-between text-sm">
+          <span className="inline-flex items-center gap-1.5 text-slate-600">
+            <SlidersHorizontal className="h-4 w-4" />
+            {loading ? "—" : `${sortedShops.length} 家旅館`}
+          </span>
+          <div className="flex items-center gap-1 text-slate-600">
+            <span className="text-xs">排序</span>
+            <SortChip
+              active={sort === "recommended"}
+              onClick={() => setSort("recommended")}
+            >
+              推薦
+            </SortChip>
+            <SortChip
+              active={sort === "price_asc"}
+              onClick={() => setSort("price_asc")}
+            >
+              低價優先
+            </SortChip>
+            <SortChip
+              active={sort === "price_desc"}
+              onClick={() => setSort("price_desc")}
+            >
+              高價優先
+            </SortChip>
+          </div>
+        </div>
 
-      <div className="mt-6">
         {error ? (
           <div className="card">
             <EmptyState icon={Search} title="搜尋失敗" description={error} />
@@ -36,7 +86,7 @@ export function ShopsPage() {
           <div className="flex justify-center py-16">
             <Spinner />
           </div>
-        ) : shops.length === 0 ? (
+        ) : sortedShops.length === 0 ? (
           <div className="card">
             <EmptyState
               icon={Search}
@@ -45,13 +95,44 @@ export function ShopsPage() {
             />
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {shops.map((s) => (
-              <ShopCard key={s.id} shop={s} />
-            ))}
-          </div>
+          <ShopGrid shops={sortedShops} />
         )}
       </div>
     </div>
+  );
+}
+
+function ShopGrid({ shops }: { shops: ShopSearchResult[] }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {shops.map((s) => (
+        <ShopCard key={s.id} shop={s} />
+      ))}
+    </div>
+  );
+}
+
+function SortChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "rounded-full px-3 py-1 text-xs font-medium transition-colors " +
+        (active
+          ? "bg-brand-600 text-white"
+          : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50")
+      }
+    >
+      {children}
+    </button>
   );
 }

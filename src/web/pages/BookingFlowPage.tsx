@@ -291,16 +291,23 @@ export function BookingFlowPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-4 flex items-center justify-between">
-        <Link to={`${shopPrefix}/${slug}`} className="btn-ghost text-sm">
-          <ArrowLeft className="h-4 w-4" />
-          回 {data.shop.name}
-        </Link>
-        <Steps step={step} />
+    <div className="bg-slate-50 pb-24 sm:pb-8">
+      {/* 頂部：返回 + 步驟指示 */}
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-3">
+          <Link
+            to={`${shopPrefix}/${slug}`}
+            className="inline-flex min-w-0 items-center gap-1.5 text-sm text-slate-700 hover:text-brand-700"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span className="truncate">{data.shop.name}</span>
+          </Link>
+          <Steps step={step} />
+        </div>
       </div>
 
-      <div className="card p-6">
+      <div className="mx-auto max-w-2xl px-4 pt-4">
+        <div className="card p-5 sm:p-6">
         {step === "dates" && (
           <div>
             <h1 className="text-xl font-bold text-slate-900">選擇入住日期</h1>
@@ -515,27 +522,33 @@ export function BookingFlowPage() {
               <Row label="寵物" value={`${guest.pet_name} (${PET_TYPE_LABEL[guest.pet_type]})`} />
               {guest.guest_note && <Row label="備註" value={guest.guest_note} />}
 
-              <div className="rounded-xl bg-brand-50 p-4 text-sm">
-                <p className="text-slate-600">預估費用</p>
-                <p className="mt-1 text-2xl font-bold text-brand-700">
-                  {fmtMoney(totalForRoom(selectedRoom))}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  確切金額以店家確認後為準
+              <div className="flex items-center justify-between rounded-lg bg-price-50 p-4">
+                <div>
+                  <p className="text-xs text-slate-600">預估費用</p>
+                  <p className="text-[10px] text-slate-500">
+                    確切金額以店家確認後為準
+                  </p>
+                </div>
+                <p className="price-lg">
+                  {fmtMoney(totalForRoom(selectedRoom)).replace("NT$ ", "")}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
                 <CheckCircle2 className="mr-1 inline h-4 w-4" />
                 送出後店家會盡快確認，結果將以 Email 通知。
               </div>
             </div>
           </div>
         )}
+        </div>
+      </div>
 
-        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+      {/* sticky 底部按鈕：mobile 釘底，desktop 為一般 inline 區 */}
+      <div className="sticky-bottom-bar mt-4">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           {step !== "dates" ? (
-            <button className="btn-ghost" onClick={goBack}>
+            <button className="btn-secondary" onClick={goBack}>
               <ArrowLeft className="h-4 w-4" />
               上一步
             </button>
@@ -543,13 +556,13 @@ export function BookingFlowPage() {
             <span />
           )}
           {step !== "review" ? (
-            <button className="btn-primary" onClick={goNext}>
+            <button className="btn-cta flex-1 justify-center" onClick={goNext}>
               下一步
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button
-              className="btn-primary"
+              className="btn-cta flex-1 justify-center"
               onClick={handleSubmit}
               disabled={submitting}
             >
@@ -564,18 +577,39 @@ export function BookingFlowPage() {
 }
 
 function Steps({ step }: { step: Step }) {
-  const order: Step[] = ["dates", "room", "guest", "review"];
-  const idx = order.indexOf(step);
+  const order: { key: Step; label: string }[] = [
+    { key: "dates", label: "日期" },
+    { key: "room", label: "房型" },
+    { key: "guest", label: "資料" },
+    { key: "review", label: "確認" },
+  ];
+  const idx = order.findIndex((o) => o.key === step);
   return (
-    <div className="flex items-center gap-1 text-xs">
-      {order.map((s, i) => (
-        <div
-          key={s}
-          className={
-            "h-1.5 w-6 rounded-full " +
-            (i <= idx ? "bg-brand-600" : "bg-slate-200")
-          }
-        />
+    <div className="flex items-center gap-1.5 text-[11px]">
+      {order.map((o, i) => (
+        <div key={o.key} className="flex items-center gap-1.5">
+          <span
+            className={
+              "flex h-5 w-5 items-center justify-center rounded-full font-semibold " +
+              (i <= idx
+                ? "bg-brand-600 text-white"
+                : "bg-slate-200 text-slate-400")
+            }
+          >
+            {i + 1}
+          </span>
+          <span
+            className={
+              "hidden font-medium sm:inline " +
+              (i === idx ? "text-slate-900" : "text-slate-500")
+            }
+          >
+            {o.label}
+          </span>
+          {i < order.length - 1 && (
+            <span className="h-px w-3 bg-slate-200 sm:w-5" />
+          )}
+        </div>
       ))}
     </div>
   );

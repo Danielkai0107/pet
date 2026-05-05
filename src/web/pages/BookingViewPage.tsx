@@ -5,6 +5,7 @@ import {
   Bed,
   Calendar,
   CheckCircle2,
+  Clock,
   MapPin,
   PawPrint,
   Phone,
@@ -12,10 +13,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
 import {
-  BOOKING_STATUS_COLOR,
   BOOKING_STATUS_LABEL,
   PET_SIZE_LABEL,
   PET_TYPE_LABEL,
@@ -67,6 +66,41 @@ interface BookingViewRow {
   checked_in_at: string | null;
   checked_out_at: string | null;
 }
+
+// Trip.com 風訂單狀態色：每個狀態給一個飽和色 banner
+const STATUS_BANNER: Record<
+  BookingStatus,
+  { bg: string; description: string }
+> = {
+  pending: {
+    bg: "bg-amber-500",
+    description: "店家正在處理您的預約，請耐心稍候",
+  },
+  confirmed: {
+    bg: "bg-emerald-600",
+    description: "店家已確認，請於入住當天攜帶寵物用品",
+  },
+  declined: {
+    bg: "bg-rose-600",
+    description: "店家無法接受此預約",
+  },
+  cancelled: {
+    bg: "bg-slate-500",
+    description: "此預約已取消",
+  },
+  checked_in: {
+    bg: "bg-blue-600",
+    description: "已入住，您的毛孩正在被悉心照顧",
+  },
+  checked_out: {
+    bg: "bg-slate-500",
+    description: "已退房，謝謝您的光顧",
+  },
+  no_show: {
+    bg: "bg-rose-600",
+    description: "未出席紀錄",
+  },
+};
 
 export function BookingViewPage() {
   const { code } = useParams<{ code: string }>();
@@ -151,170 +185,236 @@ export function BookingViewPage() {
     );
   }
 
+  const banner = STATUS_BANNER[booking.status];
   const canCancel =
     booking.status === "pending" || booking.status === "confirmed";
-
   const locationText = [booking.shop_city, booking.shop_district]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
-      <div className="card overflow-hidden">
-        <div
-          className="aspect-[16/9] w-full bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center"
-          style={
-            booking.shop_cover_image_url
-              ? { backgroundImage: `url(${booking.shop_cover_image_url})` }
-              : undefined
-          }
-        >
-          {!booking.shop_cover_image_url && (
-            <div className="flex h-full items-center justify-center text-brand-700">
-              <PawPrint className="h-12 w-12 opacity-50" />
+    <div className="bg-slate-50 pb-24 sm:pb-6">
+      {/* ====== 狀態 Banner ====== */}
+      <section className={`${banner.bg} text-white`}>
+        <div className="mx-auto max-w-2xl px-4 py-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wider text-white/80">
+                訂單狀態
+              </p>
+              <h1 className="mt-0.5 text-xl font-bold">
+                {BOOKING_STATUS_LABEL[booking.status]}
+              </h1>
+              <p className="mt-1 text-sm text-white/90">{banner.description}</p>
             </div>
-          )}
-        </div>
-
-        <div className="p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className={BOOKING_STATUS_COLOR[booking.status]}>
-              {BOOKING_STATUS_LABEL[booking.status]}
-            </Badge>
-            <span className="font-mono text-xs text-slate-500">
-              訂單 {booking.code}
-            </span>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wider text-white/80">
+                訂單編號
+              </p>
+              <p className="font-mono text-sm font-semibold">{booking.code}</p>
+            </div>
           </div>
-          <h1 className="mt-2 text-xl font-bold text-slate-900">
-            {booking.shop_name}
-          </h1>
-          {locationText && (
-            <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
-              <MapPin className="h-4 w-4" />
-              {locationText}
-              {booking.shop_address && (
-                <span className="ml-1 truncate">· {booking.shop_address}</span>
-              )}
-            </p>
-          )}
-          {booking.shop_phone && (
-            <a
-              href={`tel:${booking.shop_phone}`}
-              className="mt-1 inline-flex items-center gap-1 text-sm text-brand-700 hover:underline"
-            >
-              <Phone className="h-4 w-4" />
-              {formatPhone(booking.shop_phone)}
-            </a>
-          )}
         </div>
-      </div>
+      </section>
 
-      <Section title="入住資訊" className="mt-4">
-        <Row icon={Calendar} label="入住">
-          {fmtDate(booking.check_in_date)}
-        </Row>
-        <Row icon={Calendar} label="退房">
-          {fmtDate(booking.check_out_date)}
-        </Row>
-        <Row label="夜數">{booking.nights} 晚</Row>
-        <Row icon={Bed} label="房型">
-          {booking.room_name}
-        </Row>
-        <Row label="費用">
-          <span className="text-base font-bold text-brand-700">
-            {fmtMoney(booking.total_price)}
-          </span>
-        </Row>
-      </Section>
-
-      <Section title="客戶與寵物" className="mt-3">
-        <Row label="姓名">{booking.guest_name}</Row>
-        <Row label="手機">{formatPhone(booking.guest_phone)}</Row>
-        <Row label="Email">{booking.guest_email}</Row>
-        <Row label="寵物">
-          {booking.pet_name}
-          <span className="ml-1 text-xs text-slate-500">
-            ({PET_TYPE_LABEL[booking.pet_type]}
-            {booking.pet_size
-              ? ` · ${PET_SIZE_LABEL.default[booking.pet_size]}`
-              : ""}
-            {booking.pet_breed ? ` · ${booking.pet_breed}` : ""})
-          </span>
-        </Row>
-        {booking.pet_note && <Row label="寵物備註">{booking.pet_note}</Row>}
-        {booking.guest_note && <Row label="給店家">{booking.guest_note}</Row>}
-      </Section>
-
-      <Section title="訂單時間軸" className="mt-3">
-        <Timeline booking={booking} />
-      </Section>
-
-      <div className="mt-4 flex flex-col gap-2">
-        <Link to={`${shopPrefix}/${booking.shop_slug}`} className="btn-ghost">
-          再次預約 {booking.shop_name}
-          <ArrowRight className="h-4 w-4" />
+      <div className="mx-auto max-w-2xl px-4 py-4 space-y-3">
+        {/* ====== 店家卡 ====== */}
+        <Link
+          to={`${shopPrefix}/${booking.shop_slug}`}
+          className="card-elevated flex items-stretch overflow-hidden"
+        >
+          <div
+            className="aspect-square w-24 shrink-0 bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center"
+            style={
+              booking.shop_cover_image_url
+                ? {
+                    backgroundImage: `url(${booking.shop_cover_image_url})`,
+                  }
+                : undefined
+            }
+          >
+            {!booking.shop_cover_image_url && (
+              <div className="flex h-full items-center justify-center text-brand-700">
+                <PawPrint className="h-8 w-8 opacity-40" />
+              </div>
+            )}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col justify-center px-4">
+            <h2 className="truncate font-bold text-slate-900">
+              {booking.shop_name}
+            </h2>
+            {locationText && (
+              <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate">{locationText}</span>
+              </p>
+            )}
+            {booking.shop_phone && (
+              <p className="mt-0.5 flex items-center gap-1 text-xs text-brand-700">
+                <Phone className="h-3 w-3 shrink-0" />
+                {formatPhone(booking.shop_phone)}
+              </p>
+            )}
+          </div>
         </Link>
 
-        {canCancel ? (
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={cancelling}
-            className="btn-secondary border border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
-          >
-            {cancelling ? (
-              <Spinner size="sm" />
-            ) : (
-              <X className="h-4 w-4" />
-            )}
-            取消預約
-          </button>
-        ) : booking.status === "cancelled" ? (
-          <div className="rounded-xl bg-slate-100 p-3 text-center text-sm text-slate-600">
-            <CheckCircle2 className="mr-1 inline h-4 w-4" />
-            這筆預約已取消
+        {/* ====== 入住資訊 ====== */}
+        <section className="card p-5">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            入住資訊
+          </h3>
+
+          {/* 入住 / 退房 + 夜數 (Trip.com 風雙列) */}
+          <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 rounded-lg bg-slate-50 px-4 py-4">
+            <div>
+              <p className="text-[11px] text-slate-500">入住</p>
+              <p className="mt-0.5 text-base font-bold text-slate-900">
+                {fmtDate(booking.check_in_date)}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-slate-400">{booking.nights} 晚</p>
+              <ArrowRight className="mx-auto h-4 w-4 text-slate-400" />
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] text-slate-500">退房</p>
+              <p className="mt-0.5 text-base font-bold text-slate-900">
+                {fmtDate(booking.check_out_date)}
+              </p>
+            </div>
           </div>
-        ) : null}
+
+          <dl className="mt-4 space-y-2 text-sm">
+            <DataRow icon={Bed} label="房型" value={booking.room_name} />
+            <DataRow
+              label="總費用"
+              value={
+                <span className="price-md">
+                  {fmtMoney(booking.total_price)}
+                </span>
+              }
+            />
+          </dl>
+        </section>
+
+        {/* ====== 客戶與寵物 ====== */}
+        <section className="card p-5">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            客戶與寵物
+          </h3>
+          <dl className="space-y-2 text-sm">
+            <DataRow label="姓名" value={booking.guest_name} />
+            <DataRow label="手機" value={formatPhone(booking.guest_phone)} />
+            <DataRow label="Email" value={booking.guest_email || "—"} />
+            <DataRow
+              label="寵物"
+              value={
+                <>
+                  {booking.pet_name}
+                  <span className="ml-1 text-xs text-slate-500">
+                    ({PET_TYPE_LABEL[booking.pet_type]}
+                    {booking.pet_size
+                      ? ` · ${PET_SIZE_LABEL.default[booking.pet_size]}`
+                      : ""}
+                    {booking.pet_breed ? ` · ${booking.pet_breed}` : ""})
+                  </span>
+                </>
+              }
+            />
+            {booking.pet_note && (
+              <DataRow label="寵物備註" value={booking.pet_note} />
+            )}
+            {booking.guest_note && (
+              <DataRow label="給店家" value={booking.guest_note} />
+            )}
+          </dl>
+        </section>
+
+        {/* ====== 時間軸 ====== */}
+        <section className="card p-5">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            訂單時間軸
+          </h3>
+          <Timeline booking={booking} />
+        </section>
+
+        {/* ====== Desktop 取消按鈕 ====== */}
+        <div className="hidden flex-col gap-2 sm:flex">
+          <Link to={`${shopPrefix}/${booking.shop_slug}`} className="btn-secondary">
+            再次預約 {booking.shop_name}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          {canCancel ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="btn-danger"
+            >
+              {cancelling ? <Spinner size="sm" /> : <X className="h-4 w-4" />}
+              取消預約
+            </button>
+          ) : booking.status === "cancelled" ? (
+            <div className="rounded-lg bg-slate-100 p-3 text-center text-sm text-slate-600">
+              <CheckCircle2 className="mr-1 inline h-4 w-4" />
+              這筆預約已取消
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ====== Mobile sticky bottom 取消 / 再次預約 ====== */}
+      <div className="sticky-bottom-bar sm:hidden">
+        <div className="flex items-center gap-2">
+          {canCancel ? (
+            <>
+              <Link
+                to={`${shopPrefix}/${booking.shop_slug}`}
+                className="btn-secondary flex-1 justify-center"
+              >
+                再次預約
+              </Link>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="btn-danger flex-1 justify-center"
+              >
+                {cancelling ? <Spinner size="sm" /> : <X className="h-4 w-4" />}
+                取消預約
+              </button>
+            </>
+          ) : (
+            <Link
+              to={`${shopPrefix}/${booking.shop_slug}`}
+              className="btn-cta flex-1 justify-center"
+            >
+              再次預約 {booking.shop_name}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function Section({
-  title,
-  className,
-  children,
-}: {
-  title: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={`card p-5 ${className ?? ""}`}>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-        {title}
-      </h2>
-      <dl className="space-y-2">{children}</dl>
-    </div>
-  );
-}
-
-function Row({
+function DataRow({
   icon: Icon,
   label,
-  children,
+  value,
 }: {
   icon?: typeof Calendar;
   label: string;
-  children: React.ReactNode;
+  value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-slate-100 pb-2 last:border-0">
-      <span className="flex w-20 shrink-0 items-center gap-1 text-xs font-medium text-slate-500">
+    <div className="flex items-start gap-3">
+      <span className="flex w-16 shrink-0 items-center gap-1 text-xs text-slate-500">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {label}
       </span>
-      <span className="flex-1 text-sm text-slate-900">{children}</span>
+      <span className="flex-1 text-sm text-slate-900">{value}</span>
     </div>
   );
 }
@@ -330,11 +430,15 @@ function Timeline({ booking }: { booking: BookingViewRow }) {
   ].filter((x) => x.at);
 
   return (
-    <ol className="space-y-2">
+    <ol className="space-y-3">
       {items.map((it, i) => (
-        <li key={i} className="flex items-center gap-3 text-sm">
-          <span className="h-2 w-2 rounded-full bg-brand-500" />
-          <span className="font-medium text-slate-900">{it.label}</span>
+        <li key={i} className="flex items-center gap-3">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <Clock className="h-3 w-3" />
+          </span>
+          <span className="flex-1 text-sm font-medium text-slate-900">
+            {it.label}
+          </span>
           <span className="text-xs text-slate-500">
             {fmtDateTime(it.at as string)}
           </span>

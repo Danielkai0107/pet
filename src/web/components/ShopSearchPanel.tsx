@@ -1,4 +1,4 @@
-import { Filter, X } from "lucide-react";
+import { Calendar, MapPin, PawPrint, Search, Wallet, X } from "lucide-react";
 import { PET_TYPE_LABEL, TAIWAN_CITIES } from "@/lib/constants";
 import type { PetType } from "@/lib/types";
 import {
@@ -11,6 +11,11 @@ interface Props {
   onChange: (next: ShopSearchFilters) => void;
 }
 
+/**
+ * Trip.com 風搜尋條：水平 pill-style 排列，五個欄位用 separator 分隔，
+ * 右側放大型「搜尋」CTA。RWD：mobile 改成 grid，pill 樣式自動變回普通
+ * card grid。
+ */
 export function ShopSearchPanel({ filters, onChange }: Props) {
   const hasFilters =
     filters.city ||
@@ -20,28 +25,26 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
     filters.maxPrice !== null;
 
   return (
-    <div className="card p-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div>
-          <label className="label text-xs">城市</label>
+    <div className="card overflow-hidden p-1.5 sm:p-2">
+      <div className="grid gap-1 sm:grid-cols-5 sm:items-stretch sm:divide-x sm:divide-slate-200">
+        <SearchField icon={MapPin} label="城市">
           <select
-            className="input"
+            className="search-select"
             value={filters.city}
             onChange={(e) => onChange({ ...filters, city: e.target.value })}
           >
-            <option value="">全部城市</option>
+            <option value="">全部</option>
             {TAIWAN_CITIES.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
-        </div>
+        </SearchField>
 
-        <div>
-          <label className="label text-xs">寵物</label>
+        <SearchField icon={PawPrint} label="寵物">
           <select
-            className="input"
+            className="search-select"
             value={filters.petType}
             onChange={(e) =>
               onChange({ ...filters, petType: e.target.value as PetType | "" })
@@ -54,39 +57,34 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
               </option>
             ))}
           </select>
-        </div>
+        </SearchField>
 
-        <div>
-          <label className="label text-xs">入住</label>
+        <SearchField icon={Calendar} label="入住">
           <input
             type="date"
-            className="input"
+            className="search-select"
             value={filters.checkIn}
             onChange={(e) => onChange({ ...filters, checkIn: e.target.value })}
             min={new Date().toISOString().slice(0, 10)}
           />
-        </div>
+        </SearchField>
 
-        <div>
-          <label className="label text-xs">退房</label>
+        <SearchField icon={Calendar} label="退房">
           <input
             type="date"
-            className="input"
+            className="search-select"
             value={filters.checkOut}
             onChange={(e) => onChange({ ...filters, checkOut: e.target.value })}
-            min={
-              filters.checkIn || new Date().toISOString().slice(0, 10)
-            }
+            min={filters.checkIn || new Date().toISOString().slice(0, 10)}
           />
-        </div>
+        </SearchField>
 
-        <div>
-          <label className="label text-xs">每晚最高 (TWD)</label>
+        <SearchField icon={Wallet} label="每晚預算">
           <input
             type="number"
-            className="input"
             min={0}
             step={100}
+            className="search-select"
             value={filters.maxPrice ?? ""}
             placeholder="不限"
             onChange={(e) =>
@@ -96,17 +94,17 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
               })
             }
           />
-        </div>
+        </SearchField>
       </div>
 
       {hasFilters && (
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+        <div className="mt-2 flex items-center justify-between border-t border-slate-100 px-2.5 pt-2 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1">
-            <Filter className="h-3.5 w-3.5" />
-            已套用篩選
+            <Search className="h-3.5 w-3.5" />
+            已套用篩選條件
           </span>
           <button
-            className="inline-flex items-center gap-1 text-brand-700 hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline"
             onClick={() => onChange(emptyFilters)}
           >
             <X className="h-3.5 w-3.5" />
@@ -115,5 +113,29 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function SearchField({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof MapPin;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-slate-50">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          {label}
+        </p>
+        <div className="-ml-0.5 mt-0.5">{children}</div>
+      </div>
+    </label>
   );
 }
