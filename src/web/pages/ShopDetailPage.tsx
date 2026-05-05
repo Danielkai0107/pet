@@ -92,35 +92,9 @@ export function ShopDetailPage() {
         </Link>
       </div>
       <div className="mx-auto max-w-5xl px-4 pt-3 sm:pt-4">
-        {/* 標題 + 評分 + 收藏 */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
-              {shop.name}
-            </h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-700">
-              <span className="inline-flex items-center gap-1">
-                <Star className="h-4 w-4 fill-neutral-900 text-neutral-900" />
-                <strong>4.8</strong>
-              </span>
-              {(shop.city || shop.district) && (
-                <>
-                  <span className="text-neutral-300">·</span>
-                  <span className="inline-flex items-center gap-1 text-neutral-700">
-                    <MapPin className="h-4 w-4" />
-                    {[shop.city, shop.district].filter(Boolean).join(" ")}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="shrink-0">
-            <FavoriteButton shopId={shop.id} />
-          </div>
-        </div>
-
-        {/* Hero 圖牆：desktop 1 大圖 + 4 小圖；mobile 單張 16:10 */}
-        <div className="mt-4 grid gap-2 sm:grid-cols-4 sm:grid-rows-2">
+        {/* Hero 圖牆：desktop 1 大圖 + 4 小圖；mobile 單張 16:10。
+            標題改放在圖片下方，讓頂部畫面只有「回首頁 + 圖片」更乾淨。 */}
+        <div className="grid gap-2 sm:grid-cols-4 sm:grid-rows-2">
           <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-neutral-100 sm:col-span-2 sm:row-span-2 sm:aspect-auto">
             {cover ? (
               <img
@@ -157,13 +131,38 @@ export function ShopDetailPage() {
         </div>
 
         {/* 主要內容 + 浮動預訂卡 */}
-        <div className="mt-8 grid gap-10 sm:grid-cols-[1fr,360px]">
+        <div className="mt-6 grid gap-10 sm:mt-8 sm:grid-cols-[1fr,360px]">
           <div className="min-w-0">
+            {/* 標題 + 評分 + 收藏（Airbnb 風：放在 Hero 之下） */}
             <section>
-              <h2 className="text-lg font-semibold text-neutral-900">
-                關於這家旅館
-              </h2>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
+                    {shop.name}
+                  </h1>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-700">
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-neutral-900 text-neutral-900" />
+                      <strong>4.8</strong>
+                    </span>
+                    {(shop.city || shop.district) && (
+                      <>
+                        <span className="text-neutral-300">·</span>
+                        <span className="inline-flex items-center gap-1 text-neutral-700">
+                          <MapPin className="h-4 w-4" />
+                          {[shop.city, shop.district]
+                            .filter(Boolean)
+                            .join(" ")}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  <FavoriteButton shopId={shop.id} />
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
                 {shop.pet_types.map((p) => (
                   <span key={p} className="tag-outline">
                     {PET_TYPE_LABEL[p as PetType]}
