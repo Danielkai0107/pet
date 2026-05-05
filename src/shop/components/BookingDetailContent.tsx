@@ -18,6 +18,7 @@ import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { Booking, BookingStatus, Room } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
 import { sendBookingLine } from "@/lib/notify";
+import { StayLogPanel } from "@/shop/components/StayLogPanel";
 
 interface Props {
   bookingId: string;
@@ -302,6 +303,14 @@ export function BookingDetailContent({ bookingId, onChanged }: Props) {
         </h3>
         <Timeline booking={booking} />
       </div>
+
+      {(booking.status === "checked_in" || booking.status === "checked_out") && (
+        <StayLogPanel
+          bookingId={booking.id}
+          shopId={booking.shop_id}
+          status={booking.status}
+        />
+      )}
     </div>
   );
 }

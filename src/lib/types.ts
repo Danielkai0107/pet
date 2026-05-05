@@ -30,7 +30,8 @@ export type NotificationKind =
   | "booking_reminder"
   | "booking_cancelled"
   | "checked_in"
-  | "checked_out";
+  | "checked_out"
+  | "stay_log";
 
 export type AdminRole = "admin" | "super_admin";
 
@@ -144,8 +145,43 @@ export interface Customer {
   picture_url: string | null;
   phone: string | null;
   email: string | null;
+  pending_bind_phone: string | null;
+  pending_bind_expires_at: string | null;
   created_at: string;
   last_active_at: string | null;
+}
+
+export type StayLogNotifyStatus =
+  | "pending"
+  | "sent"
+  | "failed"
+  | "no_line"
+  | "skipped";
+
+export interface BookingLog {
+  id: string;
+  booking_id: string;
+  shop_id: string;
+  author_user_id: string | null;
+  photo_urls: string[];
+  note: string | null;
+  notify_status: StayLogNotifyStatus;
+  notify_error: string | null;
+  notify_sent_at: string | null;
+  notify_to_line_user_id: string | null;
+  created_at: string;
+}
+
+/** Aggregated row returned by `get_shop_customers` RPC. */
+export interface ShopCustomerSummary {
+  phone: string;
+  name: string;
+  bookings_count: number;
+  last_check_in: string | null;
+  total_spent: number;
+  line_bound: boolean;
+  line_display_name: string | null;
+  line_picture_url: string | null;
 }
 
 export interface NotificationTemplate {

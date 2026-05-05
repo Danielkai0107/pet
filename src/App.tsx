@@ -95,6 +95,11 @@ const ShopSettingsPage = lazy(() =>
 const ShopStaffPage = lazy(() =>
   import("@/shop/pages/StaffPage").then((m) => ({ default: m.ShopStaffPage })),
 );
+const ShopCustomersPage = lazy(() =>
+  import("@/shop/pages/CustomersPage").then((m) => ({
+    default: m.ShopCustomersPage,
+  })),
+);
 const ShopBillingPage = lazy(() =>
   import("@/shop/pages/BillingPage").then((m) => ({
     default: m.ShopBillingPage,
@@ -238,6 +243,7 @@ export default function App() {
                   <Route path="/shop/inventory" element={<ShopInventoryPage />} />
                   <Route path="/shop/templates" element={<ShopTemplatesPage />} />
                   <Route path="/shop/settings" element={<ShopSettingsPage />} />
+                  <Route path="/shop/customers" element={<ShopCustomersPage />} />
                   <Route path="/shop/staff" element={<ShopStaffPage />} />
                   <Route path="/shop/billing" element={<ShopBillingPage />} />
                 </Route>

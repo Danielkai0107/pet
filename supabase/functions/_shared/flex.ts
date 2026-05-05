@@ -336,3 +336,171 @@ function row(
 
 // Suppress lint for SLATE_500 — kept for callers that may want subtle copy
 void SLATE_500;
+
+// =====================================================================
+// Stay log push — 「店家報平安」訊息
+//
+// Hero 用第一張照片（cover）；body 顯示寵物名 + 店家名 + 文字 note；
+// 若超過 1 張照片，組成 Flex carousel：第 1 個 bubble 為主訊息（hero +
+// body + footer CTA），第 2..N 個 bubble 為純照片 bubble，讓家長可以
+// 滑動瀏覽。
+// =====================================================================
+
+export interface FlexStayLogVars {
+  shopName: string;
+  petName: string;
+  guestName: string;
+  bookingCode: string;
+  /** 至少 1 張；超過 1 張會自動組 carousel */
+  photoUrls: string[];
+  /** 店家寫的文字 note（可空） */
+  note?: string | null;
+  /** 點擊 CTA 跳到的訂單頁網址 */
+  detailUrl?: string;
+  /** 拍攝時間（ISO string）— 用於 footer 顯示 */
+  takenAt?: string;
+}
+
+function fmtTakenAt(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${mm}/${dd} ${hh}:${mi}`;
+  } catch {
+    return iso;
+  }
+}
+
+/** 主 bubble：hero 照片 + body 文字 + CTA。 */
+function buildStayLogPrimaryBubble(
+  vars: FlexStayLogVars,
+): Record<string, unknown> {
+  const cover = vars.photoUrls[0];
+  const bodyContents: Record<string, unknown>[] = [
+    {
+      type: "text",
+      text: `${vars.petName} 報平安`,
+      weight: "bold",
+      size: "lg",
+      color: SLATE_900,
+      wrap: true,
+    },
+    {
+      type: "text",
+      text: `來自 ${vars.shopName}`,
+      size: "xs",
+      color: SLATE_500,
+      margin: "xs",
+    },
+  ];
+
+  if (vars.note && vars.note.trim()) {
+    bodyContents.push({
+      type: "separator",
+      color: SLATE_200,
+      margin: "md",
+    });
+    bodyContents.push({
+      type: "text",
+      text: vars.note.trim(),
+      size: "sm",
+      color: SLATE_900,
+      wrap: true,
+      margin: "md",
+    });
+  }
+
+  if (vars.takenAt) {
+    bodyContents.push({
+      type: "text",
+      text: fmtTakenAt(vars.takenAt),
+      size: "xs",
+      color: SLATE_400,
+      margin: "md",
+      align: "end",
+    });
+  }
+
+  const footerButtons: Record<string, unknown>[] = [];
+  if (vars.detailUrl) {
+    footerButtons.push(primaryButton("查看訂單詳情", vars.detailUrl));
+  }
+
+  const bubble: Record<string, unknown> = {
+    type: "bubble",
+    size: "kilo",
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "20px",
+      spacing: "sm",
+      contents: bodyContents,
+    },
+  };
+
+  if (cover) {
+    bubble.hero = {
+      type: "image",
+      url: cover,
+      size: "full",
+      aspectRatio: "4:3",
+      aspectMode: "cover",
+    };
+  }
+
+  if (footerButtons.length > 0) {
+    bubble.footer = {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "16px",
+      paddingTop: "0px",
+      contents: footerButtons,
+    };
+  }
+
+  return bubble;
+}
+
+/** 額外照片 bubble — 只有一張全幅照片。 */
+function buildStayLogPhotoBubble(url: string): Record<string, unknown> {
+  return {
+    type: "bubble",
+    size: "kilo",
+    hero: {
+      type: "image",
+      url,
+      size: "full",
+      aspectRatio: "4:3",
+      aspectMode: "cover",
+    },
+  };
+}
+
+/**
+ * 回傳適合直接放進 Flex message contents 的物件。
+ * 1 張照片 → 單一 bubble；多張 → carousel。
+ */
+export function buildStayLogContents(
+  vars: FlexStayLogVars,
+): Record<string, unknown> {
+  const primary = buildStayLogPrimaryBubble(vars);
+  const extras = vars.photoUrls.slice(1, 10).map(buildStayLogPhotoBubble);
+  if (extras.length === 0) return primary;
+  return {
+    type: "carousel",
+    contents: [primary, ...extras],
+  };
+}
+
+/** Plain text fallback shown in chat list / push preview. */
+export function buildStayLogAltText(vars: FlexStayLogVars): string {
+  const noteSnippet =
+    vars.note && vars.note.trim()
+      ? `：${vars.note.trim().slice(0, 40)}`
+      : "";
+  return `[${vars.shopName}] ${vars.petName} 報平安${noteSnippet}`;
+}

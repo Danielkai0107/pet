@@ -8,6 +8,7 @@ import {
   Settings,
   Mail,
   Users,
+  UserCog,
   CreditCard,
   LogOut,
   Menu,
@@ -136,8 +137,14 @@ export function ShopLayout() {
             expanded={expanded}
           />
           <SideItem
-            to="/shop/staff"
+            to="/shop/customers"
             icon={Users}
+            label="客戶"
+            expanded={expanded}
+          />
+          <SideItem
+            to="/shop/staff"
+            icon={UserCog}
             label="員工"
             expanded={expanded}
           />

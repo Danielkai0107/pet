@@ -8,9 +8,12 @@ import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { PageHeader } from "@/shop/components/PageHeader";
 
 // Subset of NotificationKind that maps to editable email templates.
-// `checked_in` / `checked_out` are LINE-only push events so they don't
-// appear here.
-type EmailKind = Exclude<NotificationKind, "checked_in" | "checked_out">;
+// `checked_in` / `checked_out` / `stay_log` are LINE-only push events so
+// they don't appear here.
+type EmailKind = Exclude<
+  NotificationKind,
+  "checked_in" | "checked_out" | "stay_log"
+>;
 
 const KIND_LABEL: Record<EmailKind, string> = {
   booking_received: "預約收到（自動寄給消費者）",
