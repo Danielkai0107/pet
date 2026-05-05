@@ -355,7 +355,10 @@ export interface FlexStayLogVars {
   photoUrls: string[];
   /** 店家寫的文字 note（可空） */
   note?: string | null;
-  /** 點擊 CTA 跳到的訂單頁網址 */
+  /** 店家官方 LINE 加好友連結 — 主 CTA「聯絡旅館」會打開這個 URL；
+   *  若空則退回顯示「查看訂單詳情」按鈕。 */
+  shopLineOaUrl?: string | null;
+  /** 點擊「查看訂單詳情」CTA 跳到的訂單頁網址（fallback） */
   detailUrl?: string;
   /** 拍攝時間（ISO string）— 用於 footer 顯示 */
   takenAt?: string;
@@ -424,8 +427,12 @@ function buildStayLogPrimaryBubble(
     });
   }
 
+  // CTA 順序：優先「聯絡旅館」(打開店家官方 LINE)；無 OA 連結時 fall back
+  // 顯示「查看訂單詳情」(LIFF deeplink)。
   const footerButtons: Record<string, unknown>[] = [];
-  if (vars.detailUrl) {
+  if (vars.shopLineOaUrl) {
+    footerButtons.push(primaryButton("聯絡旅館", vars.shopLineOaUrl));
+  } else if (vars.detailUrl) {
     footerButtons.push(primaryButton("查看訂單詳情", vars.detailUrl));
   }
 

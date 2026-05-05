@@ -153,14 +153,15 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: true, sent: false, reason: "no_line" });
   }
 
-  // Look up shop name for the bubble title.
+  // Look up shop name + OA URL for the bubble title and CTA.
   const { data: shop } = await supa
     .from("shops")
-    .select("name")
+    .select("name, line_oa_url")
     .eq("id", log.shop_id)
-    .maybeSingle<{ name: string }>();
+    .maybeSingle<{ name: string; line_oa_url: string | null }>();
 
-  // CTA deeplink — points to booking detail inside LIFF.
+  // Fallback CTA — booking detail inside LIFF (used when shop has no
+  // line_oa_url). Primary CTA is 「聯絡旅館」 which opens shop's OA.
   const liffId = Deno.env.get("LIFF_ID");
   const detailUrl = liffId
     ? `https://liff.line.me/${liffId}/booking/${booking.code}`
@@ -174,6 +175,7 @@ Deno.serve(async (req: Request) => {
     bookingCode: booking.code,
     photoUrls: log.photo_urls ?? [],
     note: log.note,
+    shopLineOaUrl: shop?.line_oa_url ?? null,
     detailUrl,
     takenAt: log.created_at,
   };
