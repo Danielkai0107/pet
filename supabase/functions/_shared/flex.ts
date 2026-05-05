@@ -23,6 +23,8 @@ export interface FlexBookingVars {
   shopName: string;
   shopAddress?: string;
   shopPhone?: string;
+  /** 店家官方 LINE 加好友連結 — 有設定就會在 footer 加一顆「聯絡旅館」按鈕 */
+  shopLineOaUrl?: string | null;
   shopCoverUrl?: string;
   bookingCode: string;
   guestName: string;
@@ -185,7 +187,14 @@ function statusPill(label: string): Record<string, unknown> {
   };
 }
 
-/** Footer：主 CTA 實心 brand-500 + 白字；次要鈕灰底黑字 */
+/**
+ * Footer：主 CTA 實心 brand-500 + 白字；其餘為灰底黑字次要鈕。
+ *
+ * 按鈕順序：
+ *   1. 主 CTA（查看訂單詳情 / 再次預約）— 由 kind 決定，只有 detailUrl 有值才出
+ *   2. 聯絡旅館（店家官方 LINE）— 只在 shopLineOaUrl 有設定時出
+ *   3. 致電店家（tel: 撥號）— 只在 shopPhone 有設定時出；標籤不顯示電話號碼
+ */
 function buildFooter(
   ctaLabel: string,
   vars: FlexBookingVars,
@@ -195,10 +204,11 @@ function buildFooter(
   if (vars.detailUrl) {
     buttons.push(primaryButton(ctaLabel, vars.detailUrl));
   }
+  if (vars.shopLineOaUrl) {
+    buttons.push(secondaryButton("聯絡旅館", vars.shopLineOaUrl));
+  }
   if (vars.shopPhone) {
-    buttons.push(
-      secondaryButton(`致電店家 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
-    );
+    buttons.push(secondaryButton("致電店家", `tel:${vars.shopPhone}`));
   }
 
   if (buttons.length === 0) return undefined;
@@ -408,13 +418,12 @@ function buildStayLogPrimaryBubble(
   //   1. 店家官方 LINE → 「聯絡旅館」打開 OA 聊天
   //   2. 沒 OA → 「致電旅館」直接 tel: 撥號（聯絡電話為店家設定必填項）
   //   3. 都沒有 → 退回「查看訂單詳情」(LIFF deeplink)
+  // 注意：按鈕標籤一律不顯示電話號碼，避免長字串截斷
   const footerButtons: Record<string, unknown>[] = [];
   if (vars.shopLineOaUrl) {
     footerButtons.push(primaryButton("聯絡旅館", vars.shopLineOaUrl));
   } else if (vars.shopPhone) {
-    footerButtons.push(
-      primaryButton(`致電旅館 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
-    );
+    footerButtons.push(primaryButton("致電旅館", `tel:${vars.shopPhone}`));
   } else if (vars.detailUrl) {
     footerButtons.push(primaryButton("查看訂單詳情", vars.detailUrl));
   }

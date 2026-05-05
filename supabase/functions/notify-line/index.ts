@@ -136,12 +136,15 @@ Deno.serve(async (req: Request) => {
   // used in the hero / footer overlays).
   const { data: shop } = await supa
     .from("shops")
-    .select("name, address, contact_phone, cover_image_url, city, district")
+    .select(
+      "name, address, contact_phone, line_oa_url, cover_image_url, city, district",
+    )
     .eq("id", booking.shop_id)
     .maybeSingle<{
       name: string;
       address: string | null;
       contact_phone: string | null;
+      line_oa_url: string | null;
       cover_image_url: string | null;
       city: string | null;
       district: string | null;
@@ -171,6 +174,7 @@ Deno.serve(async (req: Request) => {
     shopName: shop?.name ?? "(店家)",
     shopAddress: fullAddress,
     shopPhone: shop?.contact_phone ?? undefined,
+    shopLineOaUrl: shop?.line_oa_url ?? null,
     shopCoverUrl: shop?.cover_image_url ?? undefined,
     bookingCode: booking.code,
     guestName: booking.guest_name,
