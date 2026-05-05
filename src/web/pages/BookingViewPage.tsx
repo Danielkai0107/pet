@@ -412,19 +412,22 @@ export function BookingViewPage() {
         onClick={(e) => e.stopPropagation()}
         className="relative flex h-full w-full max-h-screen flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
       >
-        {/* sticky header：標題 + X 關閉 */}
-        <header className="flex items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3 sm:px-5">
-          <h1 className="truncate text-base font-semibold text-neutral-900">
-            訂單詳情
-          </h1>
+        {/* sticky header：左 X 關閉、中標題、右側留同寬 spacer 把標題置中 */}
+        <header className="relative flex items-center border-b border-neutral-200 bg-white px-2 py-3 sm:px-3">
           <button
             type="button"
             onClick={handleClose}
             aria-label="關閉"
-            className="-mr-1 rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
+            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
           >
             <X className="h-5 w-5" />
           </button>
+          <h1 className="pointer-events-none absolute left-1/2 -translate-x-1/2 truncate text-base font-semibold text-neutral-900">
+            訂單詳情
+          </h1>
+          {/* spacer 與左側按鈕同寬，確保 flex 平衡（雖然標題用 absolute 置中，
+              這顆 spacer 也保證 header 在 X 被移除時排版仍合理） */}
+          <span className="ml-auto h-8 w-8" aria-hidden="true" />
         </header>
 
         <div className="flex-1 overflow-y-auto">{body}</div>
