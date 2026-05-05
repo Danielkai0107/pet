@@ -102,6 +102,10 @@ export function ShopSettingsPage() {
     );
   }
 
+  // 抽出 status 並顯式 annotate 為 ShopStatus，避免 Cursor 內建 TS server
+  // 在某些路徑下把 shop.status 推斷成 any 而報「無法用 any 索引 Record」警告。
+  const status: ShopStatus = shop.status;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <PageHeader
@@ -110,12 +114,9 @@ export function ShopSettingsPage() {
         action={
           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700">
             <span
-              className={cn(
-                "h-1.5 w-1.5 rounded-full",
-                STATUS_DOT[shop.status],
-              )}
+              className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])}
             />
-            {STATUS_LABEL[shop.status]}
+            {STATUS_LABEL[status]}
           </span>
         }
       />
