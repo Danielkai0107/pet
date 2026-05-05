@@ -13,18 +13,35 @@ import { PLATFORM_NAME } from "@/lib/constants";
 import { emptyFilters, useShopSearch } from "@/web/hooks/useShopSearch";
 import { ShopSearchPanel } from "@/web/components/ShopSearchPanel";
 import { ShopCard } from "@/web/components/ShopCard";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 export function HomePage() {
   const [filters, setFilters] = useState(emptyFilters);
   const { shops, loading } = useShopSearch(filters);
   const featured = shops.slice(0, 8);
+  const { value: heroImageUrl } = useSiteSetting("home_hero_image_url");
 
   return (
     <div>
       {/* ====== Hero + 搜尋條 ====== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 text-white">
-        <div className="absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_25%_30%,white_1px,transparent_1px)] [background-size:32px_32px]" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-12 sm:pt-20">
+      <section
+        className="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 bg-cover bg-center text-white"
+        style={
+          heroImageUrl
+            ? { backgroundImage: `url(${heroImageUrl})` }
+            : undefined
+        }
+      >
+        {/* 點點紋理（無圖時才顯示） */}
+        {!heroImageUrl && (
+          <div className="absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_25%_30%,white_1px,transparent_1px)] [background-size:32px_32px]" />
+        )}
+        {/* 有圖時加一層深色蒙版確保白字可讀 */}
+        {heroImageUrl && (
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-900/70 via-brand-800/55 to-brand-900/65" />
+        )}
+
+        <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-12 sm:pb-32 sm:pt-20">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">
             {PLATFORM_NAME} · 寵物住宿訂房平台
           </p>
@@ -37,8 +54,8 @@ export function HomePage() {
           </p>
         </div>
 
-        {/* 搜尋條浮在 hero 下緣 */}
-        <div className="relative z-10 mx-auto -mt-12 max-w-6xl px-4 sm:-mt-14">
+        {/* 搜尋條浮在 hero 下緣 — 比原本再向下 12px，讓底部明顯超出 hero */}
+        <div className="relative z-10 mx-auto -mt-9 max-w-6xl px-4 sm:-mt-11">
           <ShopSearchPanel filters={filters} onChange={setFilters} />
         </div>
       </section>

@@ -157,6 +157,11 @@ const AdminBookingsPage = lazy(() =>
     default: m.AdminBookingsPage,
   })),
 );
+const AdminSiteSettingsPage = lazy(() =>
+  import("@/admin/pages/SiteSettingsPage").then((m) => ({
+    default: m.AdminSiteSettingsPage,
+  })),
+);
 
 /** Wraps every /shop/* route with the ShopAuthProvider context. */
 function ShopAuthScope() {
@@ -278,6 +283,10 @@ export default function App() {
                   <Route
                     path="/admin/bookings"
                     element={<AdminBookingsPage />}
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={<AdminSiteSettingsPage />}
                   />
                 </Route>
               </Route>

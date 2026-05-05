@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
-import { Shield, Store, Users, Calendar, LogOut } from "lucide-react";
+import { Shield, Store, Users, Calendar, LogOut, Sliders } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { PLATFORM_NAME } from "@/lib/constants";
 import { useAdminAuth } from "@/admin/auth/useAdminAuth";
@@ -30,6 +30,7 @@ export function AdminLayout() {
           <SideItem to="/admin/shops" icon={Store} label="商家管理" />
           <SideItem to="/admin/customers" icon={Users} label="消費者" />
           <SideItem to="/admin/bookings" icon={Calendar} label="全平台訂單" />
+          <SideItem to="/admin/settings" icon={Sliders} label="站台設定" />
         </nav>
         <div className="border-t border-slate-100 p-3">
           <button onClick={handleLogout} className="btn-ghost w-full justify-start">

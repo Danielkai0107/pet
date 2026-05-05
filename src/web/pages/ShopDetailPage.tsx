@@ -57,11 +57,11 @@ export function ShopDetailPage() {
   }, null);
 
   return (
-    <div className="bg-slate-50 pb-24 sm:pb-0">
-      {/* ====== Hero 圖 + 浮動價格卡 ====== */}
+    <div className="bg-slate-50 pb-32 sm:pb-16">
+      {/* ====== Hero 圖 + 浮動價格卡（trip.com 風格：扁平 banner） ====== */}
       <section className="relative">
         <div
-          className="aspect-[16/9] w-full bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center sm:aspect-[21/9]"
+          className="aspect-[21/9] w-full bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center sm:aspect-[32/9]"
           style={
             shop.cover_image_url
               ? { backgroundImage: `url(${shop.cover_image_url})` }
