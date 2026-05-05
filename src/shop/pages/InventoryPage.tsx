@@ -89,7 +89,7 @@ export function ShopInventoryPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader
         title="庫存日曆"
-        description="即時呈現每日剩餘房數與價格，可手動覆寫某天的庫存或價格"
+        description="檢視每日剩餘房數與價格。批次設定請到「房型管理」每個房型卡上的「庫存排程」按鈕。"
       />
 
       {roomsLoading ? (

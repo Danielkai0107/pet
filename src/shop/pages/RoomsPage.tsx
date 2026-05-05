@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Bed, Edit3, EyeOff, Eye, Plus, Trash2 } from "lucide-react";
+import {
+  Bed,
+  CalendarRange,
+  Edit3,
+  EyeOff,
+  Eye,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { Spinner } from "@/components/Spinner";
@@ -12,12 +20,14 @@ import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { useRooms } from "@/shop/hooks/useRooms";
 import { PageHeader } from "@/shop/components/PageHeader";
 import { RoomFormModal } from "@/shop/components/RoomFormModal";
+import { BulkInventoryModal } from "@/shop/components/BulkInventoryModal";
 
 export function ShopRoomsPage() {
   const { shop } = useShopAuth();
   const { rooms, loading, reload } = useRooms(shop?.id);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Room | null>(null);
+  const [scheduleRoom, setScheduleRoom] = useState<Room | null>(null);
 
   const openNew = () => {
     setEditing(null);
@@ -118,6 +128,14 @@ export function ShopRoomsPage() {
               </div>
               <div className="flex items-center gap-1">
                 <button
+                  className="btn-secondary"
+                  onClick={() => setScheduleRoom(room)}
+                  title="管理庫存與排程"
+                >
+                  <CalendarRange className="h-4 w-4" />
+                  <span className="hidden sm:inline">庫存排程</span>
+                </button>
+                <button
                   className="btn-ghost"
                   onClick={() => toggleActive(room)}
                   title={room.is_active ? "下架" : "上架"}
@@ -155,6 +173,15 @@ export function ShopRoomsPage() {
           initial={editing}
           onClose={() => setModalOpen(false)}
           onSaved={reload}
+        />
+      )}
+
+      {scheduleRoom && (
+        <BulkInventoryModal
+          open={!!scheduleRoom}
+          room={scheduleRoom}
+          onClose={() => setScheduleRoom(null)}
+          onSaved={() => setScheduleRoom(null)}
         />
       )}
     </div>
