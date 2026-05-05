@@ -153,15 +153,19 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: true, sent: false, reason: "no_line" });
   }
 
-  // Look up shop name + OA URL for the bubble title and CTA.
+  // Look up shop name / OA URL / phone for the bubble title and CTA chain.
   const { data: shop } = await supa
     .from("shops")
-    .select("name, line_oa_url")
+    .select("name, line_oa_url, contact_phone")
     .eq("id", log.shop_id)
-    .maybeSingle<{ name: string; line_oa_url: string | null }>();
+    .maybeSingle<{
+      name: string;
+      line_oa_url: string | null;
+      contact_phone: string | null;
+    }>();
 
-  // Fallback CTA — booking detail inside LIFF (used when shop has no
-  // line_oa_url). Primary CTA is 「聯絡旅館」 which opens shop's OA.
+  // Last-resort CTA — booking detail inside LIFF. Primary CTA chain is
+  // OA URL → phone (tel:) → detailUrl (see buildStayLogContents).
   const liffId = Deno.env.get("LIFF_ID");
   const detailUrl = liffId
     ? `https://liff.line.me/${liffId}/booking/${booking.code}`
@@ -176,6 +180,7 @@ Deno.serve(async (req: Request) => {
     photoUrls: log.photo_urls ?? [],
     note: log.note,
     shopLineOaUrl: shop?.line_oa_url ?? null,
+    shopPhone: shop?.contact_phone ?? null,
     detailUrl,
     takenAt: log.created_at,
   };

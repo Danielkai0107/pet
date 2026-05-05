@@ -331,10 +331,11 @@ export interface FlexStayLogVars {
   photoUrls: string[];
   /** 店家寫的文字 note（可空） */
   note?: string | null;
-  /** 店家官方 LINE 加好友連結 — 主 CTA「聯絡旅館」會打開這個 URL；
-   *  若空則退回顯示「查看訂單詳情」按鈕。 */
+  /** 店家官方 LINE 加好友連結 — 主 CTA「聯絡旅館」第一順位會打開這個 URL */
   shopLineOaUrl?: string | null;
-  /** 點擊「查看訂單詳情」CTA 跳到的訂單頁網址（fallback） */
+  /** 店家聯絡電話 — 沒有 LINE OA 時，CTA 會退回 `tel:` 撥號 */
+  shopPhone?: string | null;
+  /** 點擊「查看訂單詳情」CTA 跳到的訂單頁網址（最後 fallback） */
   detailUrl?: string;
   /** 拍攝時間（ISO string）— 用於 footer 顯示 */
   takenAt?: string;
@@ -403,11 +404,17 @@ function buildStayLogPrimaryBubble(
     });
   }
 
-  // CTA 順序：優先「聯絡旅館」(打開店家官方 LINE)；無 OA 連結時 fall back
-  // 顯示「查看訂單詳情」(LIFF deeplink)。
+  // CTA 順序：
+  //   1. 店家官方 LINE → 「聯絡旅館」打開 OA 聊天
+  //   2. 沒 OA → 「致電旅館」直接 tel: 撥號（聯絡電話為店家設定必填項）
+  //   3. 都沒有 → 退回「查看訂單詳情」(LIFF deeplink)
   const footerButtons: Record<string, unknown>[] = [];
   if (vars.shopLineOaUrl) {
     footerButtons.push(primaryButton("聯絡旅館", vars.shopLineOaUrl));
+  } else if (vars.shopPhone) {
+    footerButtons.push(
+      primaryButton(`致電旅館 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
+    );
   } else if (vars.detailUrl) {
     footerButtons.push(primaryButton("查看訂單詳情", vars.detailUrl));
   }

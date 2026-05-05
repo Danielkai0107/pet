@@ -185,11 +185,19 @@ export function ShopSettingsPage() {
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="聯絡電話">
+          <Field
+            label="聯絡電話"
+            required
+            hint="家長收到的「報平安」訊息若沒設店家 LINE，會顯示此電話作為聯絡方式"
+          >
             <input
+              type="tel"
               className="input"
               value={form.contact_phone}
-              onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, contact_phone: e.target.value })
+              }
+              required
             />
           </Field>
           <Field label="客服 Email">
@@ -253,7 +261,7 @@ export function ShopSettingsPage() {
               平台尚未建立服務特色清單,請等候管理員設定。
             </p>
           ) : (
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               {features.map((f) => {
                 const Icon = getFeatureIcon(f.icon);
                 const checked = form.service_feature_keys.includes(f.key);
@@ -270,13 +278,13 @@ export function ShopSettingsPage() {
                       })
                     }
                     className={
-                      "flex items-start gap-2.5 rounded-xl border bg-white p-3 text-left transition-colors " +
+                      "flex items-start gap-4 rounded-xl border bg-white p-4 text-left transition-colors " +
                       (checked
                         ? "border-neutral-900 ring-1 ring-neutral-900"
                         : "border-neutral-200 hover:bg-neutral-50")
                     }
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -284,7 +292,7 @@ export function ShopSettingsPage() {
                         {f.label}
                       </p>
                       {f.description && (
-                        <p className="mt-0.5 line-clamp-2 text-[11px] text-neutral-500">
+                        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-neutral-500">
                           {f.description}
                         </p>
                       )}
