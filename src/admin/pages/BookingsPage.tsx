@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
+import { StatusDot } from "@/components/StatusDot";
 import { EmptyState } from "@/components/EmptyState";
 import { fmtDate, fmtDateTime, fmtMoney } from "@/lib/format";
-import {
-  BOOKING_STATUS_COLOR,
-  BOOKING_STATUS_LABEL,
-} from "@/lib/constants";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { Booking } from "@/lib/types";
 
@@ -46,11 +42,13 @@ export function AdminBookingsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900">全平台訂單</h1>
-        <p className="mt-1 text-sm text-slate-600">最近 200 筆訂單</p>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          全平台訂單
+        </h1>
+        <p className="mt-1 text-sm text-neutral-500">最近 200 筆訂單</p>
       </header>
 
-      <div className="card overflow-hidden">
+      <div className="overflow-hidden rounded-card border border-neutral-200 bg-white">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Spinner />
@@ -58,27 +56,25 @@ export function AdminBookingsPage() {
         ) : bookings.length === 0 ? (
           <EmptyState icon={Calendar} title="尚無訂單" />
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-neutral-100">
             {bookings.map((b) => (
-              <li key={b.id} className="p-4">
+              <li key={b.id} className="p-4 transition-colors hover:bg-neutral-50">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs text-slate-500">
+                  <span className="font-mono text-xs text-neutral-500">
                     {b.code}
                   </span>
-                  <Badge className={BOOKING_STATUS_COLOR[b.status]}>
-                    {BOOKING_STATUS_LABEL[b.status]}
-                  </Badge>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <StatusDot status={b.status} />
+                  <span className="text-sm font-semibold text-neutral-900">
                     {b.shop?.name ?? "—"}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-slate-700">
+                <p className="mt-1 text-sm text-neutral-700">
                   {b.guest_name} · {b.pet_name}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-neutral-500">
                   {fmtDate(b.check_in_date)} → {fmtDate(b.check_out_date)} ·{" "}
-                  {b.nights} 晚 · {fmtMoney(b.total_price)} ·{" "}
-                  建立 {fmtDateTime(b.created_at)}
+                  {b.nights} 晚 · {fmtMoney(b.total_price)} · 建立{" "}
+                  {fmtDateTime(b.created_at)}
                 </p>
               </li>
             ))}

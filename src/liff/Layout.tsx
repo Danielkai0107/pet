@@ -10,7 +10,7 @@ import { LiffAuthProvider } from "@/liff/auth/LiffAuthProvider";
 export function LiffLayout() {
   return (
     <LiffAuthProvider>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
         <Outlet />
       </div>
     </LiffAuthProvider>

@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Shield } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
@@ -39,16 +38,22 @@ export function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="card w-full max-w-md p-8">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <div className="w-full max-w-sm">
         <Link
           to="/"
-          className="mb-6 flex items-center justify-center gap-2 text-rose-700"
+          className="mb-8 flex items-center justify-center gap-2 text-neutral-900"
         >
-          <Shield className="h-7 w-7" />
-          <span className="text-lg font-bold">{PLATFORM_NAME} Super Admin</span>
+          <span className="text-lg font-bold tracking-tight">
+            {PLATFORM_NAME}
+          </span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-brand-700">
+            Super Admin
+          </span>
         </Link>
-        <h1 className="text-xl font-bold text-slate-900">超級管理員登入</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          超級管理員登入
+        </h1>
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <input
             type="email"
@@ -69,7 +74,7 @@ export function AdminLoginPage() {
             required
           />
           <button
-            className="btn-primary w-full"
+            className="btn-primary w-full justify-center"
             type="submit"
             disabled={submitting}
           >

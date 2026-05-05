@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Users } from "lucide-react";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { ShopMember } from "@/lib/types";
@@ -44,7 +43,7 @@ export function ShopStaffPage() {
         description="這個商家的所有員工。Phase F 將擴充為邀請制。"
       />
 
-      <div className="card">
+      <div className="overflow-hidden rounded-card border border-neutral-200 bg-white">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner />
@@ -52,27 +51,28 @@ export function ShopStaffPage() {
         ) : members.length === 0 ? (
           <EmptyState icon={Users} title="尚無員工" />
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-neutral-100">
             {members.map((m) => (
-              <li key={m.id} className="flex items-center justify-between p-4">
+              <li
+                key={m.id}
+                className="flex items-center justify-between p-4"
+              >
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-neutral-900">
                     {m.display_name ?? "—"}
                     {m.user_id === member?.user_id && (
-                      <span className="ml-2 text-xs text-slate-500">（您）</span>
+                      <span className="ml-2 text-xs text-neutral-500">
+                        （您）
+                      </span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">user id: {m.user_id.slice(0, 8)}…</p>
+                  <p className="text-xs text-neutral-500">
+                    user id: {m.user_id.slice(0, 8)}…
+                  </p>
                 </div>
-                <Badge
-                  className={
-                    m.role === "owner"
-                      ? "bg-brand-50 text-brand-700"
-                      : "bg-slate-100 text-slate-700"
-                  }
-                >
+                <span className="tag-outline">
                   {m.role === "owner" ? "店主" : "員工"}
-                </Badge>
+                </span>
               </li>
             ))}
           </ul>

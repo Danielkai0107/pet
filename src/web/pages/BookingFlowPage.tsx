@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { addDays, addMonths, format, parseISO } from "date-fns";
-import { ArrowLeft, ArrowRight, Bed, CheckCircle2, PawPrint } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bed, Info, PawPrint } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
 import { fmtDate, fmtMoney, nightsBetween } from "@/lib/format";
 import { PET_SIZE_LABEL, PET_TYPE_LABEL } from "@/lib/constants";
@@ -291,30 +290,38 @@ export function BookingFlowPage() {
   }
 
   return (
-    <div className="bg-slate-50 pb-28 sm:pb-8">
-      {/* 頂部：返回 + 步驟指示 */}
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-3">
+    <div className="bg-white pb-28 sm:pb-12">
+      {/* 頂部：返回 + 步驟指示（LIFF 加上安全區留白避免被 LINE 狀態列遮住） */}
+      <div
+        className={
+          "sticky top-0 z-20 border-b border-neutral-200 bg-white" +
+          (isLiff ? " pt-[max(env(safe-area-inset-top),0px)]" : "")
+        }
+      >
+        <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
           <Link
             to={`${shopPrefix}/${slug}`}
-            className="inline-flex min-w-0 items-center gap-1.5 text-sm text-slate-700 hover:text-brand-700"
+            className="inline-flex min-w-0 items-center gap-1.5 text-sm text-neutral-700 hover:text-neutral-900"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             <span className="truncate">{data.shop.name}</span>
           </Link>
+        </div>
+        <div className="mx-auto max-w-2xl px-4 pb-3">
           <Steps step={step} />
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 pt-4">
-        <div className="card p-5 sm:p-6">
+      <div className="mx-auto max-w-2xl px-4 pt-6">
         {step === "dates" && (
           <div>
-            <h1 className="text-xl font-bold text-slate-900">選擇入住日期</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+              選擇入住日期
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
               點選入住日 → 再點退房日
             </p>
-            <div className="mt-4">
+            <div className="mt-5">
               <DateRangePicker
                 checkIn={checkIn}
                 checkOut={checkOut}
@@ -328,10 +335,20 @@ export function BookingFlowPage() {
               />
             </div>
             {checkIn && checkOut && (
-              <div className="mt-4 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">
-                <strong>{fmtDate(checkIn)}</strong> 入住 →{" "}
-                <strong>{fmtDate(checkOut)}</strong> 退房，共{" "}
-                <strong>{nightsBetween(checkIn, checkOut)}</strong> 晚
+              <div className="mt-5 border-t border-neutral-200 pt-4 text-sm text-neutral-700">
+                <p>
+                  <span className="font-semibold text-neutral-900">
+                    {fmtDate(checkIn)}
+                  </span>{" "}
+                  入住 →{" "}
+                  <span className="font-semibold text-neutral-900">
+                    {fmtDate(checkOut)}
+                  </span>{" "}
+                  退房
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">
+                  共 {nightsBetween(checkIn, checkOut)} 晚
+                </p>
               </div>
             )}
           </div>
@@ -339,16 +356,19 @@ export function BookingFlowPage() {
 
         {step === "room" && (
           <div>
-            <h1 className="text-xl font-bold text-slate-900">選擇房型</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+              選擇房型
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
               {fmtDate(checkIn!)} → {fmtDate(checkOut!)}（
               {nightsBetween(checkIn!, checkOut!)} 晚）
             </p>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-5 space-y-3">
               {eligibleRooms.length === 0 ? (
-                <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
-                  您選擇的日期區間內沒有可訂房型，請回上一步調整日期。
+                <div className="flex items-start gap-2 rounded-card border border-neutral-200 px-4 py-3 text-sm text-neutral-700">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500" />
+                  <span>您選擇的日期區間內沒有可訂房型，請回上一步調整日期。</span>
                 </div>
               ) : (
                 eligibleRooms.map((r) => {
@@ -360,11 +380,13 @@ export function BookingFlowPage() {
                       type="button"
                       onClick={() => setSelectedRoomId(r.id)}
                       className={
-                        "card flex w-full items-stretch gap-3 overflow-hidden p-0 text-left transition-all " +
-                        (isSelected ? "ring-2 ring-brand-500" : "hover:shadow-md")
+                        "flex w-full items-stretch gap-3 overflow-hidden rounded-card border bg-white p-0 text-left transition-shadow hover:shadow-md " +
+                        (isSelected
+                          ? "border-brand-500 ring-2 ring-brand-500/20"
+                          : "border-neutral-200")
                       }
                     >
-                      <div className="relative aspect-[4/3] w-32 shrink-0 overflow-hidden bg-gradient-to-br from-brand-50 to-amber-50 sm:w-40">
+                      <div className="relative aspect-[4/3] w-32 shrink-0 overflow-hidden bg-neutral-100 sm:w-40">
                         {cover ? (
                           <img
                             src={cover}
@@ -373,36 +395,38 @@ export function BookingFlowPage() {
                             loading="lazy"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-brand-600">
-                            <Bed className="h-7 w-7 opacity-40" />
+                          <div className="flex h-full w-full items-center justify-center text-neutral-300">
+                            <Bed className="h-8 w-8" />
                           </div>
                         )}
                         {r.photo_urls && r.photo_urls.length > 1 && (
-                          <span className="absolute bottom-1 right-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm">
                             {r.photo_urls.length} 張
                           </span>
                         )}
                       </div>
                       <div className="flex flex-1 flex-col py-3 pr-4">
-                        <p className="font-semibold text-slate-900">{r.name}</p>
+                        <p className="text-base font-semibold text-neutral-900">
+                          {r.name}
+                        </p>
                         {r.description && (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">
+                          <p className="mt-0.5 line-clamp-2 text-xs text-neutral-500">
                             {r.description}
                           </p>
                         )}
                         <div className="mt-2 flex flex-wrap gap-1">
                           {r.pet_types.map((p) => (
-                            <Badge key={p} className="bg-slate-100 text-slate-700">
+                            <span key={p} className="tag-outline">
                               {PET_TYPE_LABEL[p as PetType]}
-                            </Badge>
+                            </span>
                           ))}
                         </div>
                         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[11px] text-neutral-500">
                             共 {nightsBetween(checkIn!, checkOut!)} 晚
                           </p>
-                          <p className="price-md">
-                            {fmtMoney(totalForRoom(r)).replace("NT$ ", "")}
+                          <p className="text-base font-bold text-neutral-900">
+                            {fmtMoney(totalForRoom(r))}
                           </p>
                         </div>
                       </div>
@@ -416,14 +440,16 @@ export function BookingFlowPage() {
 
         {step === "guest" && selectedRoom && (
           <div>
-            <h1 className="text-xl font-bold text-slate-900">填寫您的資料</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+              填寫您的資料
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
               店家會以 Email 與您聯繫確認預約
             </p>
 
-            <div className="mt-4 space-y-4">
+            <div className="mt-5 space-y-5">
               <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-slate-700">
+                <legend className="text-sm font-semibold text-neutral-900">
                   您的聯絡資料
                 </legend>
                 <Input
@@ -452,8 +478,8 @@ export function BookingFlowPage() {
                 />
               </fieldset>
 
-              <fieldset className="space-y-3 border-t border-slate-100 pt-4">
-                <legend className="text-sm font-semibold text-slate-700">
+              <fieldset className="space-y-3 border-t border-neutral-200 pt-5">
+                <legend className="text-sm font-semibold text-neutral-900">
                   寵物資料
                 </legend>
                 <Input
@@ -518,8 +544,14 @@ export function BookingFlowPage() {
 
         {step === "review" && selectedRoom && (
           <div>
-            <h1 className="text-xl font-bold text-slate-900">確認訂單資訊</h1>
-            <div className="mt-4 space-y-3">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+              確認訂單資訊
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              送出前請再確認以下資訊
+            </p>
+
+            <dl className="mt-5 divide-y divide-neutral-100 rounded-card border border-neutral-200">
               <Row label="店家" value={data.shop.name} />
               <Row
                 label="入住"
@@ -537,33 +569,35 @@ export function BookingFlowPage() {
               <Row label="姓名" value={guest.guest_name} />
               <Row label="手機" value={guest.guest_phone} />
               <Row label="Email" value={guest.guest_email} />
-              <Row label="寵物" value={`${guest.pet_name} (${PET_TYPE_LABEL[guest.pet_type]})`} />
+              <Row
+                label="寵物"
+                value={`${guest.pet_name} (${PET_TYPE_LABEL[guest.pet_type]})`}
+              />
               {guest.guest_note && <Row label="備註" value={guest.guest_note} />}
+            </dl>
 
-              <div className="flex items-center justify-between rounded-lg bg-price-50 p-4">
-                <div>
-                  <p className="text-xs text-slate-600">預估費用</p>
-                  <p className="text-[10px] text-slate-500">
-                    確切金額以店家確認後為準
-                  </p>
-                </div>
-                <p className="price-lg">
-                  {fmtMoney(totalForRoom(selectedRoom)).replace("NT$ ", "")}
+            <div className="mt-5 flex items-end justify-between border-t border-neutral-200 pt-5">
+              <div>
+                <p className="text-sm text-neutral-700">預估費用</p>
+                <p className="mt-0.5 text-[11px] text-neutral-500">
+                  確切金額以店家確認後為準
                 </p>
               </div>
-
-              <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-                <CheckCircle2 className="mr-1 inline h-4 w-4" />
-                送出後店家會盡快確認，結果將以 Email 通知。
-              </div>
+              <p className="text-2xl font-bold text-neutral-900">
+                {fmtMoney(totalForRoom(selectedRoom))}
+              </p>
             </div>
+
+            <p className="mt-4 flex items-start gap-1.5 text-xs text-neutral-500">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              送出後店家會盡快確認，結果將以 Email 通知。
+            </p>
           </div>
         )}
-        </div>
       </div>
 
       {/* sticky 底部按鈕：mobile 釘底，desktop 為一般 inline 區 */}
-      <div className="sticky-bottom-bar mt-4">
+      <div className="sticky-bottom-bar mt-8">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           {step !== "dates" ? (
             <button className="btn-secondary" onClick={goBack}>
@@ -574,13 +608,13 @@ export function BookingFlowPage() {
             <span />
           )}
           {step !== "review" ? (
-            <button className="btn-cta flex-1 justify-center" onClick={goNext}>
+            <button className="btn-primary flex-1 justify-center" onClick={goNext}>
               下一步
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button
-              className="btn-cta flex-1 justify-center"
+              className="btn-primary flex-1 justify-center"
               onClick={handleSubmit}
               disabled={submitting}
             >
@@ -594,6 +628,10 @@ export function BookingFlowPage() {
   );
 }
 
+/**
+ * Airbnb 風進度線：4 條等寬橫條 — 已完成/當前段是 brand-500，
+ * 未到的段是 neutral-200。下方是當前步驟標題。
+ */
 function Steps({ step }: { step: Step }) {
   const order: { key: Step; label: string }[] = [
     { key: "dates", label: "日期" },
@@ -603,32 +641,28 @@ function Steps({ step }: { step: Step }) {
   ];
   const idx = order.findIndex((o) => o.key === step);
   return (
-    <div className="flex items-center gap-1.5 text-[11px]">
-      {order.map((o, i) => (
-        <div key={o.key} className="flex items-center gap-1.5">
-          <span
+    <div>
+      <div className="flex items-center gap-1.5">
+        {order.map((o, i) => (
+          <div
+            key={o.key}
             className={
-              "flex h-5 w-5 items-center justify-center rounded-full font-semibold " +
-              (i <= idx
-                ? "bg-brand-600 text-white"
-                : "bg-slate-200 text-slate-400")
+              "h-1 flex-1 rounded-full " +
+              (i <= idx ? "bg-brand-500" : "bg-neutral-200")
             }
-          >
-            {i + 1}
-          </span>
+          />
+        ))}
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] font-medium">
+        {order.map((o, i) => (
           <span
-            className={
-              "hidden font-medium sm:inline " +
-              (i === idx ? "text-slate-900" : "text-slate-500")
-            }
+            key={o.key}
+            className={i === idx ? "text-neutral-900" : "text-neutral-400"}
           >
-            {o.label}
+            {i + 1}. {o.label}
           </span>
-          {i < order.length - 1 && (
-            <span className="h-px w-3 bg-slate-200 sm:w-5" />
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -681,9 +715,11 @@ function Textarea({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start gap-4 border-b border-slate-100 pb-2 last:border-0">
-      <span className="w-20 shrink-0 text-sm text-slate-500">{label}</span>
-      <span className="flex-1 text-sm font-medium text-slate-900">{value}</span>
+    <div className="flex items-start gap-4 px-4 py-3">
+      <span className="w-20 shrink-0 text-sm text-neutral-500">{label}</span>
+      <span className="flex-1 text-sm font-medium text-neutral-900">
+        {value}
+      </span>
     </div>
   );
 }

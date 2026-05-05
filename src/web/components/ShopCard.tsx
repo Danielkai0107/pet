@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, PawPrint, Star } from "lucide-react";
+import { PawPrint, Star } from "lucide-react";
 import { fmtMoney } from "@/lib/format";
 import { PET_TYPE_LABEL } from "@/lib/constants";
 import type { PetType, ShopSearchResult } from "@/lib/types";
@@ -11,75 +11,72 @@ interface Props {
 }
 
 /**
- * Trip.com 風酒店卡：
- * - 4:3 cover 圖佔上半，圖左上角放熱門/Hot badge、右上角放收藏圖標
- * - 下半文字區：店名 (粗體) → 地點 → 寵物類型 tags
- * - 右下角放大字粗體價格，對應「NT$ 1,200 起 / 晚」的訊息層級
- * - 整張卡 hover 微浮起 (shadow-card-hover)
+ * Airbnb 風房源卡：
+ *   - 4:3 圖片，圓角 16px，圖片是視覺主體（無漸層底色）。
+ *   - 文字區無背景：標題（黑粗體）、評分（圖右上小白底膠囊）、地點（小灰）。
+ *   - 寵物類型用細邊 outline tag，最多顯示 2 個。
+ *   - 價格大字黑色加粗 + /晚 灰字。
  */
 export function ShopCard({ shop, prefix = "/shop" }: Props) {
   return (
     <Link
       to={`${prefix}/${shop.slug}`}
-      className="card-elevated group flex h-full flex-col overflow-hidden"
+      className="group block focus:outline-none"
     >
-      <div
-        className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center"
-        style={
-          shop.cover_image_url
-            ? { backgroundImage: `url(${shop.cover_image_url})` }
-            : undefined
-        }
-      >
-        {!shop.cover_image_url && (
-          <div className="flex h-full items-center justify-center text-brand-700">
-            <PawPrint className="h-12 w-12 opacity-40" />
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-card bg-neutral-100">
+        {shop.cover_image_url ? (
+          <img
+            src={shop.cover_image_url}
+            alt={shop.name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-neutral-300">
+            <PawPrint className="h-12 w-12" />
           </div>
         )}
         {/* TODO: 連到 ratings 後改成評分 + 評論數 */}
         <span className="img-overlay-top">
-          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          <Star className="h-3 w-3 fill-neutral-900 text-neutral-900" />
           4.8
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-        <h3 className="line-clamp-1 text-[15px] font-bold text-slate-900 group-hover:text-brand-700">
-          {shop.name}
-        </h3>
+      <div className="px-1 pt-3">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-1 text-[15px] font-semibold text-neutral-900">
+            {shop.name}
+          </h3>
+        </div>
         {(shop.city || shop.district) && (
-          <p className="flex items-center gap-1 text-xs text-slate-500">
-            <MapPin className="h-3 w-3 shrink-0" />
-            <span className="truncate">
-              {[shop.city, shop.district].filter(Boolean).join(" · ")}
-            </span>
+          <p className="mt-0.5 line-clamp-1 text-sm text-neutral-500">
+            {[shop.city, shop.district].filter(Boolean).join(" · ")}
           </p>
         )}
 
-        <div className="flex flex-wrap gap-1">
-          {shop.pet_types.slice(0, 3).map((p) => (
-            <span key={p} className="tag">
-              {PET_TYPE_LABEL[p as PetType]}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-auto flex items-end justify-between pt-2">
-          {shop.min_price !== null ? (
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-[11px] text-slate-500">每晚</span>
-              <span className="price-md leading-none">
-                {fmtMoney(shop.min_price).replace("NT$ ", "")}
+        {shop.pet_types.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {shop.pet_types.slice(0, 3).map((p) => (
+              <span key={p} className="tag-outline">
+                {PET_TYPE_LABEL[p as PetType]}
               </span>
-              <span className="text-[11px] text-slate-500">起</span>
-            </div>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-1.5 text-sm text-neutral-900">
+          {shop.min_price !== null ? (
+            <>
+              <span className="font-semibold underline decoration-neutral-300 underline-offset-2">
+                {fmtMoney(shop.min_price)}
+              </span>
+              <span className="text-neutral-500"> / 晚起</span>
+            </>
           ) : (
-            <span className="text-xs text-slate-400">尚無房型</span>
+            <span className="text-neutral-400">尚無房型</span>
           )}
-          <span className="text-xs font-semibold text-brand-700 group-hover:translate-x-0.5 transition-transform">
-            查看 →
-          </span>
-        </div>
+        </p>
       </div>
     </Link>
   );

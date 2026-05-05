@@ -80,15 +80,15 @@ export function FavoriteButton({ shopId }: Props) {
     <button
       onClick={toggle}
       disabled={busy}
+      aria-label={active ? "移除收藏" : "加入收藏"}
       className={cn(
-        "btn-ghost",
-        active && "text-rose-600 hover:bg-rose-50",
+        "inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-100",
+        active && "text-rose-600",
       )}
     >
       <Heart
-        className={cn("h-4 w-4", active && "fill-rose-600")}
+        className={cn("h-5 w-5", active && "fill-rose-600 text-rose-600")}
       />
-      {active ? "已收藏" : "收藏"}
     </button>
   );
 }

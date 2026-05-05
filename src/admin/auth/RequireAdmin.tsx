@@ -19,12 +19,14 @@ export function RequireAdmin() {
   if (!admin) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="card max-w-md p-6 text-center">
-          <h1 className="text-base font-bold text-slate-900">未授權</h1>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="rounded-card border border-neutral-200 max-w-md p-6 text-center">
+          <h1 className="text-base font-bold text-neutral-900">未授權</h1>
+          <p className="mt-1 text-sm text-neutral-500">
             您的帳號 ({user.email}) 不在 admins 表中。
           </p>
-          <a href="/" className="btn-primary mt-4">回首頁</a>
+          <a href="/" className="btn-primary mt-4">
+            回首頁
+          </a>
         </div>
       </div>
     );

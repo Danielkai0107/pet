@@ -1,18 +1,15 @@
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, PawPrint } from "lucide-react";
-import { Badge } from "@/components/Badge";
+import { PawPrint } from "lucide-react";
+import { StatusDot } from "@/components/StatusDot";
 import { fmtDate, fmtMoney } from "@/lib/format";
-import {
-  BOOKING_STATUS_COLOR,
-  BOOKING_STATUS_LABEL,
-} from "@/lib/constants";
 import type { LineBookingWithRefs } from "@/liff/hooks/useLineOrders";
 
 /**
- * LIFF 訂單列表卡片 — inline / Trip.com 風格：
- *   - 上方 21:9 商家封面圖，左上角浮狀態 pill
- *   - 圖片下方顯示店名 + 地址 + 入住日期 + 房型 + 寵物 + 費用
- *   - 沒有封面圖時 fallback 到 brand 色塊 + 占位 icon
+ * Airbnb 風 LIFF 訂單卡：
+ *   - 上方 16:10 商家封面圖（純白底，圖片是唯一視覺重心）
+ *   - 圖外的標題列顯示店名 + 訂單編號（小字）
+ *   - 狀態用 dot+text 顯示在標題上方一行
+ *   - 價格、日期、房型、寵物以資訊清單呈現，無背景色塊
  */
 export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
   const cover = booking.shop?.cover_image_url;
@@ -23,10 +20,9 @@ export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
   return (
     <Link
       to={`/liff/booking/${booking.code}`}
-      className="card-elevated block overflow-hidden"
+      className="block overflow-hidden rounded-card border border-neutral-200 bg-white transition-shadow hover:shadow-md"
     >
-      {/* Hero — 商家封面圖 */}
-      <div className="relative aspect-[21/9] w-full overflow-hidden bg-gradient-to-br from-brand-100 to-amber-100">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
         {cover ? (
           <img
             src={cover}
@@ -35,66 +31,46 @@ export function BookingCard({ booking }: { booking: LineBookingWithRefs }) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-brand-600">
-            <PawPrint className="h-10 w-10 opacity-40" />
+          <div className="flex h-full w-full items-center justify-center text-neutral-300">
+            <PawPrint className="h-10 w-10" />
           </div>
         )}
-        {/* 左上角狀態 pill */}
-        <div className="absolute left-3 top-3">
-          <Badge className={BOOKING_STATUS_COLOR[booking.status]}>
-            {BOOKING_STATUS_LABEL[booking.status]}
-          </Badge>
-        </div>
-        {/* 訂單編號 — 右上角 */}
-        <div className="absolute right-3 top-3">
-          <span className="rounded-md bg-black/55 px-2 py-0.5 font-mono text-[10px] font-medium text-white backdrop-blur-sm">
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <StatusDot status={booking.status} />
+          <span className="font-mono text-[11px] text-neutral-400">
             {booking.code}
           </span>
         </div>
-      </div>
 
-      {/* 內容區 */}
-      <div className="p-4">
-        <h3 className="truncate font-bold text-slate-900">
+        <h3 className="mt-2 truncate text-base font-semibold text-neutral-900">
           {booking.shop?.name ?? "—"}
         </h3>
         {location && (
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
-            <MapPin className="h-3 w-3" />
-            {location}
-          </p>
+          <p className="mt-0.5 truncate text-xs text-neutral-500">{location}</p>
         )}
 
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-700">
-          <Calendar className="h-3.5 w-3.5 text-brand-600" />
-          <span>
+        <dl className="mt-3 grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 text-xs">
+          <dt className="text-neutral-500">入住</dt>
+          <dd className="text-neutral-900">
             {fmtDate(booking.check_in_date)} → {fmtDate(booking.check_out_date)}
-          </span>
-          <span className="text-slate-400">·</span>
-          <span className="text-slate-500">{booking.nights} 晚</span>
-        </div>
+            <span className="ml-1 text-neutral-400">· {booking.nights} 晚</span>
+          </dd>
+          <dt className="text-neutral-500">房型</dt>
+          <dd className="truncate text-neutral-900">
+            {booking.room?.name ?? "—"}
+          </dd>
+          <dt className="text-neutral-500">寵物</dt>
+          <dd className="truncate text-neutral-900">{booking.pet_name}</dd>
+        </dl>
 
-        <div className="mt-3 flex items-end justify-between gap-2 border-t border-slate-100 pt-3">
-          <div className="min-w-0 text-xs text-slate-600">
-            <p className="truncate">
-              <span className="text-slate-500">房型</span>{" "}
-              <span className="font-medium text-slate-900">
-                {booking.room?.name ?? "—"}
-              </span>
-            </p>
-            <p className="mt-0.5 truncate">
-              <span className="text-slate-500">寵物</span>{" "}
-              <span className="font-medium text-slate-900">
-                {booking.pet_name}
-              </span>
-            </p>
-          </div>
-          <div className="text-right leading-none">
-            <p className="text-[10px] text-slate-500">總價</p>
-            <p className="mt-0.5 price-md">
-              {fmtMoney(booking.total_price).replace("NT$ ", "")}
-            </p>
-          </div>
+        <div className="mt-3 flex items-baseline justify-between border-t border-neutral-100 pt-3">
+          <span className="text-xs text-neutral-500">總價</span>
+          <span className="text-base font-bold text-neutral-900">
+            {fmtMoney(booking.total_price)}
+          </span>
         </div>
       </div>
     </Link>

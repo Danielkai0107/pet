@@ -107,15 +107,15 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
       title={`批次設定庫存 — ${room.name}`}
     >
       <div className="space-y-4">
-        <div className="flex gap-2 rounded-xl bg-slate-100 p-1">
+        <div className="flex gap-1 rounded-xl border border-neutral-200 p-1">
           <button
             type="button"
             onClick={() => setMode("set")}
             className={cn(
               "flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
               mode === "set"
-                ? "bg-white text-slate-900 shadow"
-                : "text-slate-500 hover:text-slate-700",
+                ? "bg-neutral-900 text-white"
+                : "text-neutral-700 hover:bg-neutral-50",
             )}
           >
             <Save className="mr-1 inline h-4 w-4" />
@@ -127,8 +127,8 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
             className={cn(
               "flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
               mode === "clear"
-                ? "bg-white text-slate-900 shadow"
-                : "text-slate-500 hover:text-slate-700",
+                ? "bg-neutral-900 text-white"
+                : "text-neutral-700 hover:bg-neutral-50",
             )}
           >
             <Eraser className="mr-1 inline h-4 w-4" />
@@ -168,8 +168,8 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
               className={cn(
                 "rounded-lg border px-3 py-1 text-xs font-medium transition-colors",
                 allWeekdays
-                  ? "border-brand-500 bg-brand-50 text-brand-700"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+                  ? "border-neutral-900 bg-neutral-900 text-white"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
               )}
               onClick={() => setWeekdays([])}
             >
@@ -177,14 +177,14 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
             </button>
             <button
               type="button"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
               onClick={() => setWeekdays([1, 2, 3, 4, 5])}
             >
               週一到週五
             </button>
             <button
               type="button"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
               onClick={() => setWeekdays([0, 6])}
             >
               週末
@@ -201,9 +201,9 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
                   className={cn(
                     "rounded-lg border px-2 py-2 text-xs font-medium transition-colors",
                     checked
-                      ? "border-brand-500 bg-brand-50 text-brand-700"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
-                    allWeekdays && "border-dashed text-slate-400",
+                      ? "border-neutral-900 bg-neutral-900 text-white"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
+                    allWeekdays && "border-dashed text-neutral-400",
                   )}
                 >
                   {d.label}
@@ -215,9 +215,9 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
         </div>
 
         {mode === "set" && (
-          <div className="space-y-3 rounded-xl bg-slate-50 p-3">
+          <div className="space-y-3 rounded-xl border border-neutral-200 p-3">
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
                 <input
                   type="checkbox"
                   checked={enableAvail}
@@ -243,7 +243,7 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
                 <input
                   type="checkbox"
                   checked={enablePrice}
@@ -270,13 +270,13 @@ export function BulkInventoryModal({ room, open, onClose, onSaved }: Props) {
         )}
 
         {mode === "clear" && (
-          <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-800">
+          <p className="rounded-xl border border-rose-200 bg-white p-3 text-sm text-rose-700">
             將刪除這個範圍內、符合星期條件的所有覆寫，恢復為房型預設值
             （{room.total_count} 間 / {fmtMoney(room.price_per_night)}）
-          </div>
+          </p>
         )}
 
-        <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <div className="flex justify-end gap-2 border-t border-neutral-200 pt-4">
           <button type="button" className="btn-ghost" onClick={onClose}>
             取消
           </button>

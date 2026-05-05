@@ -1,12 +1,13 @@
 // LINE Flex Message bubble builders for booking lifecycle events.
 //
-// 設計：對標 inline 訂位通知卡片
-//   - hero 區為「商家封面圖」，狀態 pill 浮在左上角；店名 + 地址疊在
-//     圖底部漸層上（白字）
-//   - body 為純資訊欄位（訂單編號 / 入住 / 退房 / 夜數 / 房型 / 寵物 /
-//     費用），標籤淺灰、值深色，費用以 brand teal 強調
-//   - footer 為兩個堆疊的軟調按鈕（teal-100 底 + teal-700 字），
-//     主 CTA 在上、致電店家在下
+// Airbnb 風 — 全白 / 黑灰 / 主色青藍 #1AB6C1，無大彩色塊：
+//   - hero 為「商家封面圖」；左上小色塊狀態 pill 用 brand-50 底 + brand-700 字
+//     維持低彩度的軟調感
+//   - 沒有封面圖時 fallback 改成黑色 (#111111) 大字標題，呼應「白為主、不用大彩色塊」
+//   - 圖片底部仍保留半透明黑色 title bar（白字標題在圖片上是可讀性最佳作法）
+//   - body 為純資訊欄位；費用一律 slate-900 加粗（價格永遠黑色），不再 brand teal
+//   - footer 重排：主 CTA 為實心 brand-500 + 白字 pill；
+//     次要按鈕（致電店家）為 neutral-100 底 + 黑字
 //   - 無任何 emoji，全部以文字呈現
 
 export type LineNotifyKind =
@@ -52,13 +53,15 @@ const META: Record<LineNotifyKind, KindMeta> = {
   checked_out: { statusLabel: "退房完成", cta: "再次預約" },
 };
 
-// Brand teal — 跟前端後台 .btn-primary / 主色一致 (#0d9488 / #0f766e)
-const TEAL_700 = "#0F766E";
-const TEAL_100 = "#CCFBF1";
+// Brand cyan-teal — 與前端 #1ab6c1 主色一致
+const BRAND_500 = "#1AB6C1";
+const BRAND_700 = "#137A82";
+const BRAND_50 = "#EAFBFC";
 const SLATE_900 = "#0F172A";
 const SLATE_500 = "#64748B";
 const SLATE_400 = "#94A3B8";
 const SLATE_200 = "#E2E8F0";
+const NEUTRAL_100 = "#F4F4F5";
 
 function fmtDate(iso: string): string {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -93,14 +96,14 @@ function buildHero(
   statusLabel: string,
   vars: FlexBookingVars,
 ): Record<string, unknown> {
-  // 狀態 pill — 不設 offsetEnd，box 寬度會自動 fit 內容
+  // 狀態 pill — Airbnb 軟調 brand-50 + brand-700 字
   const pill: Record<string, unknown> = {
     type: "box",
     layout: "vertical",
     position: "absolute",
     offsetTop: "12px",
     offsetStart: "12px",
-    backgroundColor: TEAL_100,
+    backgroundColor: BRAND_50,
     cornerRadius: "md",
     paddingTop: "5px",
     paddingBottom: "5px",
@@ -110,14 +113,14 @@ function buildHero(
       {
         type: "text",
         text: statusLabel,
-        color: TEAL_700,
+        color: BRAND_700,
         weight: "bold",
         size: "xs",
       },
     ],
   };
 
-  // 店名 + 地址 — 底部半透明黑底（仿 inline 漸層效果，但用單一 box 更穩定）
+  // 店名 + 地址 — 底部半透明黑底；圖片上的標題用白字可讀性最佳
   const titleBar: Record<string, unknown> = {
     type: "box",
     layout: "vertical",
@@ -175,18 +178,18 @@ function buildHero(
     };
   }
 
-  // Fallback：沒有封面圖 → 用 teal 底色 + 大字店名（避免空 image url 被拒）
+  // Fallback：沒有封面圖 → 黑底白字（呼應「白為主、不用大彩色塊」）
   return {
     type: "box",
     layout: "vertical",
-    backgroundColor: TEAL_700,
+    backgroundColor: "#111111",
     paddingAll: "0px",
     height: "150px",
     contents: [pill, titleBar],
   };
 }
 
-/** Body：訂單編號 + 6 個 row 資料表，跟 inline 排版一樣 label 淺、值深 */
+/** Body：訂單編號 + 6 個 row 資料表；費用一律 slate-900 加粗（價格永遠黑色） */
 function buildBody(vars: FlexBookingVars): Record<string, unknown> {
   return {
     type: "box",
@@ -201,12 +204,12 @@ function buildBody(vars: FlexBookingVars): Record<string, unknown> {
       row("夜數", `${vars.nights} 晚`),
       row("房型", vars.roomName),
       row("寵物", vars.petName),
-      row("費用", fmtMoney(vars.totalPrice), TEAL_700, true),
+      row("費用", fmtMoney(vars.totalPrice), SLATE_900, true),
     ],
   };
 }
 
-/** Footer：兩顆堆疊的「軟調 teal」按鈕 — 主 CTA + 致電店家 */
+/** Footer：主 CTA 實心 brand-500 + 白字；次要鈕灰底黑字 */
 function buildFooter(
   ctaLabel: string,
   vars: FlexBookingVars,
@@ -214,11 +217,11 @@ function buildFooter(
   const buttons: Record<string, unknown>[] = [];
 
   if (vars.detailUrl) {
-    buttons.push(softButton(ctaLabel, vars.detailUrl));
+    buttons.push(primaryButton(ctaLabel, vars.detailUrl));
   }
   if (vars.shopPhone) {
     buttons.push(
-      softButton(`致電店家 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
+      secondaryButton(`致電店家 ${vars.shopPhone}`, `tel:${vars.shopPhone}`),
     );
   }
 
@@ -234,12 +237,12 @@ function buildFooter(
   };
 }
 
-/** Inline-style soft pill button: teal-100 底 + teal-700 字 */
-function softButton(label: string, uri: string): Record<string, unknown> {
+/** Airbnb 風主 CTA — 實心 brand-500 + 白字 pill */
+function primaryButton(label: string, uri: string): Record<string, unknown> {
   return {
     type: "box",
     layout: "vertical",
-    backgroundColor: TEAL_100,
+    backgroundColor: BRAND_500,
     cornerRadius: "lg",
     paddingAll: "14px",
     action: {
@@ -251,7 +254,35 @@ function softButton(label: string, uri: string): Record<string, unknown> {
       {
         type: "text",
         text: label,
-        color: TEAL_700,
+        color: "#FFFFFF",
+        weight: "bold",
+        size: "sm",
+        align: "center",
+        wrap: false,
+        maxLines: 1,
+      },
+    ],
+  };
+}
+
+/** 次要按鈕 — neutral-100 底 + 黑字（致電店家） */
+function secondaryButton(label: string, uri: string): Record<string, unknown> {
+  return {
+    type: "box",
+    layout: "vertical",
+    backgroundColor: NEUTRAL_100,
+    cornerRadius: "lg",
+    paddingAll: "14px",
+    action: {
+      type: "uri",
+      label,
+      uri,
+    },
+    contents: [
+      {
+        type: "text",
+        text: label,
+        color: SLATE_900,
         weight: "bold",
         size: "sm",
         align: "center",

@@ -87,12 +87,16 @@ export const BOOKING_STATUS_LABEL = {
   no_show: "未出席",
 } as const;
 
-export const BOOKING_STATUS_COLOR = {
-  pending: "bg-amber-100 text-amber-800",
-  confirmed: "bg-emerald-100 text-emerald-800",
-  declined: "bg-rose-100 text-rose-800",
-  cancelled: "bg-slate-200 text-slate-700",
-  checked_in: "bg-blue-100 text-blue-800",
-  checked_out: "bg-slate-100 text-slate-600",
-  no_show: "bg-rose-100 text-rose-800",
+/**
+ * 狀態色點：Airbnb 風以「6px 圓點 + 文字」呈現，不再用大色塊背景。
+ * 每個狀態只配一個 dot 顏色 class（bg-*-500），文字一律 neutral-700。
+ */
+export const BOOKING_STATUS_DOT = {
+  pending: "bg-amber-500",
+  confirmed: "bg-brand-500",
+  declined: "bg-rose-500",
+  cancelled: "bg-neutral-400",
+  checked_in: "bg-emerald-500",
+  checked_out: "bg-neutral-400",
+  no_show: "bg-rose-500",
 } as const;

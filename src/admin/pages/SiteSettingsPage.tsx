@@ -31,12 +31,14 @@ export function AdminSiteSettingsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 p-6 sm:p-10">
       <header className="flex items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
-          <Sliders className="h-5 w-5" />
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
+          <Sliders className="h-5 w-5" strokeWidth={1.5} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">站台設定</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+            站台設定
+          </h1>
+          <p className="mt-1 text-sm text-neutral-500">
             首頁 hero、服務特色清單等全站性的呈現設定。
           </p>
         </div>
@@ -83,13 +85,13 @@ function HeroImageSection() {
   };
 
   return (
-    <section className="card p-6">
-      <h2 className="text-base font-semibold text-slate-900">
+    <section className="rounded-card border border-neutral-200 bg-white p-6">
+      <h2 className="text-base font-semibold text-neutral-900">
         首頁 Hero 背景圖
       </h2>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-neutral-500">
         建議寬度 ≥ 1920px、比例約 21:9 / 16:9。會顯示為公開首頁頂端的大圖
-        banner，留白時則使用預設的 teal 漸層。
+        banner，留白時則使用預設淡色背景。
       </p>
       <div className="mt-4">
         {loading ? (
@@ -168,13 +170,13 @@ function ServiceFeaturesSection() {
   };
 
   return (
-    <section className="card p-6">
+    <section className="rounded-card border border-neutral-200 bg-white p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-neutral-900">
             服務特色清單
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-neutral-500">
             這份清單會出現在「商家後台 → 商家設定 → 服務特色」的勾選欄裡，
             並顯示在每個商家的公開頁。
           </p>
@@ -194,7 +196,7 @@ function ServiceFeaturesSection() {
             <Spinner />
           </div>
         ) : features.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-xl border border-neutral-200 p-6 text-center text-sm text-neutral-500">
             還沒有任何特色,點上方「新增特色」開始建立。
           </p>
         ) : (
@@ -203,26 +205,24 @@ function ServiceFeaturesSection() {
             return (
               <div
                 key={f.id}
-                className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-3"
+                className="flex items-start gap-3 rounded-xl border border-neutral-200 bg-white p-3"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
-                  <Icon className="h-5 w-5" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
+                  <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
                     {f.label}
                     {!f.is_active && (
-                      <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] text-slate-700">
-                        已停用
-                      </span>
+                      <span className="tag-outline">已停用</span>
                     )}
                   </p>
                   {f.description && (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-neutral-500">
                       {f.description}
                     </p>
                   )}
-                  <p className="mt-0.5 text-[10px] font-mono text-slate-400">
+                  <p className="mt-0.5 font-mono text-[10px] text-neutral-400">
                     key: {f.key} · icon: {f.icon}
                   </p>
                 </div>
@@ -262,7 +262,7 @@ function ServiceFeaturesSection() {
                     編輯
                   </button>
                   <button
-                    className="btn-ghost text-rose-600 hover:bg-rose-50"
+                    className="btn-ghost text-rose-700"
                     onClick={() => removeOne(f)}
                     title="刪除"
                   >
@@ -428,8 +428,8 @@ function FeatureFormModal({
         <div>
           <label className="label">圖示</label>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
-              <Icon className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
+              <Icon className="h-4 w-4" />
             </div>
             <select
               className="input flex-1"
@@ -457,7 +457,7 @@ function FeatureFormModal({
               }
             />
           </div>
-          <label className="flex items-center gap-2 pt-7 text-sm text-slate-700">
+          <label className="flex items-center gap-2 pt-7 text-sm text-neutral-700">
             <input
               type="checkbox"
               checked={form.is_active}
@@ -469,7 +469,7 @@ function FeatureFormModal({
           </label>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+        <div className="flex justify-end gap-2 border-t border-neutral-100 pt-4">
           <button type="button" className="btn-ghost" onClick={onClose}>
             取消
           </button>

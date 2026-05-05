@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { fmtDateTime } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
@@ -48,13 +47,13 @@ export function ShopBillingPage() {
         description="您目前的方案與到期時間"
       />
 
-      <div className="card p-6">
+      <div className="rounded-card border border-neutral-200 bg-white p-6">
         {loading ? (
           <div className="flex justify-center py-6">
             <Spinner />
           </div>
         ) : !sub ? (
-          <div className="flex items-center gap-3 text-slate-600">
+          <div className="flex items-center gap-3 text-neutral-600">
             <CreditCard className="h-5 w-5" />
             尚未指派訂閱方案，請聯繫平台管理員開通。
           </div>
@@ -71,15 +70,13 @@ function SubscriptionDetails({ sub }: { sub: Subscription }) {
   return (
     <dl className="space-y-3 text-sm">
       <Row label="方案">
-        <Badge className="bg-brand-50 text-brand-700">
-          {PLAN_LABEL[sub.plan]}
-        </Badge>
+        <span className="tag-outline">{PLAN_LABEL[sub.plan]}</span>
       </Row>
       <Row label="開始時間">{fmtDateTime(sub.starts_at)}</Row>
       <Row label="到期時間">
         <span
           className={
-            expired ? "font-bold text-rose-600" : "font-bold text-slate-900"
+            expired ? "font-bold text-rose-700" : "font-bold text-neutral-900"
           }
         >
           {fmtDateTime(sub.expires_at)}
@@ -99,9 +96,9 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-4 border-b border-slate-100 pb-2 last:border-0">
-      <span className="w-24 shrink-0 text-slate-500">{label}</span>
-      <span className="flex-1 text-slate-900">{children}</span>
+    <div className="flex items-start gap-4 border-b border-neutral-100 pb-2 last:border-0">
+      <span className="w-24 shrink-0 text-neutral-500">{label}</span>
+      <span className="flex-1 text-neutral-900">{children}</span>
     </div>
   );
 }

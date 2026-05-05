@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Mail, Lock, PawPrint } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import { PLATFORM_NAME } from "@/lib/constants";
@@ -43,17 +43,21 @@ export function ShopLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-slate-50 px-4">
-      <div className="card w-full max-w-md p-8">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <div className="w-full max-w-sm">
         <Link
           to="/"
-          className="mb-6 flex items-center justify-center gap-2 text-brand-700"
+          className="mb-8 flex items-center justify-center gap-2 text-neutral-900"
         >
-          <PawPrint className="h-7 w-7" />
-          <span className="text-lg font-bold">{PLATFORM_NAME} 店家後台</span>
+          <span className="text-lg font-bold tracking-tight">
+            {PLATFORM_NAME}
+          </span>
+          <span className="text-sm font-medium text-neutral-500">店家後台</span>
         </Link>
-        <h1 className="text-xl font-bold text-slate-900">店家登入</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          店家登入
+        </h1>
+        <p className="mt-1 text-sm text-neutral-500">
           使用您的合作店家 Email 登入後台
         </p>
 
@@ -61,7 +65,7 @@ export function ShopLoginPage() {
           <div>
             <label className="label">Email</label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <input
                 type="email"
                 autoComplete="email"
@@ -77,7 +81,7 @@ export function ShopLoginPage() {
           <div>
             <label className="label">密碼</label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <input
                 type="password"
                 autoComplete="current-password"
@@ -90,15 +94,22 @@ export function ShopLoginPage() {
               />
             </div>
           </div>
-          <button type="submit" className="btn-primary w-full" disabled={submitting}>
+          <button
+            type="submit"
+            className="btn-primary w-full justify-center"
+            disabled={submitting}
+          >
             {submitting ? <Spinner size="sm" /> : null}
             {submitting ? "登入中…" : "登入"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-neutral-500">
           還不是合作店家？
-          <Link to="/shop/onboarding" className="ml-1 font-semibold text-brand-700">
+          <Link
+            to="/shop/onboarding"
+            className="ml-1 font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2"
+          >
             申請加入
           </Link>
         </p>

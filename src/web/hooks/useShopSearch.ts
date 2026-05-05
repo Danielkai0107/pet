@@ -18,6 +18,33 @@ export const emptyFilters: ShopSearchFilters = {
   maxPrice: null,
 };
 
+/** Serialize filters to URL search params (empty fields are omitted). */
+export function filtersToSearchParams(
+  filters: ShopSearchFilters,
+): URLSearchParams {
+  const sp = new URLSearchParams();
+  if (filters.city) sp.set("city", filters.city);
+  if (filters.petType) sp.set("pet", filters.petType);
+  if (filters.checkIn) sp.set("in", filters.checkIn);
+  if (filters.checkOut) sp.set("out", filters.checkOut);
+  if (filters.maxPrice !== null) sp.set("price", String(filters.maxPrice));
+  return sp;
+}
+
+/** Parse URL search params back into filter shape. */
+export function filtersFromSearchParams(
+  sp: URLSearchParams,
+): ShopSearchFilters {
+  const priceRaw = sp.get("price");
+  return {
+    city: sp.get("city") ?? "",
+    petType: (sp.get("pet") as PetType | null) ?? "",
+    checkIn: sp.get("in") ?? "",
+    checkOut: sp.get("out") ?? "",
+    maxPrice: priceRaw ? Number(priceRaw) : null,
+  };
+}
+
 export function useShopSearch(filters: ShopSearchFilters) {
   const [shops, setShops] = useState<ShopSearchResult[]>([]);
   const [loading, setLoading] = useState(true);

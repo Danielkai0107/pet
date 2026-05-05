@@ -4,10 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // DM Sans 為主字體（拉丁），中文 fallback Noto Sans TC，其後為
-        // 系統字體保底。所有元件預設都會吃 .font-sans 這組 stack。
+        // Airbnb 風：Inter 為主拉丁字，中文 fallback Noto Sans TC，最後系統字保底。
         sans: [
-          "DM Sans",
+          "Inter",
           "Noto Sans TC",
           "-apple-system",
           "system-ui",
@@ -18,43 +17,40 @@ export default {
         ],
       },
       colors: {
-        // 主色系維持原本 teal — 用於 CTA、品牌識別、選中狀態
+        // 品牌青藍 — 以 #1ab6c1 為 500，往兩端推出 50–950 完整 ramp。
+        // 只用在主 CTA、focus ring、選中狀態描邊與 dot；不再做大背景色塊。
         brand: {
-          50: "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
-          950: "#042f2e",
+          50: "#eafbfc",
+          100: "#d0f5f7",
+          200: "#a3eaef",
+          300: "#6ddbe2",
+          400: "#2cc4ce",
+          500: "#1ab6c1",
+          600: "#1597a0",
+          700: "#137a82",
+          800: "#135d63",
+          900: "#114a4f",
+          950: "#062b2e",
         },
-        // 價格 / 緊湊 / 限時感的橘紅 accent — 對標 Trip.com 訂房系紅橘色
-        // 但飽和度降低、避開正紅，讓它跟 teal 主色和諧共存
-        price: {
-          50: "#fff7ed",
-          100: "#ffedd5",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
+        // neutral 別名 — Airbnb 慣用 neutral 指稱灰階；底層仍是 slate ramp，
+        // 之後新組件用 `neutral-*` 命名，舊頁面繼續可用 `slate-*`。
+        neutral: {
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+          950: "#020617",
         },
       },
       borderRadius: {
-        // Trip.com 風卡片偏向 8-12px，避免過圓；對應我們的 .card 設定
-        card: "12px",
-      },
-      boxShadow: {
-        // 卡片用：細、低、淡藍灰調，比預設 shadow-sm 還精緻
-        card: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 4px 0 rgb(15 23 42 / 0.04)",
-        "card-hover":
-          "0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -1px rgb(15 23 42 / 0.06)",
-        // 浮動 sticky bar 用
-        "bar-up":
-          "0 -4px 14px -2px rgb(15 23 42 / 0.08), 0 -1px 3px 0 rgb(15 23 42 / 0.04)",
+        // Airbnb 圖片卡 16px、表單 12px
+        card: "16px",
       },
       keyframes: {
         "fade-in": {

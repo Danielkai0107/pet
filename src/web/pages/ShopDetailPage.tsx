@@ -2,7 +2,6 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowRight,
   Bed,
-  CheckCircle2,
   MapPin,
   PawPrint,
   Phone,
@@ -19,12 +18,20 @@ import { FavoriteButton } from "@/web/components/FavoriteButton";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
 import { useServiceFeatures } from "@/lib/useServiceFeatures";
 import { getFeatureIcon } from "@/lib/featureIcon";
+import { LiffBackBar } from "@/liff/components/LiffBackBar";
 
+/**
+ * Airbnb 風房源詳情頁：
+ *   - 圖片：mobile 為單張 16:10 圖；desktop 為 1+4 圖牆排版（16px 間距）。
+ *   - 資訊區無大色塊；標籤一律 outline tag、評分以 Star + 數字呈現。
+ *   - 房型卡：左圖右文，價格黑色加粗，僅剩數量用小色點表示，沒有橘紅 hot pill。
+ *   - mobile 底部 sticky 預約 bar；desktop 用標題列右側 CTA。
+ */
 export function ShopDetailPage() {
   const { slug } = useParams();
   const { data, loading, error } = useShopBySlug(slug);
   const { features: allFeatures } = useServiceFeatures();
-  const { shopPrefix } = useRoutePrefix();
+  const { isLiff, shopPrefix } = useRoutePrefix();
   const bookHref = `${shopPrefix}/${slug}/book`;
 
   if (loading) {
@@ -58,166 +65,202 @@ export function ShopDetailPage() {
     return Math.min(min, r.price_per_night);
   }, null);
 
-  // 取出店家勾選的特色,並依平台 sort_order 顯示
   const selectedFeatures = allFeatures.filter((f) =>
     (shop.service_feature_keys ?? []).includes(f.key),
   );
 
-  return (
-    <div className="bg-slate-50 pb-36 sm:pb-16">
-      {/* ====== Hero 圖 + 浮動價格卡（trip.com 風格：扁平 banner） ====== */}
-      <section className="relative">
-        <div
-          className="aspect-[21/9] w-full bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center sm:aspect-[32/9]"
-          style={
-            shop.cover_image_url
-              ? { backgroundImage: `url(${shop.cover_image_url})` }
-              : undefined
-          }
-        >
-          {!shop.cover_image_url && (
-            <div className="flex h-full items-center justify-center text-brand-700">
-              <PawPrint className="h-20 w-20 opacity-30" />
-            </div>
-          )}
-        </div>
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
-      </section>
+  const cover = shop.cover_image_url;
 
-      <div className="mx-auto max-w-5xl px-4 -mt-10 sm:-mt-14">
-        {/* 標題卡 */}
-        <div className="card relative overflow-hidden p-5 sm:p-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-1.5">
+  return (
+    <div className="bg-white pb-28 sm:pb-12">
+      {isLiff && <LiffBackBar caption={shop.name} />}
+      <div className="mx-auto max-w-5xl px-4 pt-5 sm:pt-8">
+        {/* 標題 + 評分 + 收藏 */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
+              {shop.name}
+            </h1>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-700">
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-4 w-4 fill-neutral-900 text-neutral-900" />
+                <strong>4.8</strong>
+              </span>
+              {(shop.city || shop.district) && (
+                <>
+                  <span className="text-neutral-300">·</span>
+                  <span className="inline-flex items-center gap-1 text-neutral-700">
+                    <MapPin className="h-4 w-4" />
+                    {[shop.city, shop.district].filter(Boolean).join(" ")}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="shrink-0">
+            <FavoriteButton shopId={shop.id} />
+          </div>
+        </div>
+
+        {/* Hero 圖牆：desktop 1 大圖 + 4 小圖；mobile 單張 16:10 */}
+        <div className="mt-4 grid gap-2 sm:grid-cols-4 sm:grid-rows-2">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-neutral-100 sm:col-span-2 sm:row-span-2 sm:aspect-auto">
+            {cover ? (
+              <img
+                src={cover}
+                alt={shop.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-neutral-300">
+                <PawPrint className="h-16 w-16" />
+              </div>
+            )}
+          </div>
+          {/* desktop only：4 個小圖佔位 — 先用同 cover 重複顯示，未來接 photo_urls */}
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="relative hidden aspect-[4/3] overflow-hidden rounded-card bg-neutral-100 sm:block"
+            >
+              {cover ? (
+                <img
+                  src={cover}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-cover opacity-90"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-neutral-300">
+                  <PawPrint className="h-8 w-8" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* 主要內容 + 浮動預訂卡 */}
+        <div className="mt-8 grid gap-10 sm:grid-cols-[1fr,360px]">
+          <div className="min-w-0">
+            <section>
+              <h2 className="text-lg font-semibold text-neutral-900">
+                關於這家旅館
+              </h2>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 {shop.pet_types.map((p) => (
-                  <span key={p} className="tag-brand">
+                  <span key={p} className="tag-outline">
                     {PET_TYPE_LABEL[p as PetType]}
                   </span>
                 ))}
-                <span className="tag-success">
+                <span className="tag-outline">
                   <ShieldCheck className="h-3 w-3" />
                   平台合作店家
                 </span>
               </div>
+              {shop.contact_phone && (
+                <a
+                  href={`tel:${shop.contact_phone}`}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-neutral-700 hover:underline"
+                >
+                  <Phone className="h-4 w-4" />
+                  {shop.contact_phone}
+                </a>
+              )}
+              {shop.description && (
+                <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-neutral-700">
+                  {shop.description}
+                </p>
+              )}
+            </section>
 
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-                {shop.name}
-              </h1>
+            {selectedFeatures.length > 0 && (
+              <section className="mt-10 border-t border-neutral-200 pt-8">
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  服務特色
+                </h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {selectedFeatures.map((f) => (
+                    <FeatureChip
+                      key={f.id}
+                      icon={getFeatureIcon(f.icon)}
+                      text={f.label}
+                      description={f.description}
+                    />
+                  ))}
+                </div>
+                <p className="mt-3 text-[11px] text-neutral-400">
+                  * 實際服務內容以店家現場提供為準
+                </p>
+              </section>
+            )}
 
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                <span className="inline-flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <strong className="text-slate-900">4.8</strong>
-                  <span className="text-slate-500">·</span>
-                  <span className="text-slate-500">優質寵物旅館</span>
+            <section className="mt-10 border-t border-neutral-200 pt-8">
+              <div className="mb-4 flex items-end justify-between">
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  提供的房型
+                </h2>
+                <span className="text-xs text-neutral-500">
+                  {rooms.length} 種房型
                 </span>
-                {(shop.city || shop.district) && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {[shop.city, shop.district].filter(Boolean).join(" ")}
+              </div>
+              {rooms.length === 0 ? (
+                <div className="rounded-card border border-neutral-200">
+                  <EmptyState icon={Bed} title="店家尚未上架房型" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {rooms.map((r) => (
+                    <RoomCard key={r.id} room={r} bookHref={bookHref} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* desktop only：sticky 預訂卡 */}
+          <aside className="hidden sm:block">
+            <div className="sticky top-24 rounded-card border border-neutral-200 p-6">
+              {minPrice !== null ? (
+                <p className="text-neutral-900">
+                  <span className="text-2xl font-bold">
+                    {fmtMoney(minPrice)}
                   </span>
-                )}
-                {shop.contact_phone && (
-                  <a
-                    href={`tel:${shop.contact_phone}`}
-                    className="inline-flex items-center gap-1 hover:text-brand-700"
-                  >
-                    <Phone className="h-4 w-4" />
-                    {shop.contact_phone}
-                  </a>
-                )}
-              </div>
+                  <span className="ml-1 text-sm text-neutral-500">/ 晚起</span>
+                </p>
+              ) : (
+                <p className="text-sm text-neutral-500">目前尚無房型</p>
+              )}
+              <Link
+                to={bookHref}
+                className="btn-primary mt-5 w-full justify-center"
+              >
+                選擇日期 預約
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <p className="mt-3 text-center text-xs text-neutral-500">
+                送出後店家會盡快確認
+              </p>
             </div>
-
-            <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
-              <div className="hidden sm:block">
-                {minPrice !== null ? (
-                  <p className="text-right">
-                    <span className="text-xs text-slate-500">每晚最低</span>
-                    <br />
-                    <span className="price-lg">
-                      {fmtMoney(minPrice).replace("NT$ ", "")}
-                    </span>
-                    <span className="ml-0.5 text-xs text-slate-500">起</span>
-                  </p>
-                ) : null}
-              </div>
-              <div className="flex items-center gap-2">
-                <FavoriteButton shopId={shop.id} />
-                <Link to={bookHref} className="btn-cta hidden sm:inline-flex">
-                  立即預約
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {shop.description && (
-            <p className="mt-4 whitespace-pre-line border-t border-slate-100 pt-4 text-sm text-slate-600">
-              {shop.description}
-            </p>
-          )}
-        </div>
-
-        {/* ====== 服務 / 設施 chips —— 動態讀取店家勾選 ====== */}
-        {selectedFeatures.length > 0 && (
-          <div className="card mt-4 p-5">
-            <h2 className="mb-3 text-sm font-bold text-slate-900">服務特色</h2>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {selectedFeatures.map((f) => (
-                <FeatureChip
-                  key={f.id}
-                  icon={getFeatureIcon(f.icon)}
-                  text={f.label}
-                  description={f.description}
-                />
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] text-slate-400">
-              * 實際服務內容以店家現場提供為準
-            </p>
-          </div>
-        )}
-
-        {/* ====== 房型列表 ====== */}
-        <div className="mt-4">
-          <div className="mb-3 flex items-end justify-between">
-            <h2 className="text-base font-bold text-slate-900">提供的房型</h2>
-            <span className="text-xs text-slate-500">{rooms.length} 種房型</span>
-          </div>
-
-          {rooms.length === 0 ? (
-            <div className="card">
-              <EmptyState icon={Bed} title="店家尚未上架房型" />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {rooms.map((r) => (
-                <RoomCard key={r.id} room={r} bookHref={bookHref} />
-              ))}
-            </div>
-          )}
+          </aside>
         </div>
       </div>
 
-      {/* ====== Mobile sticky bottom 預約 bar ====== */}
+      {/* mobile sticky bottom 預約 bar */}
       <div className="sticky-bottom-bar sm:hidden">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-col leading-none">
+          <div className="leading-none">
             {minPrice !== null ? (
               <>
-                <span className="text-[10px] text-slate-500">每晚</span>
-                <span className="price-md">
-                  {fmtMoney(minPrice).replace("NT$ ", "")}
-                  <span className="ml-0.5 text-[10px] text-slate-500">起</span>
-                </span>
+                <p className="text-base font-bold text-neutral-900">
+                  {fmtMoney(minPrice)}
+                </p>
+                <p className="mt-0.5 text-[11px] text-neutral-500">/ 晚起</p>
               </>
             ) : (
-              <span className="text-xs text-slate-500">尚無房型</span>
+              <span className="text-xs text-neutral-500">尚無房型</span>
             )}
           </div>
-          <Link to={bookHref} className="btn-cta flex-1 justify-center">
+          <Link to={bookHref} className="btn-primary flex-1 justify-center">
             選擇日期 預約
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -237,12 +280,12 @@ function FeatureChip({
   description?: string | null;
 }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+    <div className="flex items-start gap-3 text-sm text-neutral-700">
+      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-neutral-700" />
       <div className="min-w-0">
-        <p className="font-medium text-slate-800">{text}</p>
+        <p className="font-medium text-neutral-900">{text}</p>
         {description && (
-          <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-500">
+          <p className="mt-0.5 line-clamp-2 text-xs text-neutral-500">
             {description}
           </p>
         )}
@@ -252,11 +295,11 @@ function FeatureChip({
 }
 
 function RoomCard({ room, bookHref }: { room: Room; bookHref: string }) {
+  const lowStock = room.total_count > 0 && room.total_count <= 3;
   return (
-    <article className="card overflow-hidden p-4 transition-shadow hover:shadow-card-hover">
-      <div className="flex flex-col gap-4 sm:flex-row">
-        {/* 圖佔位 */}
-        <div className="relative aspect-video shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-brand-50 to-amber-50 sm:aspect-[4/3] sm:w-44">
+    <article className="overflow-hidden rounded-card border border-neutral-200 bg-white transition-shadow hover:shadow-md">
+      <div className="flex flex-col gap-4 p-4 sm:flex-row">
+        <div className="relative aspect-video shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:aspect-[4/3] sm:w-48">
           {room.photo_urls?.[0] ? (
             <img
               src={room.photo_urls[0]}
@@ -264,57 +307,57 @@ function RoomCard({ room, bookHref }: { room: Room; bookHref: string }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-brand-600">
-              <Bed className="h-10 w-10 opacity-40" />
+            <div className="flex h-full items-center justify-center text-neutral-300">
+              <Bed className="h-10 w-10" />
             </div>
-          )}
-          {room.total_count > 0 && room.total_count <= 3 && (
-            <span className="img-overlay-hot">
-              <CheckCircle2 className="h-3 w-3" />
-              僅剩 {room.total_count} 間
-            </span>
           )}
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-slate-900">{room.name}</h3>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <h3 className="text-base font-semibold text-neutral-900">
+                {room.name}
+              </h3>
+              <p className="mt-0.5 text-xs text-neutral-500">
                 共 {room.total_count} 間
+                {lowStock && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-neutral-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    僅剩 {room.total_count} 間
+                  </span>
+                )}
               </p>
             </div>
-            <div className="text-right">
-              <p>
-                <span className="price-sm">
-                  {fmtMoney(room.price_per_night).replace("NT$ ", "")}
-                </span>
-                <span className="ml-0.5 text-[11px] text-slate-500">/晚</span>
+            <div className="text-right leading-none">
+              <p className="text-lg font-bold text-neutral-900">
+                {fmtMoney(room.price_per_night)}
               </p>
+              <p className="mt-0.5 text-[11px] text-neutral-500">/ 晚</p>
             </div>
           </div>
 
           {room.description && (
-            <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+            <p className="mt-2 line-clamp-2 text-sm text-neutral-600">
               {room.description}
             </p>
           )}
 
           <div className="mt-2 flex flex-wrap gap-1">
             {room.pet_types.map((p) => (
-              <span key={p} className="tag">
+              <span key={p} className="tag-outline">
                 {PET_TYPE_LABEL[p as PetType]}
               </span>
             ))}
             {room.pet_sizes.map((s) => (
-              <span key={s} className="tag">
+              <span key={s} className="tag-outline">
                 {PET_SIZE_LABEL.default[s]}
               </span>
             ))}
           </div>
 
           <div className="mt-3 flex items-center justify-end">
-            <Link to={bookHref} className="btn-cta text-xs">
+            <Link to={bookHref} className="btn-secondary text-xs">
               選擇此房型
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>

@@ -169,7 +169,7 @@ export function ShopInventoryPage() {
                 {activeRooms.map((r) => (
                   <span
                     key={r.id}
-                    className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5"
+                    className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5"
                   >
                     <Bed className="h-3 w-3" />
                     {r.name}（{r.total_count}）
@@ -206,7 +206,7 @@ export function ShopInventoryPage() {
           </div>
 
           <div className="card overflow-hidden">
-            <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center text-xs font-medium text-slate-500">
+            <div className="grid grid-cols-7 border-b border-neutral-200 bg-neutral-50 text-center text-xs font-medium text-neutral-500">
               {["日", "一", "二", "三", "四", "五", "六"].map((d) => (
                 <div key={d} className="py-2">
                   {d}
@@ -234,34 +234,31 @@ export function ShopInventoryPage() {
                       onClick={() => cell && inMonth && setEditingDate(dateStr)}
                       disabled={!cell || !inMonth}
                       className={cn(
-                        "relative min-h-[92px] border-b border-r border-slate-100 p-1.5 text-left text-xs transition-colors",
-                        !inMonth && "bg-slate-50/40 text-slate-300",
-                        inMonth &&
-                          cell &&
-                          (cell.totalAvailable > 0
-                            ? "hover:bg-emerald-50"
-                            : "bg-rose-50/40 hover:bg-rose-50"),
-                        isToday && "ring-2 ring-inset ring-brand-500",
+                        "relative min-h-[92px] border-b border-r border-neutral-100 p-1.5 text-left text-xs transition-colors",
+                        !inMonth && "bg-neutral-50/60 text-neutral-300",
+                        inMonth && cell && "hover:bg-neutral-50",
+                        isToday && "ring-1 ring-inset ring-neutral-900",
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span
                           className={cn(
                             "font-semibold",
-                            inMonth ? "text-slate-900" : "text-slate-300",
+                            inMonth ? "text-neutral-900" : "text-neutral-300",
                           )}
                         >
                           {d.getDate()}
                         </span>
                         {cell && inMonth && (
-                          <span
-                            className={cn(
-                              "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                              cell.totalAvailable > 0
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-rose-100 text-rose-700",
-                            )}
-                          >
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-neutral-700">
+                            <span
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                cell.totalAvailable > 0
+                                  ? "bg-emerald-500"
+                                  : "bg-rose-500",
+                              )}
+                            />
                             {cell.totalAvailable}/{cell.totalCapacity}
                           </span>
                         )}
@@ -272,34 +269,27 @@ export function ShopInventoryPage() {
                             {cell.perRoom.slice(0, 2).map((r) => (
                               <div
                                 key={r.room.id}
-                                className="flex items-center justify-between text-[10px] text-slate-600"
+                                className="flex items-center justify-between text-[10px] text-neutral-600"
                               >
                                 <span className="truncate">{r.room.name}</span>
-                                <span
-                                  className={cn(
-                                    "shrink-0 font-medium",
-                                    r.availability.available > 0
-                                      ? "text-emerald-700"
-                                      : "text-rose-600",
-                                  )}
-                                >
+                                <span className="shrink-0 font-medium text-neutral-900">
                                   {r.availability.available}/{r.room.total_count}
                                 </span>
                               </div>
                             ))}
                             {cell.perRoom.length > 2 && (
-                              <div className="text-[10px] text-slate-400">
+                              <div className="text-[10px] text-neutral-400">
                                 +{cell.perRoom.length - 2} 個房型
                               </div>
                             )}
                           </div>
-                          <div className="mt-1 text-[10px] text-slate-500">
+                          <div className="mt-1 text-[10px] text-neutral-500">
                             {cell.minPrice === cell.maxPrice
                               ? fmtMoney(cell.minPrice)
                               : `${fmtMoney(cell.minPrice)}-${fmtMoney(cell.maxPrice)}`}
                           </div>
                           {sold > 0 && (
-                            <div className="mt-0.5 text-[10px] text-amber-700">
+                            <div className="mt-0.5 text-[10px] text-neutral-500">
                               已售 {sold}
                             </div>
                           )}
@@ -421,34 +411,33 @@ function RoomDayRow({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
+    <div className="rounded-xl border border-neutral-200 p-3">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center justify-between gap-2 text-left"
       >
         <div className="flex items-center gap-2">
-          <Bed className="h-4 w-4 text-brand-700" />
-          <strong className="text-sm text-slate-900">{room.name}</strong>
+          <Bed className="h-4 w-4 text-neutral-500" />
+          <strong className="text-sm text-neutral-900">{room.name}</strong>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 font-semibold",
-              availability.available > 0
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-rose-100 text-rose-700",
-            )}
-          >
+        <div className="flex items-center gap-2 text-xs text-neutral-700">
+          <span className="inline-flex items-center gap-1 font-medium">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                availability.available > 0 ? "bg-emerald-500" : "bg-rose-500",
+              )}
+            />
             剩 {availability.available}/{room.total_count}
           </span>
           <span>{fmtMoney(availability.price)}</span>
-          <Edit3 className="h-3 w-3 text-slate-400" />
+          <Edit3 className="h-3 w-3 text-neutral-400" />
         </div>
       </button>
 
       {expanded && (
-        <div className="mt-3 space-y-3 border-t border-slate-100 pt-3">
+        <div className="mt-3 space-y-3 border-t border-neutral-100 pt-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="label text-xs">可用間數</label>

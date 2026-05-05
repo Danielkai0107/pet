@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
-  PawPrint,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
@@ -134,28 +133,32 @@ export function ShopOnboardingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="min-h-screen bg-white px-4 py-10">
       <div className="mx-auto max-w-2xl">
-        <Link to="/" className="mb-6 flex items-center gap-2 text-brand-700">
-          <PawPrint className="h-6 w-6" />
-          <span className="text-lg font-bold">{PLATFORM_NAME} 店家入駐</span>
+        <Link to="/" className="mb-6 flex items-center gap-2 text-neutral-900">
+          <span className="text-lg font-bold tracking-tight">
+            {PLATFORM_NAME}
+          </span>
+          <span className="text-sm font-medium text-neutral-500">店家入駐</span>
         </Link>
 
         <div className="mb-6 flex items-center gap-2 text-xs">
           <Pill active={stepIdx >= 1} label="1 帳號" />
-          <ChevronRight className="h-4 w-4 text-slate-300" />
+          <ChevronRight className="h-4 w-4 text-neutral-300" />
           <Pill active={stepIdx >= 2} label="2 商家資訊" />
-          <ChevronRight className="h-4 w-4 text-slate-300" />
+          <ChevronRight className="h-4 w-4 text-neutral-300" />
           <Pill active={stepIdx >= 3} label="3 確認送出" />
-          <ChevronRight className="h-4 w-4 text-slate-300" />
+          <ChevronRight className="h-4 w-4 text-neutral-300" />
           <Pill active={stepIdx >= 4} label="4 完成" />
         </div>
 
-        <div className="card p-6">
+        <div className="rounded-card border border-neutral-200 bg-white p-6">
           {step === "account" && (
             <form onSubmit={handleSignup} className="space-y-4">
-              <h1 className="text-xl font-bold text-slate-900">建立店家帳號</h1>
-              <p className="text-sm text-slate-500">
+              <h1 className="text-xl font-bold text-neutral-900">
+                建立店家帳號
+              </h1>
+              <p className="text-sm text-neutral-500">
                 請填寫您的 Email 與密碼，這將是後台登入帳號。
               </p>
               <div>
@@ -191,9 +194,12 @@ export function ShopOnboardingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
-              <p className="text-center text-sm text-slate-500">
+              <p className="text-center text-sm text-neutral-500">
                 已有帳號？
-                <Link to="/shop/login" className="ml-1 font-semibold text-brand-700">
+                <Link
+                  to="/shop/login"
+                  className="ml-1 font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2"
+                >
                   登入
                 </Link>
               </p>
@@ -316,8 +322,8 @@ export function ShopOnboardingPage() {
                           className={
                             "rounded-full border px-3 py-1.5 text-sm transition-colors " +
                             (checked
-                              ? "border-brand-500 bg-brand-50 text-brand-700"
-                              : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
+                              ? "border-neutral-900 bg-neutral-900 text-white"
+                              : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50")
                           }
                         >
                           {PET_TYPE_LABEL[p]}
@@ -360,25 +366,35 @@ export function ShopOnboardingPage() {
 
           {step === "review" && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-slate-900">確認商家資訊</h1>
+              <h1 className="text-xl font-bold text-neutral-900">確認商家資訊</h1>
               <ReviewRow label="店名" value={shopForm.name} />
               <ReviewRow label="URL slug" value={shopForm.slug} />
               <ReviewRow
                 label="城市 / 行政區"
-                value={[shopForm.city, shopForm.district].filter(Boolean).join(" ") || "—"}
+                value={
+                  [shopForm.city, shopForm.district]
+                    .filter(Boolean)
+                    .join(" ") || "—"
+                }
               />
               <ReviewRow label="地址" value={shopForm.address || "—"} />
               <ReviewRow label="聯絡電話" value={shopForm.contactPhone || "—"} />
-              <ReviewRow label="客服 Email" value={shopForm.contactEmail || "—"} />
+              <ReviewRow
+                label="客服 Email"
+                value={shopForm.contactEmail || "—"}
+              />
               <ReviewRow
                 label="寵物類型"
-                value={shopForm.petTypes.map((p) => PET_TYPE_LABEL[p]).join("、") || "—"}
+                value={
+                  shopForm.petTypes.map((p) => PET_TYPE_LABEL[p]).join("、") ||
+                  "—"
+                }
               />
               <ReviewRow label="簡介" value={shopForm.description || "—"} />
 
-              <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="text-xs text-neutral-500">
                 送出後會等待平台審核。審核通過前，商家頁不會公開。
-              </div>
+              </p>
 
               <div className="flex justify-between">
                 <button className="btn-ghost" onClick={() => setStep("shop")}>
@@ -399,11 +415,12 @@ export function ShopOnboardingPage() {
 
           {step === "done" && (
             <div className="space-y-4 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
-                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-900">已送出申請</h1>
-              <p className="text-sm text-slate-600">
+              <CheckCircle2
+                className="mx-auto h-12 w-12 text-brand-500"
+                strokeWidth={1.5}
+              />
+              <h1 className="text-xl font-bold text-neutral-900">已送出申請</h1>
+              <p className="text-sm text-neutral-600">
                 您可以先進入後台設定房型與庫存，審核通過後商家頁就會自動公開。
               </p>
               <button
@@ -426,7 +443,9 @@ function Pill({ active, label }: { active: boolean; label: string }) {
     <span
       className={
         "rounded-full px-2.5 py-1 font-medium " +
-        (active ? "bg-brand-600 text-white" : "bg-slate-200 text-slate-500")
+        (active
+          ? "bg-neutral-900 text-white"
+          : "bg-neutral-100 text-neutral-500")
       }
     >
       {label}
@@ -436,9 +455,11 @@ function Pill({ active, label }: { active: boolean; label: string }) {
 
 function ReviewRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start gap-4 border-b border-slate-100 pb-3 last:border-0">
-      <span className="w-24 shrink-0 text-sm text-slate-500">{label}</span>
-      <span className="flex-1 text-sm font-medium text-slate-900">{value}</span>
+    <div className="flex items-start gap-4 border-b border-neutral-100 pb-3 last:border-0">
+      <span className="w-24 shrink-0 text-sm text-neutral-500">{label}</span>
+      <span className="flex-1 text-sm font-medium text-neutral-900">
+        {value}
+      </span>
     </div>
   );
 }

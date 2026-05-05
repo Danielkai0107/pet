@@ -237,7 +237,7 @@ export function RoomFormModal({
           />
         </Field>
 
-        <label className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
           <input
             type="checkbox"
             checked={form.is_active}
@@ -248,7 +248,7 @@ export function RoomFormModal({
           上架（可被消費者預約）
         </label>
 
-        <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <div className="flex justify-end gap-2 border-t border-neutral-200 pt-4">
           <button type="button" className="btn-ghost" onClick={onClose}>
             取消
           </button>
@@ -296,8 +296,8 @@ function Pill({
       className={
         "rounded-full border px-3 py-1.5 text-sm transition-colors " +
         (active
-          ? "border-brand-500 bg-brand-50 text-brand-700"
-          : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
+          ? "border-neutral-900 bg-neutral-900 text-white"
+          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50")
       }
     >
       {children}

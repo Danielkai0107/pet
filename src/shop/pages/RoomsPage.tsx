@@ -11,7 +11,6 @@ import {
 import toast from "react-hot-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { fmtMoney } from "@/lib/format";
 import { PET_TYPE_LABEL } from "@/lib/constants";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
@@ -76,11 +75,11 @@ export function ShopRoomsPage() {
       />
 
       {loading ? (
-        <div className="card flex items-center justify-center py-16">
+        <div className="flex items-center justify-center rounded-card border border-neutral-200 py-16">
           <Spinner />
         </div>
       ) : rooms.length === 0 ? (
-        <div className="card">
+        <div className="rounded-card border border-neutral-200">
           <EmptyState
             icon={Bed}
             title="尚未建立房型"
@@ -96,8 +95,11 @@ export function ShopRoomsPage() {
       ) : (
         <div className="grid gap-3">
           {rooms.map((room) => (
-            <div key={room.id} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
-              <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-xl bg-brand-50 text-brand-700 sm:h-20 sm:w-28">
+            <div
+              key={room.id}
+              className="flex flex-col gap-3 rounded-card border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:gap-4"
+            >
+              <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:h-20 sm:w-28">
                 {room.photo_urls && room.photo_urls.length > 0 ? (
                   <>
                     <img
@@ -107,37 +109,43 @@ export function ShopRoomsPage() {
                       loading="lazy"
                     />
                     {room.photo_urls.length > 1 && (
-                      <span className="absolute bottom-1 right-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                      <span className="absolute bottom-1.5 right-1.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm">
                         {room.photo_urls.length} 張
                       </span>
                     )}
                   </>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center">
+                  <div className="flex h-full w-full items-center justify-center text-neutral-300">
                     <Bed className="h-6 w-6" />
                   </div>
                 )}
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-semibold text-slate-900">
+                  <h3 className="text-base font-semibold text-neutral-900">
                     {room.name}
                   </h3>
                   {!room.is_active && (
-                    <Badge className="bg-slate-200 text-slate-700">已下架</Badge>
+                    <span className="tag-outline">已下架</span>
                   )}
                 </div>
                 {room.description && (
-                  <p className="mt-0.5 line-clamp-1 text-sm text-slate-500">
+                  <p className="mt-0.5 line-clamp-1 text-sm text-neutral-500">
                     {room.description}
                   </p>
                 )}
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-600">
                   <span>
-                    <strong className="text-slate-900">{room.total_count}</strong> 間
+                    <strong className="text-neutral-900">
+                      {room.total_count}
+                    </strong>{" "}
+                    間
                   </span>
                   <span>
-                    每晚 <strong className="text-slate-900">{fmtMoney(room.price_per_night)}</strong>
+                    每晚{" "}
+                    <strong className="text-neutral-900">
+                      {fmtMoney(room.price_per_night)}
+                    </strong>
                   </span>
                   <span>
                     {room.pet_types.map((p) => PET_TYPE_LABEL[p]).join("、")}
@@ -172,7 +180,7 @@ export function ShopRoomsPage() {
                   <Edit3 className="h-4 w-4" />
                 </button>
                 <button
-                  className="btn-ghost text-rose-600 hover:bg-rose-50"
+                  className="btn-ghost text-rose-700"
                   onClick={() => handleDelete(room)}
                   title="刪除"
                 >

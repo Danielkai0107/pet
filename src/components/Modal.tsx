@@ -7,10 +7,19 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
+  /** Right-side header content (e.g. status badge). */
+  headerExtra?: ReactNode;
 }
 
-export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = "md",
+  headerExtra,
+}: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -40,21 +49,27 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
           size === "sm" && "max-w-sm",
           size === "md" && "max-w-lg",
           size === "lg" && "max-w-2xl",
+          size === "xl" && "max-w-4xl",
         )}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-            <button
-              onClick={onClose}
-              className="-mr-1 rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
-              aria-label="關閉"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="flex items-center justify-between gap-3 border-b border-neutral-200 px-5 py-3.5">
+            <h2 className="truncate text-base font-semibold text-neutral-900">
+              {title}
+            </h2>
+            <div className="flex items-center gap-2">
+              {headerExtra}
+              <button
+                onClick={onClose}
+                className="-mr-1 rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100"
+                aria-label="關閉"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         )}
-        <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
+        <div className="max-h-[80vh] overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );

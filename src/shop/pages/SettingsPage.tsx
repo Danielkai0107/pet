@@ -1,19 +1,18 @@
 import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import {
-  BOOKING_STATUS_COLOR,
   PET_TYPE_LABEL,
   TAIWAN_CITIES,
 } from "@/lib/constants";
 import { supabase, formatSupabaseError } from "@/lib/supabase";
 import type { PetType, ShopStatus } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
-import { Badge } from "@/components/Badge";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { PageHeader } from "@/shop/components/PageHeader";
 import { useServiceFeatures } from "@/lib/useServiceFeatures";
 import { getFeatureIcon } from "@/lib/featureIcon";
+import { cn } from "@/lib/cn";
 
 const STATUS_LABEL: Record<ShopStatus, string> = {
   pending_review: "待審核",
@@ -22,11 +21,11 @@ const STATUS_LABEL: Record<ShopStatus, string> = {
   rejected: "已拒絕",
 };
 
-const STATUS_COLOR: Record<ShopStatus, string> = {
-  pending_review: BOOKING_STATUS_COLOR.pending,
-  active: BOOKING_STATUS_COLOR.confirmed,
-  suspended: BOOKING_STATUS_COLOR.cancelled,
-  rejected: BOOKING_STATUS_COLOR.declined,
+const STATUS_DOT: Record<ShopStatus, string> = {
+  pending_review: "bg-amber-500",
+  active: "bg-emerald-500",
+  suspended: "bg-neutral-400",
+  rejected: "bg-rose-500",
 };
 
 interface FormState {
@@ -109,9 +108,15 @@ export function ShopSettingsPage() {
         title="商家設定"
         description="這些資訊會顯示在公開的商家頁。"
         action={
-          <Badge className={STATUS_COLOR[shop.status]}>
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                STATUS_DOT[shop.status],
+              )}
+            />
             {STATUS_LABEL[shop.status]}
-          </Badge>
+          </span>
         }
       />
 
@@ -228,8 +233,8 @@ export function ShopSettingsPage() {
                   className={
                     "rounded-full border px-3 py-1.5 text-sm transition-colors " +
                     (checked
-                      ? "border-brand-500 bg-brand-50 text-brand-700"
-                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
+                      ? "border-neutral-900 bg-neutral-900 text-white"
+                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50")
                   }
                 >
                   {PET_TYPE_LABEL[p]}
@@ -244,7 +249,7 @@ export function ShopSettingsPage() {
           hint="勾選的項目會顯示在您的公開商家頁,讓消費者更容易判斷是否符合需求"
         >
           {features.length === 0 ? (
-            <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+            <p className="rounded-xl border border-neutral-200 p-3 text-xs text-neutral-500">
               平台尚未建立服務特色清單,請等候管理員設定。
             </p>
           ) : (
@@ -265,33 +270,21 @@ export function ShopSettingsPage() {
                       })
                     }
                     className={
-                      "flex items-start gap-2.5 rounded-lg border p-3 text-left transition-colors " +
+                      "flex items-start gap-2.5 rounded-xl border bg-white p-3 text-left transition-colors " +
                       (checked
-                        ? "border-brand-500 bg-brand-50"
-                        : "border-slate-200 bg-white hover:bg-slate-50")
+                        ? "border-neutral-900 ring-1 ring-neutral-900"
+                        : "border-neutral-200 hover:bg-neutral-50")
                     }
                   >
-                    <div
-                      className={
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " +
-                        (checked
-                          ? "bg-white text-brand-700"
-                          : "bg-brand-50 text-brand-700")
-                      }
-                    >
-                      <Icon className="h-4.5 w-4.5" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700">
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p
-                        className={
-                          "text-sm font-semibold " +
-                          (checked ? "text-brand-800" : "text-slate-900")
-                        }
-                      >
+                      <p className="text-sm font-semibold text-neutral-900">
                         {f.label}
                       </p>
                       {f.description && (
-                        <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-500">
+                        <p className="mt-0.5 line-clamp-2 text-[11px] text-neutral-500">
                           {f.description}
                         </p>
                       )}
@@ -303,8 +296,12 @@ export function ShopSettingsPage() {
           )}
         </Field>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
-          <button type="submit" className="btn-primary" disabled={submitting}>
+        <div className="flex justify-end gap-2 border-t border-neutral-200 pt-4">
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={submitting}
+          >
             {submitting && <Spinner size="sm" />}
             儲存變更
           </button>
@@ -329,7 +326,7 @@ function Field({
     <div>
       <label className="label">
         {label}
-        {required && <span className="ml-1 text-rose-500">*</span>}
+        {required && <span className="ml-1 text-rose-600">*</span>}
       </label>
       {children}
       {hint && <p className="helper">{hint}</p>}

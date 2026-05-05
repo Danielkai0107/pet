@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Mail, Hash, Phone, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Mail, Hash, Phone } from "lucide-react";
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -8,6 +8,7 @@ import { supabase, formatSupabaseError } from "@/lib/supabase";
 import { LiffAuthProvider } from "@/liff/auth/LiffAuthProvider";
 import { useLiffAuth } from "@/liff/auth/useLiffAuth";
 import { LiffGate } from "@/liff/components/LiffGate";
+import { LiffHeader } from "@/liff/components/LiffHeader";
 
 type Step = "form" | "code" | "done";
 
@@ -74,33 +75,28 @@ function BindContent() {
   };
 
   return (
-    <div className="px-4 py-8">
-      <div className="card mx-auto max-w-md p-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="btn-ghost mb-3 text-sm"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          返回
-        </button>
+    <div className="bg-white pb-12">
+      <LiffHeader title="綁定我的訂單" back />
 
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50">
-          <ShieldCheck className="h-6 w-6 text-brand-700" />
-        </div>
+      <div className="mx-auto max-w-md px-4 pt-6">
+        <ShieldCheck
+          className="mx-auto mb-3 h-10 w-10 text-brand-500"
+          strokeWidth={1.5}
+        />
 
         {step === "form" && (
           <form onSubmit={requestOtp}>
-            <h1 className="text-center text-lg font-bold text-slate-900">
-              綁定我的訂單
-            </h1>
-            <p className="mt-1 text-center text-sm text-slate-500">
+            <h2 className="text-center text-lg font-semibold tracking-tight text-neutral-900">
+              一次連結你的所有訂單
+            </h2>
+            <p className="mx-auto mt-1 max-w-sm text-center text-sm text-neutral-500">
               填寫手機號 + Email，我們會寄一組 6 碼驗證碼到 Email
               並把這支 LINE 與你的訂單關聯起來。
             </p>
-            <div className="mt-5">
+            <div className="mt-6">
               <label className="label">手機號碼</label>
               <div className="relative">
-                <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="tel"
                   inputMode="tel"
@@ -119,7 +115,7 @@ function BindContent() {
             <div className="mt-3">
               <label className="label">Email</label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="email"
                   autoComplete="email"
@@ -134,7 +130,7 @@ function BindContent() {
             </div>
             <button
               type="submit"
-              className="btn-primary mt-5 w-full"
+              className="btn-primary mt-5 w-full justify-center"
               disabled={submitting}
             >
               {submitting && <Spinner size="sm" />}
@@ -145,22 +141,23 @@ function BindContent() {
 
         {step === "code" && (
           <form onSubmit={verifyOtp}>
-            <h1 className="text-center text-lg font-bold text-slate-900">
+            <h2 className="text-center text-lg font-semibold tracking-tight text-neutral-900">
               輸入驗證碼
-            </h1>
-            <p className="mt-1 text-center text-sm text-slate-500">
-              我們已將 6 碼驗證碼寄到 <strong>{email}</strong>
+            </h2>
+            <p className="mt-1 text-center text-sm text-neutral-500">
+              我們已將 6 碼驗證碼寄到{" "}
+              <strong className="text-neutral-900">{email}</strong>
             </p>
-            <div className="mt-5">
+            <div className="mt-6">
               <label className="label">驗證碼</label>
               <div className="relative">
-                <Hash className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Hash className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
                   inputMode="numeric"
                   pattern="\d{6}"
                   maxLength={6}
-                  className="input pl-10 text-center text-lg font-mono tracking-widest"
+                  className="input pl-10 text-center font-mono text-lg tracking-widest"
                   placeholder="000000"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
@@ -171,7 +168,7 @@ function BindContent() {
             </div>
             <button
               type="submit"
-              className="btn-primary mt-5 w-full"
+              className="btn-primary mt-5 w-full justify-center"
               disabled={submitting}
             >
               {submitting && <Spinner size="sm" />}
@@ -179,7 +176,7 @@ function BindContent() {
             </button>
             <button
               type="button"
-              className="btn-ghost mt-2 w-full text-sm"
+              className="btn-ghost mt-2 w-full justify-center text-sm"
               onClick={() => setStep("form")}
             >
               重新輸入手機 / Email
@@ -189,18 +186,22 @@ function BindContent() {
 
         {step === "done" && (
           <div className="text-center">
-            <h1 className="text-lg font-bold text-slate-900">綁定完成！</h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <h2 className="text-lg font-semibold tracking-tight text-neutral-900">
+              綁定完成
+            </h2>
+            <p className="mt-2 text-sm text-neutral-600">
               {backfilled > 0 ? (
                 <>
-                  已為你關聯 <strong>{backfilled}</strong> 筆過去的訂單。
+                  已為你關聯{" "}
+                  <strong className="text-neutral-900">{backfilled}</strong>{" "}
+                  筆過去的訂單。
                 </>
               ) : (
-                <>未來新預約只要使用同手機/Email 就會自動顯示在這裡。</>
+                <>未來新預約只要使用同手機 / Email 就會自動顯示在這裡。</>
               )}
             </p>
             <button
-              className="btn-primary mt-5 w-full"
+              className="btn-primary mt-6 w-full justify-center"
               onClick={() => navigate("/liff")}
             >
               查看我的訂單

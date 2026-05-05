@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Bed,
   Calendar,
-  CheckCircle2,
   Clock,
   MapPin,
   PawPrint,
@@ -14,8 +13,8 @@ import {
 import toast from "react-hot-toast";
 import { Spinner } from "@/components/Spinner";
 import { EmptyState } from "@/components/EmptyState";
+import { StatusDot } from "@/components/StatusDot";
 import {
-  BOOKING_STATUS_LABEL,
   PET_SIZE_LABEL,
   PET_TYPE_LABEL,
 } from "@/lib/constants";
@@ -30,6 +29,7 @@ import type { BookingStatus, PetSize, PetType } from "@/lib/types";
 import { sendBookingEmail } from "@/lib/email";
 import { sendBookingLine } from "@/lib/notify";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
+import { LiffBackBar } from "@/liff/components/LiffBackBar";
 
 interface BookingViewRow {
   id: string;
@@ -67,39 +67,14 @@ interface BookingViewRow {
   checked_out_at: string | null;
 }
 
-// Trip.com 風訂單狀態色：每個狀態給一個飽和色 banner
-const STATUS_BANNER: Record<
-  BookingStatus,
-  { bg: string; description: string }
-> = {
-  pending: {
-    bg: "bg-amber-500",
-    description: "店家正在處理您的預約，請耐心稍候",
-  },
-  confirmed: {
-    bg: "bg-emerald-600",
-    description: "店家已確認，請於入住當天攜帶寵物用品",
-  },
-  declined: {
-    bg: "bg-rose-600",
-    description: "店家無法接受此預約",
-  },
-  cancelled: {
-    bg: "bg-slate-500",
-    description: "此預約已取消",
-  },
-  checked_in: {
-    bg: "bg-blue-600",
-    description: "已入住，您的毛孩正在被悉心照顧",
-  },
-  checked_out: {
-    bg: "bg-slate-500",
-    description: "已退房，謝謝您的光顧",
-  },
-  no_show: {
-    bg: "bg-rose-600",
-    description: "未出席紀錄",
-  },
+const STATUS_DESCRIPTION: Record<BookingStatus, string> = {
+  pending: "店家正在處理您的預約，請耐心稍候",
+  confirmed: "店家已確認，請於入住當天攜帶寵物用品",
+  declined: "店家無法接受此預約",
+  cancelled: "此預約已取消",
+  checked_in: "已入住，您的毛孩正在被悉心照顧",
+  checked_out: "已退房，謝謝您的光顧",
+  no_show: "未出席紀錄",
 };
 
 export function BookingViewPage() {
@@ -185,7 +160,6 @@ export function BookingViewPage() {
     );
   }
 
-  const banner = STATUS_BANNER[booking.status];
   const canCancel =
     booking.status === "pending" || booking.status === "confirmed";
   const locationText = [booking.shop_city, booking.shop_district]
@@ -193,38 +167,34 @@ export function BookingViewPage() {
     .join(" ");
 
   return (
-    <div className="bg-slate-50 pb-28 sm:pb-6">
-      {/* ====== 狀態 Banner ====== */}
-      <section className={`${banner.bg} text-white`}>
-        <div className="mx-auto max-w-2xl px-4 py-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wider text-white/80">
-                訂單狀態
-              </p>
-              <h1 className="mt-0.5 text-xl font-bold">
-                {BOOKING_STATUS_LABEL[booking.status]}
-              </h1>
-              <p className="mt-1 text-sm text-white/90">{banner.description}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wider text-white/80">
-                訂單編號
-              </p>
-              <p className="font-mono text-sm font-semibold">{booking.code}</p>
-            </div>
+    <div className="bg-white pb-28 sm:pb-12">
+      {isLiff && <LiffBackBar back="/liff" caption={booking.code} />}
+      <div className="mx-auto max-w-2xl px-4 pt-6">
+        {/* 狀態列：dot + 文字 + 訂單編號（無大色塊） */}
+        <div className="flex items-center justify-between gap-3 border-b border-neutral-200 pb-4">
+          <div className="min-w-0">
+            <StatusDot status={booking.status} className="text-sm" />
+            <p className="mt-1 text-xs text-neutral-500">
+              {STATUS_DESCRIPTION[booking.status]}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wider text-neutral-400">
+              訂單編號
+            </p>
+            <p className="font-mono text-sm font-semibold text-neutral-900">
+              {booking.code}
+            </p>
           </div>
         </div>
-      </section>
 
-      <div className="mx-auto max-w-2xl px-4 py-4 space-y-3">
-        {/* ====== 店家卡 ====== */}
+        {/* 店家卡 — 純白 + 細邊 */}
         <Link
           to={`${shopPrefix}/${booking.shop_slug}`}
-          className="card-elevated flex items-stretch overflow-hidden"
+          className="mt-5 flex items-stretch overflow-hidden rounded-card border border-neutral-200 bg-white transition-shadow hover:shadow-md"
         >
           <div
-            className="aspect-square w-24 shrink-0 bg-gradient-to-br from-brand-100 to-amber-100 bg-cover bg-center"
+            className="aspect-square w-24 shrink-0 bg-neutral-100 bg-cover bg-center"
             style={
               booking.shop_cover_image_url
                 ? {
@@ -234,23 +204,23 @@ export function BookingViewPage() {
             }
           >
             {!booking.shop_cover_image_url && (
-              <div className="flex h-full items-center justify-center text-brand-700">
-                <PawPrint className="h-8 w-8 opacity-40" />
+              <div className="flex h-full items-center justify-center text-neutral-300">
+                <PawPrint className="h-8 w-8" />
               </div>
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col justify-center px-4">
-            <h2 className="truncate font-bold text-slate-900">
+            <h2 className="truncate font-semibold text-neutral-900">
               {booking.shop_name}
             </h2>
             {locationText && (
-              <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+              <p className="mt-0.5 flex items-center gap-1 text-xs text-neutral-500">
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{locationText}</span>
               </p>
             )}
             {booking.shop_phone && (
-              <p className="mt-0.5 flex items-center gap-1 text-xs text-brand-700">
+              <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-neutral-700">
                 <Phone className="h-3 w-3 shrink-0" />
                 {formatPhone(booking.shop_phone)}
               </p>
@@ -258,38 +228,36 @@ export function BookingViewPage() {
           </div>
         </Link>
 
-        {/* ====== 入住資訊 ====== */}
-        <section className="card p-5">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+        {/* 入住資訊 */}
+        <section className="mt-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
             入住資訊
           </h3>
-
-          {/* 入住 / 退房 + 夜數 (Trip.com 風雙列) */}
-          <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 rounded-lg bg-slate-50 px-4 py-4">
+          <div className="mt-2 grid grid-cols-[1fr,auto,1fr] items-center gap-4 rounded-card border border-neutral-200 px-4 py-4">
             <div>
-              <p className="text-[11px] text-slate-500">入住</p>
-              <p className="mt-0.5 text-base font-bold text-slate-900">
+              <p className="text-[11px] text-neutral-500">入住</p>
+              <p className="mt-0.5 text-base font-semibold text-neutral-900">
                 {fmtDate(booking.check_in_date)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-400">{booking.nights} 晚</p>
-              <ArrowRight className="mx-auto h-4 w-4 text-slate-400" />
+              <p className="text-xs text-neutral-400">{booking.nights} 晚</p>
+              <ArrowRight className="mx-auto h-4 w-4 text-neutral-300" />
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-slate-500">退房</p>
-              <p className="mt-0.5 text-base font-bold text-slate-900">
+              <p className="text-[11px] text-neutral-500">退房</p>
+              <p className="mt-0.5 text-base font-semibold text-neutral-900">
                 {fmtDate(booking.check_out_date)}
               </p>
             </div>
           </div>
 
-          <dl className="mt-4 space-y-2 text-sm">
+          <dl className="mt-3 divide-y divide-neutral-100 rounded-card border border-neutral-200 text-sm">
             <DataRow icon={Bed} label="房型" value={booking.room_name} />
             <DataRow
               label="總費用"
               value={
-                <span className="price-md">
+                <span className="font-bold text-neutral-900">
                   {fmtMoney(booking.total_price)}
                 </span>
               }
@@ -297,12 +265,12 @@ export function BookingViewPage() {
           </dl>
         </section>
 
-        {/* ====== 客戶與寵物 ====== */}
-        <section className="card p-5">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+        {/* 客戶與寵物 */}
+        <section className="mt-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
             客戶與寵物
           </h3>
-          <dl className="space-y-2 text-sm">
+          <dl className="mt-2 divide-y divide-neutral-100 rounded-card border border-neutral-200 text-sm">
             <DataRow label="姓名" value={booking.guest_name} />
             <DataRow label="手機" value={formatPhone(booking.guest_phone)} />
             <DataRow label="Email" value={booking.guest_email || "—"} />
@@ -311,7 +279,7 @@ export function BookingViewPage() {
               value={
                 <>
                   {booking.pet_name}
-                  <span className="ml-1 text-xs text-slate-500">
+                  <span className="ml-1 text-xs text-neutral-500">
                     ({PET_TYPE_LABEL[booking.pet_type]}
                     {booking.pet_size
                       ? ` · ${PET_SIZE_LABEL.default[booking.pet_size]}`
@@ -330,40 +298,40 @@ export function BookingViewPage() {
           </dl>
         </section>
 
-        {/* ====== 時間軸 ====== */}
-        <section className="card p-5">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+        {/* 時間軸 */}
+        <section className="mt-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
             訂單時間軸
           </h3>
-          <Timeline booking={booking} />
+          <div className="mt-2 rounded-card border border-neutral-200 p-5">
+            <Timeline booking={booking} />
+          </div>
         </section>
 
-        {/* ====== Desktop 取消按鈕 ====== */}
-        <div className="hidden flex-col gap-2 sm:flex">
-          <Link to={`${shopPrefix}/${booking.shop_slug}`} className="btn-secondary">
+        {/* desktop 操作 */}
+        <div className="mt-6 hidden flex-col gap-2 sm:flex">
+          <Link
+            to={`${shopPrefix}/${booking.shop_slug}`}
+            className="btn-secondary justify-center"
+          >
             再次預約 {booking.shop_name}
             <ArrowRight className="h-4 w-4" />
           </Link>
-          {canCancel ? (
+          {canCancel && (
             <button
               type="button"
               onClick={handleCancel}
               disabled={cancelling}
-              className="btn-danger"
+              className="btn-danger justify-center"
             >
               {cancelling ? <Spinner size="sm" /> : <X className="h-4 w-4" />}
               取消預約
             </button>
-          ) : booking.status === "cancelled" ? (
-            <div className="rounded-lg bg-slate-100 p-3 text-center text-sm text-slate-600">
-              <CheckCircle2 className="mr-1 inline h-4 w-4" />
-              這筆預約已取消
-            </div>
-          ) : null}
+          )}
         </div>
       </div>
 
-      {/* ====== Mobile sticky bottom 取消 / 再次預約 ====== */}
+      {/* mobile sticky 操作列 */}
       <div className="sticky-bottom-bar sm:hidden">
         <div className="flex items-center gap-2">
           {canCancel ? (
@@ -387,7 +355,7 @@ export function BookingViewPage() {
           ) : (
             <Link
               to={`${shopPrefix}/${booking.shop_slug}`}
-              className="btn-cta flex-1 justify-center"
+              className="btn-primary flex-1 justify-center"
             >
               再次預約 {booking.shop_name}
               <ArrowRight className="h-4 w-4" />
@@ -409,12 +377,12 @@ function DataRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="flex w-16 shrink-0 items-center gap-1 text-xs text-slate-500">
+    <div className="flex items-start gap-3 px-4 py-3">
+      <span className="flex w-16 shrink-0 items-center gap-1 text-xs text-neutral-500">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {label}
       </span>
-      <span className="flex-1 text-sm text-slate-900">{value}</span>
+      <span className="flex-1 text-sm text-neutral-900">{value}</span>
     </div>
   );
 }
@@ -433,13 +401,13 @@ function Timeline({ booking }: { booking: BookingViewRow }) {
     <ol className="space-y-3">
       {items.map((it, i) => (
         <li key={i} className="flex items-center gap-3">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500">
             <Clock className="h-3 w-3" />
           </span>
-          <span className="flex-1 text-sm font-medium text-slate-900">
+          <span className="flex-1 text-sm font-medium text-neutral-900">
             {it.label}
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-neutral-500">
             {fmtDateTime(it.at as string)}
           </span>
         </li>

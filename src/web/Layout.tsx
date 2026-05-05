@@ -1,26 +1,36 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
-import { Search, PawPrint } from "lucide-react";
+import { Link, Outlet } from "react-router-dom";
+import { Search } from "lucide-react";
 import { PLATFORM_NAME } from "@/lib/constants";
-import { cn } from "@/lib/cn";
 
+/**
+ * Airbnb 風 Web 公開頁外層：
+ *   - 純白頂欄、底部細灰線；左側黑色 logo、右側「開始搜尋」膠囊。
+ *   - 不再放重複意義的 tabs（房源 / 找旅館 → 都會走到 /shops），
+ *     讓「開始搜尋」成為唯一進入點。
+ *   - footer 簡化只留版權與必要連結（探索旅館 / 成為店家 / 店家後台）。
+ */
 export function WebLayout() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+    <div className="flex min-h-screen flex-col bg-white">
+      <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-brand-700 transition-colors hover:text-brand-800"
+            className="flex items-center gap-2 text-neutral-900"
+            aria-label={PLATFORM_NAME}
           >
-            <PawPrint className="h-5 w-5" />
-            <span className="text-base font-extrabold tracking-tight">
+            <span className="text-lg font-bold tracking-tight">
               {PLATFORM_NAME}
             </span>
           </Link>
-          <nav className="hidden items-center gap-1 sm:flex">
-            <NavItem to="/" icon={Search} label="找旅館" end />
-          </nav>
-          <span />
+
+          <Link
+            to="/shops"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <Search className="h-4 w-4" />
+            開始搜尋
+          </Link>
         </div>
       </header>
 
@@ -28,52 +38,24 @@ export function WebLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-slate-500 sm:flex-row">
+      <footer className="border-t border-neutral-200 bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-neutral-500 sm:flex-row">
           <p>
-            © {new Date().getFullYear()} {PLATFORM_NAME}. 為毛孩找到最合適的住宿。
+            © {new Date().getFullYear()} {PLATFORM_NAME} · 為毛孩找到合適的住宿
           </p>
-          <div className="flex items-center gap-4 text-slate-400">
-            <Link to="/about" className="hover:text-brand-700">關於我們</Link>
-            <Link to="/shop/onboarding" className="hover:text-brand-700">
-              我是寵物旅館業者
+          <div className="flex flex-wrap items-center gap-4 text-neutral-500">
+            <Link to="/shops" className="hover:text-neutral-900">
+              探索旅館
             </Link>
-            <Link to="/shop/login" className="hover:text-brand-700">
+            <Link to="/shop/onboarding" className="hover:text-neutral-900">
+              成為店家
+            </Link>
+            <Link to="/shop/login" className="hover:text-neutral-900">
               店家後台
             </Link>
           </div>
         </div>
       </footer>
     </div>
-  );
-}
-
-function NavItem({
-  to,
-  icon: Icon,
-  label,
-  end,
-}: {
-  to: string;
-  icon: typeof Search;
-  label: string;
-  end?: boolean;
-}) {
-  return (
-    <NavLink
-      to={to}
-      end={end}
-      className={({ isActive }) =>
-        cn(
-          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
-          isActive
-            ? "text-brand-700"
-            : "text-slate-600 hover:text-brand-700",
-        )
-      }
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </NavLink>
   );
 }

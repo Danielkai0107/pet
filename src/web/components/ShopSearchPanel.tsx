@@ -9,14 +9,22 @@ import {
 interface Props {
   filters: ShopSearchFilters;
   onChange: (next: ShopSearchFilters) => void;
+  /**
+   * 點擊右側送出按鈕時觸發。父層通常用來：
+   *   - HomePage：navigate(`/shops?…`) 帶著當前篩選跳到搜尋結果頁
+   *   - ShopsPage：scrollIntoView 把畫面捲到結果列表
+   * 若不提供，按鈕仍可顯示但不做任何事。
+   */
+  onSubmit?: () => void;
 }
 
 /**
- * Trip.com 風搜尋條：水平 pill-style 排列，五個欄位用 separator 分隔，
- * 右側放大型「搜尋」CTA。RWD：mobile 改成 grid，pill 樣式自動變回普通
- * card grid。
+ * Airbnb 風搜尋膠囊：
+ *   - Desktop：水平 5 欄 + 右側圓品牌色搜尋按鈕；欄位之間「沒有」分隔線，
+ *     讓畫面更乾淨；只在送出按鈕左邊保留一條細直線當作分組視覺。
+ *   - Mobile：垂直堆疊；底部一顆全寬的搜尋按鈕。
  */
-export function ShopSearchPanel({ filters, onChange }: Props) {
+export function ShopSearchPanel({ filters, onChange, onSubmit }: Props) {
   const hasFilters =
     filters.city ||
     filters.petType ||
@@ -25,8 +33,8 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
     filters.maxPrice !== null;
 
   return (
-    <div className="card overflow-hidden p-1.5 sm:p-2">
-      <div className="grid gap-1 sm:grid-cols-5 sm:items-stretch sm:divide-x sm:divide-slate-200">
+    <div className="rounded-3xl border border-neutral-200 bg-white shadow-sm sm:rounded-full sm:p-1.5">
+      <div className="grid gap-1 p-2 sm:grid-cols-[1fr,1fr,1fr,1fr,1fr,auto] sm:items-stretch sm:gap-0 sm:p-0">
         <SearchField icon={MapPin} label="城市">
           <select
             className="search-select"
@@ -95,16 +103,39 @@ export function ShopSearchPanel({ filters, onChange }: Props) {
             }
           />
         </SearchField>
+
+        {/* 送出按鈕 — 只有這裡保留一條左側細直線當分隔，並留出 padding 讓按鈕呼吸 */}
+        <div className="hidden items-center gap-3 pl-3 pr-1.5 sm:flex sm:border-l sm:border-neutral-200">
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label="搜尋"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="px-3 pb-2 sm:hidden">
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="btn-primary w-full"
+        >
+          <Search className="h-4 w-4" />
+          搜尋
+        </button>
       </div>
 
       {hasFilters && (
-        <div className="mt-2 flex items-center justify-between border-t border-slate-100 px-2.5 pt-2 text-xs text-slate-500">
+        <div className="flex items-center justify-between border-t border-neutral-100 px-4 py-2 text-xs text-neutral-500 sm:rounded-b-full">
           <span className="inline-flex items-center gap-1">
             <Search className="h-3.5 w-3.5" />
             已套用篩選條件
           </span>
           <button
-            className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-neutral-900 hover:underline"
             onClick={() => onChange(emptyFilters)}
           >
             <X className="h-3.5 w-3.5" />
@@ -126,12 +157,12 @@ function SearchField({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-slate-50">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+    <label className="group flex cursor-pointer items-center gap-2.5 rounded-full px-3 py-2 transition-colors hover:bg-neutral-50">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-700">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
           {label}
         </p>
         <div className="-ml-0.5 mt-0.5">{children}</div>

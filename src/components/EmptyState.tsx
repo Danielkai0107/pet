@@ -8,6 +8,10 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
+/**
+ * Airbnb 風空狀態：outline icon、不帶圓底色塊；
+ * 黑色標題 + neutral-500 副標 + 居中 CTA。
+ */
 export function EmptyState({
   icon: Icon,
   title,
@@ -17,13 +21,14 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
       {Icon && (
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-          <Icon className="h-6 w-6" />
-        </div>
+        <Icon
+          className="mb-4 h-10 w-10 text-neutral-400"
+          strokeWidth={1.5}
+        />
       )}
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+      <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
       {description && (
-        <p className="mt-1.5 max-w-sm text-sm text-slate-500">{description}</p>
+        <p className="mt-1.5 max-w-sm text-sm text-neutral-500">{description}</p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>
