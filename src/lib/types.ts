@@ -45,7 +45,20 @@ export interface Shop {
   contact_email: string | null;
   line_oa_url: string | null;
   pet_types: PetType[];
+  service_feature_keys: string[];
   status: ShopStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceFeature {
+  id: string;
+  key: string;
+  label: string;
+  description: string | null;
+  icon: string;
+  sort_order: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

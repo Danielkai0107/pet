@@ -12,6 +12,8 @@ import { Badge } from "@/components/Badge";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useShopAuth } from "@/shop/auth/useShopAuth";
 import { PageHeader } from "@/shop/components/PageHeader";
+import { useServiceFeatures } from "@/lib/useServiceFeatures";
+import { getFeatureIcon } from "@/lib/featureIcon";
 
 const STATUS_LABEL: Record<ShopStatus, string> = {
   pending_review: "待審核",
@@ -38,10 +40,12 @@ interface FormState {
   line_oa_url: string;
   cover_image_url: string | null;
   pet_types: PetType[];
+  service_feature_keys: string[];
 }
 
 export function ShopSettingsPage() {
   const { shop, refresh } = useShopAuth();
+  const { features } = useServiceFeatures();
   const [form, setForm] = useState<FormState | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -58,6 +62,7 @@ export function ShopSettingsPage() {
       line_oa_url: shop.line_oa_url ?? "",
       cover_image_url: shop.cover_image_url ?? null,
       pet_types: shop.pet_types,
+      service_feature_keys: shop.service_feature_keys ?? [],
     });
   }, [shop]);
 
@@ -78,6 +83,7 @@ export function ShopSettingsPage() {
         line_oa_url: form.line_oa_url || null,
         cover_image_url: form.cover_image_url,
         pet_types: form.pet_types,
+        service_feature_keys: form.service_feature_keys,
       })
       .eq("id", shop.id);
     setSubmitting(false);
@@ -231,6 +237,70 @@ export function ShopSettingsPage() {
               );
             })}
           </div>
+        </Field>
+
+        <Field
+          label="服務特色"
+          hint="勾選的項目會顯示在您的公開商家頁,讓消費者更容易判斷是否符合需求"
+        >
+          {features.length === 0 ? (
+            <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+              平台尚未建立服務特色清單,請等候管理員設定。
+            </p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {features.map((f) => {
+                const Icon = getFeatureIcon(f.icon);
+                const checked = form.service_feature_keys.includes(f.key);
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        service_feature_keys: checked
+                          ? form.service_feature_keys.filter((k) => k !== f.key)
+                          : [...form.service_feature_keys, f.key],
+                      })
+                    }
+                    className={
+                      "flex items-start gap-2.5 rounded-lg border p-3 text-left transition-colors " +
+                      (checked
+                        ? "border-brand-500 bg-brand-50"
+                        : "border-slate-200 bg-white hover:bg-slate-50")
+                    }
+                  >
+                    <div
+                      className={
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " +
+                        (checked
+                          ? "bg-white text-brand-700"
+                          : "bg-brand-50 text-brand-700")
+                      }
+                    >
+                      <Icon className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={
+                          "text-sm font-semibold " +
+                          (checked ? "text-brand-800" : "text-slate-900")
+                        }
+                      >
+                        {f.label}
+                      </p>
+                      {f.description && (
+                        <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-500">
+                          {f.description}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </Field>
 
         <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">

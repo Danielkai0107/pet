@@ -7,7 +7,6 @@ import {
   PawPrint,
   Phone,
   ShieldCheck,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { Spinner } from "@/components/Spinner";
@@ -18,10 +17,13 @@ import type { PetType, Room } from "@/lib/types";
 import { useShopBySlug } from "@/web/hooks/useShopBySlug";
 import { FavoriteButton } from "@/web/components/FavoriteButton";
 import { useRoutePrefix } from "@/lib/useRoutePrefix";
+import { useServiceFeatures } from "@/lib/useServiceFeatures";
+import { getFeatureIcon } from "@/lib/featureIcon";
 
 export function ShopDetailPage() {
   const { slug } = useParams();
   const { data, loading, error } = useShopBySlug(slug);
+  const { features: allFeatures } = useServiceFeatures();
   const { shopPrefix } = useRoutePrefix();
   const bookHref = `${shopPrefix}/${slug}/book`;
 
@@ -55,6 +57,11 @@ export function ShopDetailPage() {
     if (min === null) return r.price_per_night;
     return Math.min(min, r.price_per_night);
   }, null);
+
+  // 取出店家勾選的特色,並依平台 sort_order 顯示
+  const selectedFeatures = allFeatures.filter((f) =>
+    (shop.service_feature_keys ?? []).includes(f.key),
+  );
 
   return (
     <div className="bg-slate-50 pb-36 sm:pb-16">
@@ -153,19 +160,25 @@ export function ShopDetailPage() {
           )}
         </div>
 
-        {/* ====== 服務 / 設施 chips（客戶易看） ====== */}
-        <div className="card mt-4 p-5">
-          <h2 className="mb-3 text-sm font-bold text-slate-900">服務特色</h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <FeatureChip icon={ShieldCheck} text="合格獸醫合作 24h 緊急聯絡" />
-            <FeatureChip icon={Sparkles} text="每日清潔消毒" />
-            <FeatureChip icon={PawPrint} text="個別籠舍 / 隔離安排" />
-            <FeatureChip icon={Bed} text="每日活動與互動" />
+        {/* ====== 服務 / 設施 chips —— 動態讀取店家勾選 ====== */}
+        {selectedFeatures.length > 0 && (
+          <div className="card mt-4 p-5">
+            <h2 className="mb-3 text-sm font-bold text-slate-900">服務特色</h2>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {selectedFeatures.map((f) => (
+                <FeatureChip
+                  key={f.id}
+                  icon={getFeatureIcon(f.icon)}
+                  text={f.label}
+                  description={f.description}
+                />
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] text-slate-400">
+              * 實際服務內容以店家現場提供為準
+            </p>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400">
-            * 實際服務內容以店家現場提供為準
-          </p>
-        </div>
+        )}
 
         {/* ====== 房型列表 ====== */}
         <div className="mt-4">
@@ -217,14 +230,23 @@ export function ShopDetailPage() {
 function FeatureChip({
   icon: Icon,
   text,
+  description,
 }: {
   icon: typeof PawPrint;
   text: string;
+  description?: string | null;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-      <Icon className="h-4 w-4 shrink-0 text-brand-600" />
-      <span>{text}</span>
+    <div className="flex items-start gap-2.5 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+      <div className="min-w-0">
+        <p className="font-medium text-slate-800">{text}</p>
+        {description && (
+          <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-500">
+            {description}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
