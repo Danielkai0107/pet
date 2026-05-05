@@ -88,80 +88,73 @@ export function buildBookingBubble(
   };
 }
 
-/** Hero：商家封面圖 + 左上狀態 pill + 底部漸層 + 店名 / 地址疊字。 */
+/** Hero：商家封面圖 + 左上狀態 pill + 底部半透明黑底 + 店名 / 地址。 */
 function buildHero(
   statusLabel: string,
   vars: FlexBookingVars,
 ): Record<string, unknown> {
-  const overlays: Record<string, unknown>[] = [
-    // 左上角狀態 pill
-    {
-      type: "box",
-      layout: "horizontal",
-      position: "absolute",
-      offsetTop: "12px",
-      offsetStart: "12px",
-      backgroundColor: TEAL_100,
-      cornerRadius: "md",
-      paddingAll: "6px",
-      paddingStart: "10px",
-      paddingEnd: "10px",
-      width: "fit-content" as unknown as string,
-      contents: [
-        {
-          type: "text",
-          text: statusLabel,
-          color: TEAL_700,
-          weight: "bold",
-          size: "xs",
-        },
-      ],
-    },
-    // 底部黑色漸層 — LINE Flex 沒有原生 gradient，用半透明黑色 box 模擬
-    {
-      type: "box",
-      layout: "vertical",
-      position: "absolute",
-      offsetBottom: "0px",
-      offsetStart: "0px",
-      offsetEnd: "0px",
-      height: "84px",
-      backgroundColor: "#00000077",
-      contents: [],
-    },
-    // 店名 + 地址疊在底部
-    {
-      type: "box",
-      layout: "vertical",
-      position: "absolute",
-      offsetBottom: "12px",
-      offsetStart: "16px",
-      offsetEnd: "16px",
-      contents: [
-        {
-          type: "text",
-          text: vars.shopName,
-          color: "#FFFFFF",
-          weight: "bold",
-          size: "lg",
-          wrap: true,
-        },
-        ...(vars.shopAddress
-          ? [
-              {
-                type: "text",
-                text: vars.shopAddress,
-                color: "#FFFFFFCC",
-                size: "xs",
-                margin: "xs",
-                wrap: true,
-                maxLines: 1,
-              },
-            ]
-          : []),
-      ],
-    },
-  ];
+  // 狀態 pill — 不設 offsetEnd，box 寬度會自動 fit 內容
+  const pill: Record<string, unknown> = {
+    type: "box",
+    layout: "vertical",
+    position: "absolute",
+    offsetTop: "12px",
+    offsetStart: "12px",
+    backgroundColor: TEAL_100,
+    cornerRadius: "md",
+    paddingTop: "5px",
+    paddingBottom: "5px",
+    paddingStart: "10px",
+    paddingEnd: "10px",
+    contents: [
+      {
+        type: "text",
+        text: statusLabel,
+        color: TEAL_700,
+        weight: "bold",
+        size: "xs",
+      },
+    ],
+  };
+
+  // 店名 + 地址 — 底部半透明黑底（仿 inline 漸層效果，但用單一 box 更穩定）
+  const titleBar: Record<string, unknown> = {
+    type: "box",
+    layout: "vertical",
+    position: "absolute",
+    offsetBottom: "0px",
+    offsetStart: "0px",
+    offsetEnd: "0px",
+    backgroundColor: "#000000B3",
+    paddingTop: "12px",
+    paddingBottom: "12px",
+    paddingStart: "16px",
+    paddingEnd: "16px",
+    contents: [
+      {
+        type: "text",
+        text: vars.shopName,
+        color: "#FFFFFF",
+        weight: "bold",
+        size: "lg",
+        wrap: true,
+        maxLines: 1,
+      },
+      ...(vars.shopAddress
+        ? [
+            {
+              type: "text",
+              text: vars.shopAddress,
+              color: "#FFFFFFCC",
+              size: "xs",
+              margin: "xs",
+              wrap: true,
+              maxLines: 1,
+            },
+          ]
+        : []),
+    ],
+  };
 
   if (vars.shopCoverUrl) {
     return {
@@ -176,19 +169,20 @@ function buildHero(
           aspectRatio: "20:13",
           aspectMode: "cover",
         },
-        ...overlays,
+        pill,
+        titleBar,
       ],
     };
   }
 
-  // Fallback：沒有封面圖 → 用 teal 底色 + 大字店名
+  // Fallback：沒有封面圖 → 用 teal 底色 + 大字店名（避免空 image url 被拒）
   return {
     type: "box",
     layout: "vertical",
     backgroundColor: TEAL_700,
     paddingAll: "0px",
-    height: "180px",
-    contents: overlays,
+    height: "150px",
+    contents: [pill, titleBar],
   };
 }
 

@@ -67,6 +67,12 @@ verify_jwt = false
 [functions.line-favorites]
 verify_jwt = false
 
+[functions.line-claim-booking]
+verify_jwt = false
+
+[functions.notify-line]
+verify_jwt = false
+
 [functions.push-line]
 verify_jwt = true
 
