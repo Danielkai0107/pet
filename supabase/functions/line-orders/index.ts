@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
   const supa = adminClient();
   const { data: customer } = await supa
     .from("customers")
-    .select("id")
+    .select("id, email, phone")
     .eq("line_user_id", claims.sub)
     .maybeSingle();
   if (!customer) {
@@ -65,10 +65,21 @@ Deno.serve(async (req: Request) => {
   const statuses =
     scope === "active" ? ACTIVE : scope === "history" ? HISTORY : null;
 
+  // Match bookings by any of:
+  //   - customer_id = current customer (ones already linked)
+  //   - guest_email = current customer's email
+  //   - guest_phone = current customer's phone
+  // Phone/email match catches old web bookings made before user bound LINE.
+  const orParts: string[] = [`customer_id.eq.${customer.id}`];
+  if (customer.email) orParts.push(`guest_email.eq.${customer.email}`);
+  if (customer.phone) orParts.push(`guest_phone.eq.${customer.phone}`);
+
   let q = supa
     .from("bookings")
-    .select("*, shop:shops(id,slug,name,city,district,cover_image_url), room:rooms(id,name)")
-    .eq("customer_id", customer.id)
+    .select(
+      "*, shop:shops(id,slug,name,city,district,cover_image_url), room:rooms(id,name)",
+    )
+    .or(orParts.join(","))
     .order("check_in_date", { ascending: scope === "active" });
   if (statuses) q = q.in("status", statuses);
 

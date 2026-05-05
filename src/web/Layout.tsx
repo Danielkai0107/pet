@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { Search, Heart, LogIn, PawPrint } from "lucide-react";
+import { Search, PawPrint } from "lucide-react";
 import { PLATFORM_NAME } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 
@@ -16,14 +16,13 @@ export function WebLayout() {
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             <NavItem to="/" icon={Search} label="探索" end />
-            <NavItem to="/favorites" icon={Heart} label="收藏" />
           </nav>
-          <div className="flex items-center gap-2">
-            <Link to="/shop/login" className="btn-ghost text-sm">
-              <LogIn className="h-4 w-4" />
-              店家登入
-            </Link>
-          </div>
+          {/*
+            消費者導覽列不放「店家登入」/「收藏」。
+            - 店家入口移到 footer 的低調連結。
+            - 收藏為 LINE 用戶專屬功能，僅在 LIFF 內顯示。
+          */}
+          <span />
         </div>
       </header>
 
@@ -36,10 +35,13 @@ export function WebLayout() {
           <p>
             © {new Date().getFullYear()} {PLATFORM_NAME}. 為毛孩找到最合適的住宿。
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-slate-400">
             <Link to="/about" className="hover:text-brand-700">關於我們</Link>
             <Link to="/shop/onboarding" className="hover:text-brand-700">
-              加入合作店家
+              我是寵物旅館業者
+            </Link>
+            <Link to="/shop/login" className="hover:text-brand-700">
+              店家後台
             </Link>
           </div>
         </div>

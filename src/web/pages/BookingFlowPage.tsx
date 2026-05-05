@@ -205,7 +205,7 @@ export function BookingFlowPage() {
       return;
     }
     const created = (Array.isArray(result) ? result[0] : result) as
-      | { id: string; code: string }
+      | { booking_id: string; booking_code: string }
       | undefined;
     if (!created) {
       setSubmitting(false);
@@ -215,12 +215,12 @@ export function BookingFlowPage() {
 
     // Fire-and-forget email; failure shouldn't block the user.
     void sendBookingEmail({
-      bookingId: created.id,
+      bookingId: created.booking_id,
       kind: "booking_received",
     }).catch(() => undefined);
 
     toast.success("預約已送出！");
-    navigate(`/booking/success/${created.code}`);
+    navigate(`/booking/success/${created.booking_code}`);
   };
 
   if (loading) {

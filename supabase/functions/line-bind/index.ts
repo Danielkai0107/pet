@@ -14,7 +14,16 @@ interface Payload {
   step?: "request_otp" | "verify_otp";
   idToken?: string;
   email?: string;
+  /** Optional but recommended: bound on verify step so we can backfill
+   * web bookings made with the same phone (no email match needed). */
+  phone?: string;
   code?: string;
+}
+
+/** Normalise TW phone numbers loosely: strip spaces / dashes / leading zero
+ * variants. Sufficient for matching against guest_phone. */
+function normalizePhone(p: string): string {
+  return p.replace(/[\s\-()]/g, "").replace(/^\+886/, "0");
 }
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
@@ -169,10 +178,12 @@ Deno.serve(async (req: Request) => {
   // mark consumed
   await supa.from("email_otps").update({ consumed: true }).eq("id", otp.id);
 
-  // Find or create customer for this line_user_id, set email + display_name.
+  const phone = body.phone ? normalizePhone(body.phone) : null;
+
+  // Find or create customer for this line_user_id, set email/phone/display_name.
   const { data: existing } = await supa
     .from("customers")
-    .select("id, email")
+    .select("id, email, phone")
     .eq("line_user_id", claims.sub)
     .maybeSingle();
 
@@ -182,6 +193,7 @@ Deno.serve(async (req: Request) => {
       .from("customers")
       .update({
         email,
+        phone: phone ?? existing.phone,
         display_name: claims.name ?? null,
         picture_url: claims.picture ?? null,
       })
@@ -193,6 +205,7 @@ Deno.serve(async (req: Request) => {
       .insert({
         line_user_id: claims.sub,
         email,
+        phone,
         display_name: claims.name ?? null,
         picture_url: claims.picture ?? null,
       })
@@ -202,16 +215,25 @@ Deno.serve(async (req: Request) => {
     customerId = created.id;
   }
 
-  // Backfill bookings: any booking whose guest_email matches and has no
-  // customer_id gets attached to this customer.
-  const { error: backErr } = await supa
+  // Backfill bookings: attach this customer to any prior booking whose
+  // guest_email OR guest_phone matches. Web/visitor bookings (no
+  // customer_id) get linked first; we do not steal bookings that already
+  // belong to a different customer.
+  const orFilter = phone
+    ? `guest_email.eq.${email},guest_phone.eq.${phone}`
+    : `guest_email.eq.${email}`;
+  const { error: backErr, count: backCount } = await supa
     .from("bookings")
-    .update({ customer_id: customerId })
-    .eq("guest_email", email)
+    .update({ customer_id: customerId }, { count: "exact" })
+    .or(orFilter)
     .is("customer_id", null);
   if (backErr) {
     return jsonResponse({ error: backErr.message }, { status: 500 });
   }
 
-  return jsonResponse({ ok: true, customerId });
+  return jsonResponse({
+    ok: true,
+    customerId,
+    backfilled: backCount ?? 0,
+  });
 });
