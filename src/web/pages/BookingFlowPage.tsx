@@ -630,39 +630,23 @@ export function BookingFlowPage() {
 
 /**
  * Airbnb 風進度線：4 條等寬橫條 — 已完成/當前段是 brand-500，
- * 未到的段是 neutral-200。下方是當前步驟標題。
+ * 未到的段是 neutral-200。標籤交給每個步驟自己的 h1 呈現，
+ * 進度條不再附文字以保持頂部簡潔。
  */
 function Steps({ step }: { step: Step }) {
-  const order: { key: Step; label: string }[] = [
-    { key: "dates", label: "日期" },
-    { key: "room", label: "房型" },
-    { key: "guest", label: "資料" },
-    { key: "review", label: "確認" },
-  ];
-  const idx = order.findIndex((o) => o.key === step);
+  const order: Step[] = ["dates", "room", "guest", "review"];
+  const idx = order.indexOf(step);
   return (
-    <div>
-      <div className="flex items-center gap-1.5">
-        {order.map((o, i) => (
-          <div
-            key={o.key}
-            className={
-              "h-1 flex-1 rounded-full " +
-              (i <= idx ? "bg-brand-500" : "bg-neutral-200")
-            }
-          />
-        ))}
-      </div>
-      <div className="mt-3 flex justify-between text-sm font-medium">
-        {order.map((o, i) => (
-          <span
-            key={o.key}
-            className={i === idx ? "text-neutral-900" : "text-neutral-400"}
-          >
-            {i + 1}. {o.label}
-          </span>
-        ))}
-      </div>
+    <div className="flex items-center gap-1.5">
+      {order.map((o, i) => (
+        <div
+          key={o}
+          className={
+            "h-1 flex-1 rounded-full " +
+            (i <= idx ? "bg-brand-500" : "bg-neutral-200")
+          }
+        />
+      ))}
     </div>
   );
 }
