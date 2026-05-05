@@ -97,8 +97,26 @@ export function ShopRoomsPage() {
         <div className="grid gap-3">
           {rooms.map((room) => (
             <div key={room.id} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                <Bed className="h-6 w-6" />
+              <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-xl bg-brand-50 text-brand-700 sm:h-20 sm:w-28">
+                {room.photo_urls && room.photo_urls.length > 0 ? (
+                  <>
+                    <img
+                      src={room.photo_urls[0]}
+                      alt={room.name}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    {room.photo_urls.length > 1 && (
+                      <span className="absolute bottom-1 right-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                        {room.photo_urls.length} 張
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Bed className="h-6 w-6" />
+                  </div>
+                )}
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
